@@ -22,6 +22,24 @@ const getNearbyVendors = async (req, res, next) => {
   }
 };
 
+// @desc    Search and filter vendors
+// @route   GET /api/vendors/search
+const searchVendors = async (req, res, next) => {
+  try {
+    const { q, is_open, category_id, lat, lng, radius, sort } = req.query;
+
+    const vendors = await Vendor.search({ q, is_open, category_id, lat, lng, radius, sort });
+
+    res.status(200).json({
+      status: 'success',
+      count: vendors.length,
+      data: vendors
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // @desc    Create a vendor
 // @route   POST /api/vendors
 const createVendor = async (req, res, next) => {
@@ -112,6 +130,7 @@ const updateMyVendorProfile = async (req, res, next) => {
 
 module.exports = {
   getNearbyVendors,
+  searchVendors,
   createVendor,
   getVendorById,
   getMyVendorProfile,

@@ -75,6 +75,13 @@ Base URL: http://localhost:3000
   "password": "supersecretadmin"
 }
 ```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Admin seeded successfully"
+}
+```
 
 ### Step 2: Verify OTP
 - **Endpoint**: `POST /api/auth/verify-otp`
@@ -140,6 +147,23 @@ Base URL: http://localhost:3000
   "email": "zero@example.com"
 }
 ```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "data": {
+    "id": 1,
+    "first_name": "Hamza",
+    "last_name": "Ibramin",
+    "email": "zero@example.com",
+    "phone_number": "1234567890",
+    "role": "customer",
+    "is_verified": true,
+    "is_active": true,
+    "updated_at": "2026-06-04T03:30:00.000Z"
+  }
+}
+```
 
 ### Update Password (Protected)
 - **Endpoint**: `PUT /api/users/password`
@@ -150,6 +174,13 @@ Base URL: http://localhost:3000
 {
   "old_password": "my_current_password",
   "new_password": "my_new_secure_password"
+}
+```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Password updated successfully"
 }
 ```
 
@@ -163,6 +194,17 @@ Base URL: http://localhost:3000
   "is_active": false
 }
 ```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "data": {
+    "id": 1,
+    "phone_number": "1234567890",
+    "is_active": false
+  }
+}
+```
 
 ---
 
@@ -171,6 +213,22 @@ Base URL: http://localhost:3000
 ### Get All Categories (Public)
 - **Endpoint**: `GET /api/categories`
 - **Description**: Retrieves all categories.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "data": [
+    {
+      "id": 1,
+      "name": "Fast Food",
+      "description": "Quick and tasty meals",
+      "is_active": true,
+      "created_at": "2026-06-04T03:30:00.000Z",
+      "updated_at": "2026-06-04T03:30:00.000Z"
+    }
+  ]
+}
+```
 
 ### Create Category (Admin Only)
 - **Endpoint**: `POST /api/categories`
@@ -180,6 +238,20 @@ Base URL: http://localhost:3000
 {
   "name": "Fast Food",
   "description": "Quick and tasty meals"
+}
+```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "data": {
+    "id": 1,
+    "name": "Fast Food",
+    "description": "Quick and tasty meals",
+    "is_active": true,
+    "created_at": "2026-06-04T03:30:00.000Z",
+    "updated_at": "2026-06-04T03:30:00.000Z"
+  }
 }
 ```
 
@@ -194,6 +266,20 @@ Base URL: http://localhost:3000
   "is_active": true
 }
 ```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "data": {
+    "id": 1,
+    "name": "Fast Food",
+    "description": "Updated description",
+    "is_active": true,
+    "created_at": "2026-06-04T03:30:00.000Z",
+    "updated_at": "2026-06-04T03:35:00.000Z"
+  }
+}
+```
 
 ### Patch Category (Admin Only)
 - **Endpoint**: `PATCH /api/categories/:id`
@@ -204,10 +290,31 @@ Base URL: http://localhost:3000
   "is_active": false
 }
 ```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "data": {
+    "id": 1,
+    "name": "Fast Food",
+    "description": "Updated description",
+    "is_active": false,
+    "created_at": "2026-06-04T03:30:00.000Z",
+    "updated_at": "2026-06-04T03:40:00.000Z"
+  }
+}
+```
 
 ### Delete Category (Admin Only)
 - **Endpoint**: `DELETE /api/categories/:id`
 - **Headers**: `Authorization: Bearer <your_admin_jwt_token>`
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Category removed"
+}
+```
 
 ---
 
@@ -248,6 +355,25 @@ Base URL: http://localhost:3000
 - **Endpoint**: `GET /api/vendors/me`
 - **Headers**: `Authorization: Bearer <your_vendor_jwt_token>`
 - **Description**: Fetches the vendor profile linked to the logged-in user.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "data": {
+    "id": 1,
+    "user_id": 2,
+    "category_id": 1,
+    "name": "KFC Accra",
+    "logo_url": "https://example.com/logo.png",
+    "rating": "4.50",
+    "is_open": true,
+    "lat": 5.6037,
+    "lng": -0.1870,
+    "created_at": "2026-06-04T03:35:00.000Z",
+    "updated_at": "2026-06-04T03:35:00.000Z"
+  }
+}
+```
 
 ### Update My Vendor Profile (Protected)
 - **Endpoint**: `PUT /api/vendors/me`
@@ -262,6 +388,56 @@ Base URL: http://localhost:3000
   "lat": 5.6150,
   "lng": -0.1900,
   "is_open": false
+}
+```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "data": {
+    "id": 1,
+    "user_id": 2,
+    "category_id": 2,
+    "name": "KFC East Legon",
+    "logo_url": "https://example.com/newlogo.png",
+    "rating": "4.50",
+    "is_open": false,
+    "lat": 5.6150,
+    "lng": -0.1900,
+    "created_at": "2026-06-04T03:35:00.000Z",
+    "updated_at": "2026-06-04T03:40:00.000Z"
+  }
+}
+```
+
+### Search and Filter Vendors (Public)
+- **Endpoint**: `GET /api/vendors/search`
+- **Description**: Searches vendors by name or category, and allows filtering by category or open status. Can also sort by distance if location is provided.
+- **Query Parameters**:
+  - `q`: Search keyword (matches vendor name or category name)
+  - `is_open`: (true/false) Filter for currently open vendors
+  - `category_id`: Filter by a specific category
+  - `lat`, `lng`: Latitude and longitude (optional, sorts results by distance unless `sort=rating` is provided)
+  - `radius`: Radius in meters (only applied if lat/lng are provided)
+  - `sort`: Sort parameter (optional, use `rating` to sort by highest rating. Defaults to alphabetical, or distance if lat/lng are provided).
+- **Example Usage**: `GET /api/vendors/search?q=pizza&is_open=true&lat=5.6037&lng=-0.1870&sort=rating`
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "count": 1,
+  "data": [
+    {
+      "id": 1,
+      "name": "KFC Accra",
+      "logo_url": "https://example.com/logo.png",
+      "rating": "4.50",
+      "is_open": true,
+      "lat": 5.6037,
+      "lng": -0.1870,
+      "distance": 0
+    }
+  ]
 }
 ```
 

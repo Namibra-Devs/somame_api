@@ -67,6 +67,59 @@ class Vendor {
     const result = await pool.query(query, [lng, lat, radius]);
     return result.rows;
   }
+
+  static async search({ q, is_open, category_id, lat, lng, radius = 5000, sort }) {
+    let query = `
+      SELECT v.id, v.name, v.logo_url, v.rating, v.is_open,
+             ST_Y(v.location::geometry) as lat, 
+             ST_X(v.location::geometry) as lng`;
+    
+    const queryParams = [];
+    let paramIndex = 1;
+    const whereClauses = [];
+
+    if (lat && lng) {
+      query += `, ST_DistanceSphere(v.location::geometry, ST_SetSRID(ST_MakePoint($${paramIndex}, $${paramIndex+1}), 4326)) as distance`;
+      whereClauses.push(`ST_DistanceSphere(v.location::geometry, ST_SetSRID(ST_MakePoint($${paramIndex}, $${paramIndex+1}), 4326)) <= $${paramIndex+2}`);
+      queryParams.push(lng, lat, radius);
+      paramIndex += 3;
+    }
+
+    query += ` FROM vendors v LEFT JOIN categories c ON v.category_id = c.id`;
+
+    if (q) {
+      whereClauses.push(`(v.name ILIKE $${paramIndex} OR c.name ILIKE $${paramIndex})`);
+      queryParams.push(`%${q}%`);
+      paramIndex++;
+    }
+
+    if (is_open !== undefined) {
+      whereClauses.push(`v.is_open = $${paramIndex}`);
+      queryParams.push(is_open === 'true' || is_open === true);
+      paramIndex++;
+    }
+
+    if (category_id) {
+      whereClauses.push(`v.category_id = $${paramIndex}`);
+      queryParams.push(category_id);
+      paramIndex++;
+    }
+
+    if (whereClauses.length > 0) {
+      query += ` WHERE ` + whereClauses.join(' AND ');
+    }
+
+    if (sort === 'rating') {
+      query += ` ORDER BY v.rating DESC`;
+    } else if (lat && lng) {
+      query += ` ORDER BY distance ASC`;
+    } else {
+      query += ` ORDER BY v.name ASC`;
+    }
+
+    const result = await pool.query(query, queryParams);
+    return result.rows;
+  }
 }
 
 module.exports = Vendor;
