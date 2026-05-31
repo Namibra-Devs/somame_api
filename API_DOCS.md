@@ -105,7 +105,45 @@ Base URL: http://localhost:3000
 
 ---
 
-## 3. Categories (/api/categories)
+## 3. Users (/api/users)
+
+### Get User Profile (Protected)
+- **Endpoint**: `GET /api/users/profile`
+- **Headers**: `Authorization: Bearer <your_jwt_token>`
+- **Description**: Retrieves the logged-in user's profile details.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "data": {
+    "id": 1,
+    "first_name": "John",
+    "last_name": "Doe",
+    "email": "john@example.com",
+    "phone_number": "1234567890",
+    "role": "customer",
+    "is_verified": true,
+    "created_at": "2026-06-04T03:30:00.000Z"
+  }
+}
+```
+
+### Update User Profile (Protected)
+- **Endpoint**: `PUT /api/users/profile`
+- **Headers**: `Authorization: Bearer <your_jwt_token>`
+- **Description**: Updates the logged-in user's profile details.
+- **Body payload (JSON)**:
+```json
+{
+  "first_name": "John",
+  "last_name": "Doe",
+  "email": "john@example.com"
+}
+```
+
+---
+
+## 4. Categories (/api/categories)
 
 ### Get All Categories (Public)
 - **Endpoint**: `GET /api/categories`
@@ -150,7 +188,7 @@ Base URL: http://localhost:3000
 
 ---
 
-## 4. Vendors (/api/vendors)
+## 5. Vendors (/api/vendors)
 
 ### Create a Vendor (Protected)
 - **Endpoint**: `POST /api/vendors`
@@ -180,6 +218,26 @@ Base URL: http://localhost:3000
     "location": "0101000020E610000022204E9484F2C7BF8BC0EB255EE61640",
     "created_at": "2026-06-04T03:35:00.000Z"
   }
+}
+```
+
+### Get My Vendor Profile (Protected)
+- **Endpoint**: `GET /api/vendors/me`
+- **Headers**: `Authorization: Bearer <your_vendor_jwt_token>`
+- **Description**: Fetches the vendor profile linked to the logged-in user.
+
+### Update My Vendor Profile (Protected)
+- **Endpoint**: `PUT /api/vendors/me`
+- **Headers**: `Authorization: Bearer <your_vendor_jwt_token>`
+- **Description**: Updates the vendor profile for the logged-in user. Only provided fields are updated.
+- **Body payload (JSON)**:
+```json
+{
+  "name": "KFC East Legon",
+  "category_id": 2,
+  "logo_url": "https://example.com/newlogo.png",
+  "lat": 5.6150,
+  "lng": -0.1900
 }
 ```
 
@@ -232,7 +290,7 @@ Base URL: http://localhost:3000
 
 ---
 
-## 5. Orders (/api/orders)
+## 6. Orders (/api/orders)
 
 ### Create an Order (Protected)
 - **Endpoint**: `POST /api/orders`
@@ -330,7 +388,7 @@ Base URL: http://localhost:3000
 
 ---
 
-## 6. Live Tracking (Socket.io)
+## 7. Live Tracking (Socket.io)
 
 Connect to the Socket.io server by passing the JWT token. 
 

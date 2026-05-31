@@ -20,6 +20,9 @@ CREATE TABLE categories (
 -- 2. users table
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
+    first_name VARCHAR(100),
+    last_name VARCHAR(100),
+    email VARCHAR(255) UNIQUE,
     phone_number VARCHAR(20) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     role user_role NOT NULL,

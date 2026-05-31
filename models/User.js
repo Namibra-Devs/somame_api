@@ -7,7 +7,20 @@ class User {
   }
 
   static async findById(id) {
-    const result = await pool.query('SELECT id, phone_number, role, is_verified, created_at FROM users WHERE id = $1', [id]);
+    const result = await pool.query('SELECT id, first_name, last_name, email, phone_number, role, is_verified, created_at FROM users WHERE id = $1', [id]);
+    return result.rows[0];
+  }
+
+  static async updateProfile(id, { first_name, last_name, email }) {
+    const result = await pool.query(
+      `UPDATE users 
+       SET first_name = COALESCE($1, first_name), 
+           last_name = COALESCE($2, last_name), 
+           email = COALESCE($3, email) 
+       WHERE id = $4 
+       RETURNING id, first_name, last_name, email, phone_number, role, is_verified`,
+      [first_name, last_name, email, id]
+    );
     return result.rows[0];
   }
 
