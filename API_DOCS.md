@@ -65,6 +65,17 @@ Base URL: http://localhost:3000
 }
 ```
 
+### Seed Admin (Hidden)
+- **Endpoint**: `POST /api/auth/seed-admin`
+- **Description**: Creates a new admin user directly. Fails if an admin already exists.
+- **Body payload (JSON)**:
+```json
+{
+  "phone_number": "0000000000",
+  "password": "supersecretadmin"
+}
+```
+
 ### Step 2: Verify OTP
 - **Endpoint**: `POST /api/auth/verify-otp`
 - **Description**: Verifies the 6-digit code sent via SMS. Returns the JWT token on success.
@@ -94,16 +105,100 @@ Base URL: http://localhost:3000
 
 ---
 
-## 3. Vendors (/api/vendors)
+## 3. Users (/api/users)
+
+### Get User Profile (Protected)
+- **Endpoint**: `GET /api/users/profile`
+- **Headers**: `Authorization: Bearer <your_jwt_token>`
+- **Description**: Retrieves the logged-in user's profile details.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "data": {
+    "id": 1,
+    "first_name": "John",
+    "last_name": "Doe",
+    "email": "john@example.com",
+    "phone_number": "1234567890",
+    "role": "customer",
+    "is_verified": true,
+    "created_at": "2026-06-04T03:30:00.000Z"
+  }
+}
+```
+
+### Update User Profile (Protected)
+- **Endpoint**: `PUT /api/users/profile`
+- **Headers**: `Authorization: Bearer <your_jwt_token>`
+- **Description**: Updates the logged-in user's profile details.
+- **Body payload (JSON)**:
+```json
+{
+  "first_name": "John",
+  "last_name": "Doe",
+  "email": "john@example.com"
+}
+```
+
+---
+
+## 4. Categories (/api/categories)
+
+### Get All Categories (Public)
+- **Endpoint**: `GET /api/categories`
+- **Description**: Retrieves all categories.
+
+### Create Category (Admin Only)
+- **Endpoint**: `POST /api/categories`
+- **Headers**: `Authorization: Bearer <your_admin_jwt_token>`
+- **Body payload (JSON)**:
+```json
+{
+  "name": "Fast Food",
+  "description": "Quick and tasty meals"
+}
+```
+
+### Update Category (Admin Only)
+- **Endpoint**: `PUT /api/categories/:id`
+- **Headers**: `Authorization: Bearer <your_admin_jwt_token>`
+- **Body payload (JSON)**:
+```json
+{
+  "name": "Fast Food",
+  "description": "Updated description",
+  "is_active": true
+}
+```
+
+### Patch Category (Admin Only)
+- **Endpoint**: `PATCH /api/categories/:id`
+- **Headers**: `Authorization: Bearer <your_admin_jwt_token>`
+- **Body payload (JSON)**:
+```json
+{
+  "is_active": false
+}
+```
+
+### Delete Category (Admin Only)
+- **Endpoint**: `DELETE /api/categories/:id`
+- **Headers**: `Authorization: Bearer <your_admin_jwt_token>`
+
+---
+
+## 5. Vendors (/api/vendors)
 
 ### Create a Vendor (Protected)
 - **Endpoint**: `POST /api/vendors`
 - **Headers**: `Authorization: Bearer <your_jwt_token>`
-- **Description**: Adds a new vendor with their physical coordinates to the database.
+- **Description**: Adds a new vendor with their physical coordinates to the database. The `user_id` is automatically extracted from your JWT token to link the vendor profile to your account.
 - **Body payload (JSON)**:
 ```json
 {
   "name": "KFC Accra",
+  "category_id": 1,
   "logo_url": "https://example.com/logo.png",
   "rating": 4.5,
   "lat": 5.6037,
@@ -117,11 +212,32 @@ Base URL: http://localhost:3000
   "data": {
     "id": 1,
     "name": "KFC Accra",
+    "user_id": 2,
     "logo_url": "https://example.com/logo.png",
     "rating": "4.50",
     "location": "0101000020E610000022204E9484F2C7BF8BC0EB255EE61640",
     "created_at": "2026-06-04T03:35:00.000Z"
   }
+}
+```
+
+### Get My Vendor Profile (Protected)
+- **Endpoint**: `GET /api/vendors/me`
+- **Headers**: `Authorization: Bearer <your_vendor_jwt_token>`
+- **Description**: Fetches the vendor profile linked to the logged-in user.
+
+### Update My Vendor Profile (Protected)
+- **Endpoint**: `PUT /api/vendors/me`
+- **Headers**: `Authorization: Bearer <your_vendor_jwt_token>`
+- **Description**: Updates the vendor profile for the logged-in user. Only provided fields are updated.
+- **Body payload (JSON)**:
+```json
+{
+  "name": "KFC East Legon",
+  "category_id": 2,
+  "logo_url": "https://example.com/newlogo.png",
+  "lat": 5.6150,
+  "lng": -0.1900
 }
 ```
 
@@ -174,7 +290,7 @@ Base URL: http://localhost:3000
 
 ---
 
-## 4. Orders (/api/orders)
+## 6. Orders (/api/orders)
 
 ### Create an Order (Protected)
 - **Endpoint**: `POST /api/orders`
@@ -272,7 +388,7 @@ Base URL: http://localhost:3000
 
 ---
 
-## 5. Live Tracking (Socket.io)
+## 7. Live Tracking (Socket.io)
 
 Connect to the Socket.io server by passing the JWT token. 
 

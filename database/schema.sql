@@ -2,14 +2,27 @@
 CREATE EXTENSION IF NOT EXISTS postgis;
 
 -- Create Enums
-CREATE TYPE user_role AS ENUM ('customer', 'rider', 'vendor');
+CREATE TYPE user_role AS ENUM ('customer', 'rider', 'vendor', 'admin');
 CREATE TYPE order_status AS ENUM ('pending', 'accepted', 'preparing', 'out_for_delivery', 'delivered');
 CREATE TYPE payment_method_type AS ENUM ('momo', 'card', 'cod');
 CREATE TYPE payment_status_type AS ENUM ('pending', 'completed', 'failed', 'refunded');
 
--- 1. users table
+-- 1. categories table
+CREATE TABLE categories (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) UNIQUE NOT NULL,
+    description TEXT,
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 2. users table
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
+    first_name VARCHAR(100),
+    last_name VARCHAR(100),
+    email VARCHAR(255) UNIQUE,
     phone_number VARCHAR(20) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     role user_role NOT NULL,
@@ -19,9 +32,11 @@ CREATE TABLE users (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- 2. vendors table
+-- 3. vendors table
 CREATE TABLE vendors (
     id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    category_id INTEGER REFERENCES categories(id) ON DELETE SET NULL,
     name VARCHAR(255) NOT NULL,
     logo_url VARCHAR(255),
     rating DECIMAL(3, 2) DEFAULT 0.00,

@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const { pool } = require('../config/db');
 
 // Helper to generate 6 digit OTP
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
@@ -134,8 +135,45 @@ const verifyOTP = async (req, res, next) => {
   }
 };
 
+// @desc    Seed the first admin user (HIDDEN ENDPOINT)
+// @route   POST /api/auth/seed-admin
+const seedAdmin = async (req, res, next) => {
+  try {
+    const { phone_number, password } = req.body;
+    if (!phone_number || !password) {
+      return res.status(400).json({ status: 'error', message: 'Provide phone_number and password' });
+    }
+    
+    // Check if an admin already exists
+    const adminCheck = await User.findByPhoneNumber(phone_number);
+    if (adminCheck) {
+      return res.status(400).json({ status: 'error', message: 'User already exists' });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const password_hash = await bcrypt.hash(password, salt);
+
+    // Force create verified admin
+    const result = await User.create({ 
+      phone_number, 
+      password_hash, 
+      role: 'admin', 
+      otp_code: null, 
+      otp_expires_at: null 
+    });
+    
+    // Immediately verify
+    await pool.query('UPDATE users SET is_verified = true WHERE id = $1', [result.id]);
+
+    res.status(201).json({ status: 'success', message: 'Admin seeded successfully' });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   register,
   login,
-  verifyOTP
+  verifyOTP,
+  seedAdmin
 };
