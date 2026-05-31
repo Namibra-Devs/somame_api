@@ -27,9 +27,11 @@ CREATE TABLE users (
     password_hash VARCHAR(255) NOT NULL,
     role user_role NOT NULL,
     is_verified BOOLEAN DEFAULT false,
+    is_active BOOLEAN DEFAULT true,
     otp_code VARCHAR(6),
     otp_expires_at TIMESTAMP WITH TIME ZONE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 3. vendors table
@@ -41,7 +43,8 @@ CREATE TABLE vendors (
     logo_url VARCHAR(255),
     rating DECIMAL(3, 2) DEFAULT 0.00,
     location GEOMETRY(Point, 4326) NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 3. orders table

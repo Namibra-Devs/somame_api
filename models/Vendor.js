@@ -6,7 +6,7 @@ class Vendor {
       `SELECT id, user_id, category_id, name, logo_url, rating, 
               ST_Y(location::geometry) as lat, 
               ST_X(location::geometry) as lng, 
-              created_at 
+              created_at, updated_at 
        FROM vendors WHERE id = $1`,
       [id]
     );
@@ -18,7 +18,7 @@ class Vendor {
       `SELECT id, user_id, category_id, name, logo_url, rating, 
               ST_Y(location::geometry) as lat, 
               ST_X(location::geometry) as lng, 
-              created_at 
+              created_at, updated_at 
        FROM vendors WHERE user_id = $1`,
       [user_id]
     );
@@ -40,13 +40,14 @@ class Vendor {
        SET name = COALESCE($1, name), 
            category_id = COALESCE($2, category_id), 
            logo_url = COALESCE($3, logo_url), 
+           updated_at = CURRENT_TIMESTAMP,
            location = CASE 
                         WHEN $4::numeric IS NOT NULL AND $5::numeric IS NOT NULL 
                         THEN ST_SetSRID(ST_MakePoint($5, $4), 4326) 
                         ELSE location 
                       END
        WHERE user_id = $6 
-       RETURNING id, user_id, category_id, name, logo_url, rating, ST_Y(location::geometry) as lat, ST_X(location::geometry) as lng, created_at`,
+       RETURNING id, user_id, category_id, name, logo_url, rating, ST_Y(location::geometry) as lat, ST_X(location::geometry) as lng, created_at, updated_at`,
       [name, category_id, logo_url, lat, lng, user_id]
     );
     return result.rows[0];

@@ -117,9 +117,9 @@ Base URL: http://localhost:3000
   "status": "success",
   "data": {
     "id": 1,
-    "first_name": "John",
-    "last_name": "Doe",
-    "email": "john@example.com",
+    "first_name": "Hamza",
+    "last_name": "Ibrahim",
+    "email": "zero@example.com",
     "phone_number": "1234567890",
     "role": "customer",
     "is_verified": true,
@@ -135,9 +135,32 @@ Base URL: http://localhost:3000
 - **Body payload (JSON)**:
 ```json
 {
-  "first_name": "John",
-  "last_name": "Doe",
-  "email": "john@example.com"
+  "first_name": "Hamza",
+  "last_name": "Ibramin",
+  "email": "zero@example.com"
+}
+```
+
+### Update Password (Protected)
+- **Endpoint**: `PUT /api/users/password`
+- **Headers**: `Authorization: Bearer <your_jwt_token>`
+- **Description**: Updates the logged-in user's password.
+- **Body payload (JSON)**:
+```json
+{
+  "old_password": "my_current_password",
+  "new_password": "my_new_secure_password"
+}
+```
+
+### Update User Status (Admin Only)
+- **Endpoint**: `PATCH /api/users/:id/status`
+- **Headers**: `Authorization: Bearer <your_admin_jwt_token>`
+- **Description**: Bans or unbans a user instantly from the platform.
+- **Body payload (JSON)**:
+```json
+{
+  "is_active": false
 }
 ```
 

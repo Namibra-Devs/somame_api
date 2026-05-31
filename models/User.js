@@ -7,7 +7,12 @@ class User {
   }
 
   static async findById(id) {
-    const result = await pool.query('SELECT id, first_name, last_name, email, phone_number, role, is_verified, created_at FROM users WHERE id = $1', [id]);
+    const result = await pool.query('SELECT id, first_name, last_name, email, phone_number, role, is_verified, is_active, created_at, updated_at FROM users WHERE id = $1', [id]);
+    return result.rows[0];
+  }
+
+  static async getAuthDataById(id) {
+    const result = await pool.query('SELECT id, password_hash, is_active FROM users WHERE id = $1', [id]);
     return result.rows[0];
   }
 
@@ -16,10 +21,27 @@ class User {
       `UPDATE users 
        SET first_name = COALESCE($1, first_name), 
            last_name = COALESCE($2, last_name), 
-           email = COALESCE($3, email) 
+           email = COALESCE($3, email),
+           updated_at = CURRENT_TIMESTAMP
        WHERE id = $4 
-       RETURNING id, first_name, last_name, email, phone_number, role, is_verified`,
+       RETURNING id, first_name, last_name, email, phone_number, role, is_verified, is_active, updated_at`,
       [first_name, last_name, email, id]
+    );
+    return result.rows[0];
+  }
+
+  static async updatePassword(id, new_password_hash) {
+    const result = await pool.query(
+      'UPDATE users SET password_hash = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING id',
+      [new_password_hash, id]
+    );
+    return result.rowCount > 0;
+  }
+
+  static async updateUserStatus(id, is_active) {
+    const result = await pool.query(
+      'UPDATE users SET is_active = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING id, phone_number, is_active',
+      [is_active, id]
     );
     return result.rows[0];
   }
@@ -43,12 +65,13 @@ class User {
   static async verifyOTP(phone_number, otp_code) {
     // Check if the user has a matching, unexpired OTP
     const userResult = await pool.query(
-      'SELECT id, role, otp_code, otp_expires_at FROM users WHERE phone_number = $1',
+      'SELECT id, role, is_active, otp_code, otp_expires_at FROM users WHERE phone_number = $1',
       [phone_number]
     );
     const user = userResult.rows[0];
     
     if (!user) return { success: false, message: 'User not found' };
+    if (!user.is_active) return { success: false, message: 'Account has been disabled. Please contact support.' };
     if (user.otp_code !== String(otp_code)) return { success: false, message: 'Invalid OTP' };
     if (new Date() > new Date(user.otp_expires_at)) return { success: false, message: 'OTP expired' };
 
