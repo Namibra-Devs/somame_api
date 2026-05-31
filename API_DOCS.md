@@ -99,7 +99,7 @@ Base URL: http://localhost:3000
 ### Create a Vendor (Protected)
 - **Endpoint**: `POST /api/vendors`
 - **Headers**: `Authorization: Bearer <your_jwt_token>`
-- **Description**: Adds a new vendor with their physical coordinates to the database.
+- **Description**: Adds a new vendor with their physical coordinates to the database. The `user_id` is automatically extracted from your JWT token to link the vendor profile to your account.
 - **Body payload (JSON)**:
 ```json
 {
@@ -117,6 +117,7 @@ Base URL: http://localhost:3000
   "data": {
     "id": 1,
     "name": "KFC Accra",
+    "user_id": 2,
     "logo_url": "https://example.com/logo.png",
     "rating": "4.50",
     "location": "0101000020E610000022204E9484F2C7BF8BC0EB255EE61640",

@@ -22,6 +22,7 @@ CREATE TABLE users (
 -- 2. vendors table
 CREATE TABLE vendors (
     id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     name VARCHAR(255) NOT NULL,
     logo_url VARCHAR(255),
     rating DECIMAL(3, 2) DEFAULT 0.00,

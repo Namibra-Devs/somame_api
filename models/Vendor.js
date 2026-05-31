@@ -13,11 +13,11 @@ class Vendor {
     return result.rows[0];
   }
 
-  static async create({ name, logo_url, rating = 0.00, lat, lng }) {
+  static async create({ user_id, name, logo_url, rating = 0.00, lat, lng }) {
     const result = await pool.query(
-      `INSERT INTO vendors (name, logo_url, rating, location) 
-       VALUES ($1, $2, $3, ST_SetSRID(ST_MakePoint($4, $5), 4326)) RETURNING *`,
-      [name, logo_url, rating, lng, lat]
+      `INSERT INTO vendors (user_id, name, logo_url, rating, location) 
+       VALUES ($1, $2, $3, $4, ST_SetSRID(ST_MakePoint($5, $6), 4326)) RETURNING *`,
+      [user_id, name, logo_url, rating, lng, lat]
     );
     return result.rows[0];
   }
