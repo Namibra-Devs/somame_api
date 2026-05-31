@@ -65,6 +65,17 @@ Base URL: http://localhost:3000
 }
 ```
 
+### Seed Admin (Hidden)
+- **Endpoint**: `POST /api/auth/seed-admin`
+- **Description**: Creates a new admin user directly. Fails if an admin already exists.
+- **Body payload (JSON)**:
+```json
+{
+  "phone_number": "0000000000",
+  "password": "supersecretadmin"
+}
+```
+
 ### Step 2: Verify OTP
 - **Endpoint**: `POST /api/auth/verify-otp`
 - **Description**: Verifies the 6-digit code sent via SMS. Returns the JWT token on success.
@@ -94,7 +105,52 @@ Base URL: http://localhost:3000
 
 ---
 
-## 3. Vendors (/api/vendors)
+## 3. Categories (/api/categories)
+
+### Get All Categories (Public)
+- **Endpoint**: `GET /api/categories`
+- **Description**: Retrieves all categories.
+
+### Create Category (Admin Only)
+- **Endpoint**: `POST /api/categories`
+- **Headers**: `Authorization: Bearer <your_admin_jwt_token>`
+- **Body payload (JSON)**:
+```json
+{
+  "name": "Fast Food",
+  "description": "Quick and tasty meals"
+}
+```
+
+### Update Category (Admin Only)
+- **Endpoint**: `PUT /api/categories/:id`
+- **Headers**: `Authorization: Bearer <your_admin_jwt_token>`
+- **Body payload (JSON)**:
+```json
+{
+  "name": "Fast Food",
+  "description": "Updated description",
+  "is_active": true
+}
+```
+
+### Patch Category (Admin Only)
+- **Endpoint**: `PATCH /api/categories/:id`
+- **Headers**: `Authorization: Bearer <your_admin_jwt_token>`
+- **Body payload (JSON)**:
+```json
+{
+  "is_active": false
+}
+```
+
+### Delete Category (Admin Only)
+- **Endpoint**: `DELETE /api/categories/:id`
+- **Headers**: `Authorization: Bearer <your_admin_jwt_token>`
+
+---
+
+## 4. Vendors (/api/vendors)
 
 ### Create a Vendor (Protected)
 - **Endpoint**: `POST /api/vendors`
@@ -104,6 +160,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "name": "KFC Accra",
+  "category_id": 1,
   "logo_url": "https://example.com/logo.png",
   "rating": 4.5,
   "lat": 5.6037,
@@ -175,7 +232,7 @@ Base URL: http://localhost:3000
 
 ---
 
-## 4. Orders (/api/orders)
+## 5. Orders (/api/orders)
 
 ### Create an Order (Protected)
 - **Endpoint**: `POST /api/orders`
@@ -273,7 +330,7 @@ Base URL: http://localhost:3000
 
 ---
 
-## 5. Live Tracking (Socket.io)
+## 6. Live Tracking (Socket.io)
 
 Connect to the Socket.io server by passing the JWT token. 
 
