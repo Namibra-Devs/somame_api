@@ -96,9 +96,9 @@ const updateMyVendorProfile = async (req, res, next) => {
       return res.status(403).json({ status: 'error', message: 'Forbidden: Vendors only' });
     }
 
-    const { name, category_id, logo_url, lat, lng } = req.body;
+    const { name, category_id, logo_url, lat, lng, is_open } = req.body;
 
-    const vendor = await Vendor.updateByUserId(req.user.id, { name, category_id, logo_url, lat, lng });
+    const vendor = await Vendor.updateByUserId(req.user.id, { name, category_id, logo_url, lat, lng, is_open });
 
     if (!vendor) {
       return res.status(404).json({ status: 'error', message: 'Vendor profile not found. Please create one first.' });

@@ -260,7 +260,8 @@ Base URL: http://localhost:3000
   "category_id": 2,
   "logo_url": "https://example.com/newlogo.png",
   "lat": 5.6150,
-  "lng": -0.1900
+  "lng": -0.1900,
+  "is_open": false
 }
 ```
 
@@ -283,6 +284,7 @@ Base URL: http://localhost:3000
       "name": "KFC Accra",
       "logo_url": "https://example.com/logo.png",
       "rating": "4.50",
+      "is_open": true,
       "lat": 5.6037,
       "lng": -0.1870,
       "distance": 0
@@ -304,6 +306,7 @@ Base URL: http://localhost:3000
     "name": "KFC Accra",
     "logo_url": "https://example.com/logo.png",
     "rating": "4.50",
+    "is_open": true,
     "lat": 5.6037,
     "lng": -0.1870,
     "created_at": "2026-06-04T03:35:00.000Z"
