@@ -6,6 +6,11 @@ class Order {
     return result.rows[0];
   }
 
+  static async findByCustomerId(customerId) {
+    const result = await pool.query('SELECT * FROM orders WHERE customer_id = $1 ORDER BY created_at DESC', [customerId]);
+    return result.rows;
+  }
+
   static async getItemsByOrderId(orderId) {
     const result = await pool.query('SELECT * FROM order_items WHERE order_id = $1', [orderId]);
     return result.rows;

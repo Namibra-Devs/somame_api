@@ -793,6 +793,36 @@ Base URL: http://localhost:3000
 }
 ```
 
+### Get My Orders (Protected)
+- **Endpoint**: `GET /api/orders/me`
+- **Headers**: `Authorization: Bearer <your_jwt_token>`
+- **Description**: Fetch all orders created by the logged-in customer.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "data": [
+    {
+      "id": 1,
+      "order_number": "ORD-1X2Y3Z-1234",
+      "customer_id": 3,
+      "vendor_id": 1,
+      "rider_id": 2,
+      "status": "pending",
+      "total_amount": "46.50",
+      "promotion_id": 1,
+      "discount_amount": "9.00",
+      "rider_tip": "5.00",
+      "estimated_delivery_time": "2026-06-04T04:10:00.000Z",
+      "customer_note": "Please leave at the front door",
+      "payment_method": "momo",
+      "payment_status": "pending",
+      "created_at": "2026-06-04T03:40:00.000Z"
+    }
+  ]
+}
+```
+
 ### Get Order Details (Protected)
 - **Endpoint**: `GET /api/orders/:id`
 - **Headers**: `Authorization: Bearer <your_jwt_token>`

@@ -116,7 +116,24 @@ const getOrderDetails = async (req, res, next) => {
   }
 };
 
+// @desc    Get all orders for the logged-in customer
+// @route   GET /api/orders/me
+const getCustomerOrders = async (req, res, next) => {
+  try {
+    const customerId = req.user.id;
+    const orders = await Order.findByCustomerId(customerId);
+    
+    res.status(200).json({
+      status: 'success',
+      data: orders
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createOrder,
-  getOrderDetails
+  getOrderDetails,
+  getCustomerOrders
 };
