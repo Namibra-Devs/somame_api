@@ -8,6 +8,10 @@ const {
   createMenuItem, getMyMenuItems, updateMenuItem, deleteMenuItem, getVendorMenu 
 } = require('../controllers/menuController');
 
+const {
+  createPromotion, getMyPromotions, updatePromotion, deletePromotion
+} = require('../controllers/promotionController');
+
 router.route('/search').get(searchVendors);
 router.route('/nearby').get(getNearbyVendors);
 router.route('/').post(protect, createVendor); // Protected route
@@ -29,6 +33,14 @@ router.route('/me/menu-items')
 router.route('/me/menu-items/:id')
   .put(protect, updateMenuItem)
   .delete(protect, deleteMenuItem);
+
+// Promotions Management (Vendor specific)
+router.route('/me/promotions')
+  .post(protect, createPromotion)
+  .get(protect, getMyPromotions);
+router.route('/me/promotions/:id')
+  .put(protect, updatePromotion)
+  .delete(protect, deletePromotion);
 
 // Public vendor routes
 router.route('/:id').get(getVendorById);
