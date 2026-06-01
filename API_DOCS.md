@@ -412,14 +412,14 @@ Base URL: http://localhost:3000
 
 ### Search and Filter Vendors (Public)
 - **Endpoint**: `GET /api/vendors/search`
-- **Description**: Searches vendors by name or category, and allows filtering by category or open status. Can also sort by distance if location is provided.
+- **Description**: Searches vendors by name or category, and allows filtering by category or open status. Can also sort by rating or distance if location is provided.
 - **Query Parameters**:
   - `q`: Search keyword (matches vendor name or category name)
   - `is_open`: (true/false) Filter for currently open vendors
   - `category_id`: Filter by a specific category
   - `lat`, `lng`: Latitude and longitude (optional, sorts results by distance unless `sort=rating` is provided)
   - `radius`: Radius in meters (only applied if lat/lng are provided)
-  - `sort`: Sort parameter (optional, use `rating` to sort by highest rating. Defaults to alphabetical, or distance if lat/lng are provided).
+  - `sort`: Sort parameter (optional, use `rating` to sort by highest rating. Defaults to alphabetical, or distance if lat/lng are provided). *NB*: However, if you also provide your lat and lng coordinates, it will intelligently override the default and sort by the closest distance instead.
 - **Example Usage**: `GET /api/vendors/search?q=pizza&is_open=true&lat=5.6037&lng=-0.1870&sort=rating`
 - **Example Response**:
 ```json
@@ -492,7 +492,242 @@ Base URL: http://localhost:3000
 
 ---
 
-## 6. Orders (/api/orders)
+## 6. Vendor Menus (/api/vendors)
+
+### Get Vendor Full Menu (Public)
+- **Endpoint**: `GET /api/vendors/:id/menu`
+- **Description**: Retrieves the full menu for a vendor, grouped by menu categories.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "data": [
+    {
+      "id": 1,
+      "vendor_id": 1,
+      "name": "Starters",
+      "description": "Appetizers and quick bites",
+      "items": [
+        {
+          "id": 1,
+          "menu_category_id": 1,
+          "name": "Spring Rolls",
+          "price": "15.50",
+          "size": "Regular",
+          "is_in_stock": true
+        }
+      ]
+    }
+  ]
+}
+```
+
+### Get My Menu Categories (Vendor Only)
+- **Endpoint**: `GET /api/vendors/me/menu-categories`
+- **Headers**: `Authorization: Bearer <your_vendor_jwt_token>`
+- **Description**: Retrieves all menu categories for the logged-in vendor.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "data": [
+    {
+      "id": 1,
+      "vendor_id": 1,
+      "name": "Starters",
+      "description": "Appetizers and quick bites",
+      "created_at": "2026-06-04T03:30:00.000Z",
+      "updated_at": "2026-06-04T03:30:00.000Z"
+    }
+  ]
+}
+```
+
+### Create Menu Category (Vendor Only)
+- **Endpoint**: `POST /api/vendors/me/menu-categories`
+- **Headers**: `Authorization: Bearer <your_vendor_jwt_token>`
+- **Body payload (JSON)**:
+```json
+{
+  "name": "Starters",
+  "description": "Appetizers and quick bites"
+}
+```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "data": {
+    "id": 1,
+    "vendor_id": 1,
+    "name": "Starters",
+    "description": "Appetizers and quick bites",
+    "created_at": "2026-06-04T03:30:00.000Z",
+    "updated_at": "2026-06-04T03:30:00.000Z"
+  }
+}
+```
+
+### Update Menu Category (Vendor Only)
+- **Endpoint**: `PUT /api/vendors/me/menu-categories/:id`
+- **Headers**: `Authorization: Bearer <your_vendor_jwt_token>`
+- **Body payload (JSON)**:
+```json
+{
+  "name": "Appetizers"
+}
+```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "data": {
+    "id": 1,
+    "vendor_id": 1,
+    "name": "Appetizers",
+    "description": "Appetizers and quick bites",
+    "created_at": "2026-06-04T03:30:00.000Z",
+    "updated_at": "2026-06-04T03:35:00.000Z"
+  }
+}
+```
+
+### Delete Menu Category (Vendor Only)
+- **Endpoint**: `DELETE /api/vendors/me/menu-categories/:id`
+- **Headers**: `Authorization: Bearer <your_vendor_jwt_token>`
+- **Description**: Deletes a specific menu category belonging to the vendor.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Menu category deleted successfully"
+}
+```
+
+### Get My Menu Items (Vendor Only)
+- **Endpoint**: `GET /api/vendors/me/menu-items`
+- **Headers**: `Authorization: Bearer <your_vendor_jwt_token>`
+- **Description**: Retrieves all menu items for the logged-in vendor.
+- **Query Parameters**:
+  - `category_id`: (Optional) Filter items by a specific menu category ID. Example: `?category_id=1`
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "data": [
+    {
+      "id": 1,
+      "vendor_id": 1,
+      "menu_category_id": 1,
+      "name": "Spring Rolls",
+      "description": "Crispy vegetable spring rolls",
+      "price": "15.50",
+      "size": "Regular",
+      "quantity": 3,
+      "image_url": "https://example.com/springrolls.jpg",
+      "extras": [
+        { "name": "Sweet Chili Sauce", "price": 2.00 }
+      ],
+      "is_in_stock": true,
+      "created_at": "2026-06-04T03:30:00.000Z",
+      "updated_at": "2026-06-04T03:30:00.000Z"
+    }
+  ]
+}
+```
+
+### Create Menu Item (Vendor Only)
+- **Endpoint**: `POST /api/vendors/me/menu-items`
+- **Headers**: `Authorization: Bearer <your_vendor_jwt_token>`
+- **Body payload (JSON)**:
+```json
+{
+  "menu_category_id": 1,
+  "name": "Spring Rolls",
+  "description": "Crispy vegetable spring rolls",
+  "price": 15.50,
+  "size": "Regular",
+  "quantity": 3,
+  "image_url": "https://example.com/springrolls.jpg",
+  "extras": [
+    { "name": "Sweet Chili Sauce", "price": 2.00 }
+  ],
+  "is_in_stock": true
+}
+```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "data": {
+    "id": 1,
+    "vendor_id": 1,
+    "menu_category_id": 1,
+    "name": "Spring Rolls",
+    "description": "Crispy vegetable spring rolls",
+    "price": "15.50",
+    "size": "Regular",
+    "quantity": 3,
+    "image_url": "https://example.com/springrolls.jpg",
+    "extras": [
+      { "name": "Sweet Chili Sauce", "price": 2.00 }
+    ],
+    "is_in_stock": true,
+    "created_at": "2026-06-04T03:30:00.000Z",
+    "updated_at": "2026-06-04T03:30:00.000Z"
+  }
+}
+```
+
+### Update Menu Item (Vendor Only)
+- **Endpoint**: `PUT /api/vendors/me/menu-items/:id`
+- **Headers**: `Authorization: Bearer <your_vendor_jwt_token>`
+- **Body payload (JSON)**:
+```json
+{
+  "price": 18.00,
+  "is_in_stock": false
+}
+```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "data": {
+    "id": 1,
+    "vendor_id": 1,
+    "menu_category_id": 1,
+    "name": "Spring Rolls",
+    "description": "Crispy vegetable spring rolls",
+    "price": "18.00",
+    "size": "Regular",
+    "quantity": 3,
+    "image_url": "https://example.com/springrolls.jpg",
+    "extras": [
+      { "name": "Sweet Chili Sauce", "price": 2.00 }
+    ],
+    "is_in_stock": false,
+    "created_at": "2026-06-04T03:30:00.000Z",
+    "updated_at": "2026-06-04T03:40:00.000Z"
+  }
+}
+```
+
+### Delete Menu Item (Vendor Only)
+- **Endpoint**: `DELETE /api/vendors/me/menu-items/:id`
+- **Headers**: `Authorization: Bearer <your_vendor_jwt_token>`
+- **Description**: Deletes a specific menu item belonging to the vendor.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Menu item deleted successfully"
+}
+```
+
+---
+
+## 7. Orders (/api/orders)
 
 ### Create an Order (Protected)
 - **Endpoint**: `POST /api/orders`
@@ -590,7 +825,7 @@ Base URL: http://localhost:3000
 
 ---
 
-## 7. Live Tracking (Socket.io)
+## 8. Delivery Tracking (/api/deliveries)
 
 Connect to the Socket.io server by passing the JWT token. 
 
