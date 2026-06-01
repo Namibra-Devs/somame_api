@@ -742,12 +742,17 @@ Base URL: http://localhost:3000
 ```json
 {
   "vendor_id": 1,
-  "rider_id": 2, 
-  "total_amount": 55.50,
-  "payment_method": "momo",
+  "rider_id": 2, // this isoptional for now
+  "total_amount": 46.50,
+  "promotion_id": 1,
+  "discount_amount": 9.00, // this is optional for now
+  "rider_tip": 5.00, // optional rider tip amount
+  "estimated_delivery_time": "2026-06-04T04:10:00.000Z", // optional
+  "customer_note": "Please leave at the front door", // optional
+  "payment_method": "momo", // this can be momo, cash, card, stripe
   "items": [
-    { "item_name": "Fried Rice", "quantity": 2, "price": 20.00 },
-    { "item_name": "Chicken", "quantity": 1, "price": 15.50 }
+    { "item_id": 1, "item_name": "Fried Rice", "quantity": 2, "price": 20.00 }, // should be get from the menu_items table using the item_id
+    { "item_id": 2, "item_name": "Chicken", "quantity": 1, "price": 15.50 } // should be get from the menu_items table using the item_id
   ],
   "delivery_location": {
     "lat": 5.6145,
@@ -762,11 +767,17 @@ Base URL: http://localhost:3000
   "data": {
     "order": {
       "id": 1,
+      "order_number": "ORD-1X2Y3Z-1234",
       "customer_id": 3,
       "vendor_id": 1,
       "rider_id": 2,
       "status": "pending",
-      "total_amount": "55.50",
+      "total_amount": "46.50",
+      "promotion_id": 1,
+      "discount_amount": "9.00",
+      "rider_tip": "5.00",
+      "estimated_delivery_time": "2026-06-04T04:10:00.000Z",
+      "customer_note": "Please leave at the front door",
       "payment_method": "momo",
       "payment_status": "pending",
       "created_at": "2026-06-04T03:40:00.000Z"
@@ -793,11 +804,17 @@ Base URL: http://localhost:3000
   "status": "success",
   "data": {
     "id": 1,
+    "order_number": "ORD-1X2Y3Z-1234",
     "customer_id": 3,
     "vendor_id": 1,
     "rider_id": 2,
     "status": "pending",
-    "total_amount": "55.50",
+    "total_amount": "46.50",
+    "promotion_id": 1,
+    "discount_amount": "9.00",
+    "rider_tip": "5.00",
+    "estimated_delivery_time": "2026-06-04T04:10:00.000Z",
+    "customer_note": "Please leave at the front door",
     "payment_method": "momo",
     "payment_status": "pending",
     "created_at": "2026-06-04T03:40:00.000Z",
@@ -805,6 +822,7 @@ Base URL: http://localhost:3000
       {
         "id": 1,
         "order_id": 1,
+        "item_id": 1,
         "item_name": "Fried Rice",
         "quantity": 2,
         "price": "20.00"
@@ -812,6 +830,7 @@ Base URL: http://localhost:3000
       {
         "id": 2,
         "order_id": 1,
+        "item_id": 2,
         "item_name": "Chicken",
         "quantity": 1,
         "price": "15.50"
@@ -853,5 +872,148 @@ Connect to the Socket.io server by passing the JWT token.
   "latitude": 5.6145,
   "longitude": -0.2057,
   "timestamp": "2026-06-04T03:45:00.000Z"
+}
+```
+
+---
+
+## 9. Vendor Promotions
+
+### Create Promotion (Vendor Only)
+- **Endpoint**: `POST /api/vendors/me/promotions`
+- **Headers**: `Authorization: Bearer <your_vendor_jwt_token>`
+- **Description**: Creates a new promotional code for the vendor.
+- **Body payload (JSON)**:
+```json
+{
+  "code": "SUMMER15",
+  "discount_type": "percentage", // can be "percentage" or "fixed" (DECIMAL - e.g., 15 for 15%, or 5 for $5 off)
+  "discount_value": 15, // can be percentage value or fixed amount (DECIMAL - e.g., 15 for 15%, or 5 for $5 off)
+  "min_order_subtotal": 50.00, // optional (DECIMAL - e.g., 50.00 for $50 minimum)
+  "max_discount_limit": 20.00, // optional (DECIMAL - e.g., 20.00 for $20 maximum discount)
+  "applicable_to": { "type": "all", "ids": [] }, // "all" or "category" or "item" (JSONB - e.g., { "type": "all", "ids": [] } for all items)
+  "expires_at": "2026-12-31T23:59:59Z", // required (TIMESTAMP WITH TIME ZONE - e.g., 2026-12-31T23:59:59Z for December 31, 2026)
+  "is_active": true // optional
+}
+```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "data": {
+    "id": 1,
+    "vendor_id": 1,
+    "code": "SUMMER15",
+    "discount_type": "percentage",
+    "discount_value": 15,
+    "min_order_subtotal": 50.00,
+    "max_discount_limit": 20.00,
+    "applicable_to": { "type": "all", "ids": [] },
+    "expires_at": "2026-12-31T23:59:59Z",
+    "is_active": true,
+    "created_at": "2026-06-04T03:50:00.000Z",
+    "updated_at": "2026-06-04T03:50:00.000Z"
+  }
+}
+```
+
+### Get My Promotions (Vendor Only)
+- **Endpoint**: `GET /api/vendors/me/promotions`
+- **Headers**: `Authorization: Bearer <your_vendor_jwt_token>`
+- **Description**: Retrieves all promotions created by the vendor.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "data": [
+    {
+      "id": 1,
+      "vendor_id": 1,
+      "code": "SUMMER15",
+      "discount_type": "percentage",
+      "discount_value": 15,
+      "min_order_subtotal": 50.00,
+      "max_discount_limit": 20.00,
+      "applicable_to": { "type": "all", "ids": [] },
+      "expires_at": "2026-12-31T23:59:59Z",
+      "is_active": true,
+      "created_at": "2026-06-04T03:50:00.000Z",
+      "updated_at": "2026-06-04T03:50:00.000Z"
+    }
+  ]
+}
+```
+
+### Update Promotion (Vendor Only)
+- **Endpoint**: `PUT /api/vendors/me/promotions/:id`
+- **Headers**: `Authorization: Bearer <your_vendor_jwt_token>`
+- **Description**: Updates an existing promotion (e.g., to turn it off, set `is_active: false`).
+- **Body payload (JSON)**:
+```json
+{
+  "is_active": false, // can be true or false
+  "expires_at": "2026-10-31T23:59:59Z" // required (TIMESTAMP WITH TIME ZONE - e.g., 2026-10-31T23:59:59Z for October 31, 2026)
+}
+```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "data": {
+    "id": 1,
+    "vendor_id": 1,
+    "code": "SUMMER15",
+    "discount_type": "percentage",
+    "discount_value": 15,
+    "min_order_subtotal": 50.00,
+    "max_discount_limit": 20.00,
+    "applicable_to": { "type": "all", "ids": [] },
+    "expires_at": "2026-10-31T23:59:59Z",
+    "is_active": false,
+    "created_at": "2026-06-04T03:50:00.000Z",
+    "updated_at": "2026-06-04T03:50:00.000Z"
+  }
+}
+```
+
+### Delete Promotion (Vendor Only)
+- **Endpoint**: `DELETE /api/vendors/me/promotions/:id`
+- **Headers**: `Authorization: Bearer <your_vendor_jwt_token>`
+- **Description**: Deletes a promotion.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Promotion deleted successfully"
+}
+```
+
+### Validate Promo Code (Customer / Public)
+- **Endpoint**: `POST /api/orders/validate-promo`
+- **Headers**: `Authorization: Bearer <your_jwt_token>` (Optional, but recommended)
+- **Description**: Validates a promo code and calculates the discount amount. The `items` array is required if the promotion is set to specific categories or items.
+- **Body payload (JSON)**:
+```json
+{
+  "vendor_id": 1, // required (INT - e.g., 1 for vendor ID 1)
+  "code": "SUMMER15", // required (TEXT - e.g., "SUMMER15" for "SUMMER15" promo code)
+  "subtotal": 60.00, // required (DECIMAL - e.g., 60.00 for $60.00)
+  "items": [  // if the promo is for all or category or item this list is required. (ARRAY - e.g., [{ "id": 1, "menu_category_id": 1, "price": 30.00, "quantity": 2 }] for all items)
+    { "id": 1, "menu_category_id": 1, "price": 30.00, "quantity": 2 } // id is item id, menu_category_id is category id, price is item price, quantity is item quantity
+  ]
+}
+```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "data": {
+    "promotion_id": 1,
+    "code": "SUMMER15",
+    "discount_type": "percentage",
+    "discount_amount": 9.00,
+    "original_subtotal": 60.00,
+    "new_subtotal": 51.00
+  }
 }
 ```
