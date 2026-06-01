@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const bcrypt = require('bcryptjs');
 
 // @desc    Get logged in user profile
 // @route   GET /api/users/profile
@@ -35,7 +36,65 @@ const updateProfile = async (req, res, next) => {
   }
 };
 
+// @desc    Update logged in user password
+// @route   PUT /api/users/password
+const updatePassword = async (req, res, next) => {
+  try {
+    const { old_password, new_password } = req.body;
+
+    if (!old_password || !new_password) {
+      return res.status(400).json({ status: 'error', message: 'Please provide both old and new passwords' });
+    }
+
+    const authData = await User.getAuthDataById(req.user.id);
+    
+    // Verify old password
+    const isMatch = await bcrypt.compare(old_password, authData.password_hash);
+    if (!isMatch) {
+      return res.status(401).json({ status: 'error', message: 'Incorrect old password' });
+    }
+
+    // Hash new password
+    const salt = await bcrypt.genSalt(10);
+    const new_password_hash = await bcrypt.hash(new_password, salt);
+
+    await User.updatePassword(req.user.id, new_password_hash);
+
+    res.status(200).json({ status: 'success', message: 'Password updated successfully' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Update user active status (Admin only)
+// @route   PATCH /api/users/:id/status
+const updateUserStatus = async (req, res, next) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ status: 'error', message: 'Forbidden: Admins only' });
+    }
+
+    const { is_active } = req.body;
+    
+    if (typeof is_active !== 'boolean') {
+      return res.status(400).json({ status: 'error', message: 'is_active must be a boolean' });
+    }
+
+    const user = await User.updateUserStatus(req.params.id, is_active);
+
+    if (!user) {
+      return res.status(404).json({ status: 'error', message: 'User not found' });
+    }
+
+    res.status(200).json({ status: 'success', data: user });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getProfile,
-  updateProfile
+  updateProfile,
+  updatePassword,
+  updateUserStatus
 };

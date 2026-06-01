@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
+const { pool } = require('../config/db');
 
-const protect = (req, res, next) => {
+const protect = async (req, res, next) => {
   let token;
 
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
@@ -11,8 +12,20 @@ const protect = (req, res, next) => {
       // Verify token
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       
+      // Look up user in DB to ensure they still exist and are active
+      const userResult = await pool.query('SELECT id, role, is_active FROM users WHERE id = $1', [decoded.id]);
+      const user = userResult.rows[0];
+
+      if (!user) {
+        return res.status(401).json({ status: 'error', message: 'Not authorized, user no longer exists' });
+      }
+
+      if (!user.is_active) {
+        return res.status(403).json({ status: 'error', message: 'Account has been disabled. Please contact support.' });
+      }
+
       // Set user info on request
-      req.user = decoded; // Contains id, role, etc.
+      req.user = user; // Contains id, role, is_active
 
       next();
     } catch (error) {

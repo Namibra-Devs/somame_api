@@ -67,6 +67,10 @@ const login = async (req, res, next) => {
       return res.status(401).json({ status: 'error', message: 'User not found' });
     }
 
+    if (!user.is_active) {
+      return res.status(403).json({ status: 'error', message: 'Account has been disabled. Please contact support.' });
+    }
+
     /* 
     // Commented out password check for passwordless OTP login
     const isMatch = await bcrypt.compare(password, user.password_hash);

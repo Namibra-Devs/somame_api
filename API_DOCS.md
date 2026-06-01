@@ -75,6 +75,13 @@ Base URL: http://localhost:3000
   "password": "supersecretadmin"
 }
 ```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Admin seeded successfully"
+}
+```
 
 ### Step 2: Verify OTP
 - **Endpoint**: `POST /api/auth/verify-otp`
@@ -117,9 +124,9 @@ Base URL: http://localhost:3000
   "status": "success",
   "data": {
     "id": 1,
-    "first_name": "John",
-    "last_name": "Doe",
-    "email": "john@example.com",
+    "first_name": "Hamza",
+    "last_name": "Ibrahim",
+    "email": "zero@example.com",
     "phone_number": "1234567890",
     "role": "customer",
     "is_verified": true,
@@ -135,9 +142,67 @@ Base URL: http://localhost:3000
 - **Body payload (JSON)**:
 ```json
 {
-  "first_name": "John",
-  "last_name": "Doe",
-  "email": "john@example.com"
+  "first_name": "Hamza",
+  "last_name": "Ibramin",
+  "email": "zero@example.com"
+}
+```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "data": {
+    "id": 1,
+    "first_name": "Hamza",
+    "last_name": "Ibramin",
+    "email": "zero@example.com",
+    "phone_number": "1234567890",
+    "role": "customer",
+    "is_verified": true,
+    "is_active": true,
+    "updated_at": "2026-06-04T03:30:00.000Z"
+  }
+}
+```
+
+### Update Password (Protected)
+- **Endpoint**: `PUT /api/users/password`
+- **Headers**: `Authorization: Bearer <your_jwt_token>`
+- **Description**: Updates the logged-in user's password.
+- **Body payload (JSON)**:
+```json
+{
+  "old_password": "my_current_password",
+  "new_password": "my_new_secure_password"
+}
+```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Password updated successfully"
+}
+```
+
+### Update User Status (Admin Only)
+- **Endpoint**: `PATCH /api/users/:id/status`
+- **Headers**: `Authorization: Bearer <your_admin_jwt_token>`
+- **Description**: Bans or unbans a user instantly from the platform.
+- **Body payload (JSON)**:
+```json
+{
+  "is_active": false
+}
+```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "data": {
+    "id": 1,
+    "phone_number": "1234567890",
+    "is_active": false
+  }
 }
 ```
 
@@ -148,6 +213,22 @@ Base URL: http://localhost:3000
 ### Get All Categories (Public)
 - **Endpoint**: `GET /api/categories`
 - **Description**: Retrieves all categories.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "data": [
+    {
+      "id": 1,
+      "name": "Fast Food",
+      "description": "Quick and tasty meals",
+      "is_active": true,
+      "created_at": "2026-06-04T03:30:00.000Z",
+      "updated_at": "2026-06-04T03:30:00.000Z"
+    }
+  ]
+}
+```
 
 ### Create Category (Admin Only)
 - **Endpoint**: `POST /api/categories`
@@ -157,6 +238,20 @@ Base URL: http://localhost:3000
 {
   "name": "Fast Food",
   "description": "Quick and tasty meals"
+}
+```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "data": {
+    "id": 1,
+    "name": "Fast Food",
+    "description": "Quick and tasty meals",
+    "is_active": true,
+    "created_at": "2026-06-04T03:30:00.000Z",
+    "updated_at": "2026-06-04T03:30:00.000Z"
+  }
 }
 ```
 
@@ -171,6 +266,20 @@ Base URL: http://localhost:3000
   "is_active": true
 }
 ```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "data": {
+    "id": 1,
+    "name": "Fast Food",
+    "description": "Updated description",
+    "is_active": true,
+    "created_at": "2026-06-04T03:30:00.000Z",
+    "updated_at": "2026-06-04T03:35:00.000Z"
+  }
+}
+```
 
 ### Patch Category (Admin Only)
 - **Endpoint**: `PATCH /api/categories/:id`
@@ -181,10 +290,31 @@ Base URL: http://localhost:3000
   "is_active": false
 }
 ```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "data": {
+    "id": 1,
+    "name": "Fast Food",
+    "description": "Updated description",
+    "is_active": false,
+    "created_at": "2026-06-04T03:30:00.000Z",
+    "updated_at": "2026-06-04T03:40:00.000Z"
+  }
+}
+```
 
 ### Delete Category (Admin Only)
 - **Endpoint**: `DELETE /api/categories/:id`
 - **Headers**: `Authorization: Bearer <your_admin_jwt_token>`
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Category removed"
+}
+```
 
 ---
 
@@ -200,6 +330,7 @@ Base URL: http://localhost:3000
   "name": "KFC Accra",
   "category_id": 1,
   "logo_url": "https://example.com/logo.png",
+  "tags": "fast food, chicken, local",
   "rating": 4.5,
   "lat": 5.6037,
   "lng": -0.1870
@@ -215,6 +346,7 @@ Base URL: http://localhost:3000
     "user_id": 2,
     "logo_url": "https://example.com/logo.png",
     "rating": "4.50",
+    "tags": "fast food, chicken, local",
     "location": "0101000020E610000022204E9484F2C7BF8BC0EB255EE61640",
     "created_at": "2026-06-04T03:35:00.000Z"
   }
@@ -225,6 +357,26 @@ Base URL: http://localhost:3000
 - **Endpoint**: `GET /api/vendors/me`
 - **Headers**: `Authorization: Bearer <your_vendor_jwt_token>`
 - **Description**: Fetches the vendor profile linked to the logged-in user.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "data": {
+    "id": 1,
+    "user_id": 2,
+    "category_id": 1,
+    "name": "KFC Accra",
+    "logo_url": "https://example.com/logo.png",
+    "rating": "4.50",
+    "tags": "fast food, chicken, local",
+    "is_open": true,
+    "lat": 5.6037,
+    "lng": -0.1870,
+    "created_at": "2026-06-04T03:35:00.000Z",
+    "updated_at": "2026-06-04T03:35:00.000Z"
+  }
+}
+```
 
 ### Update My Vendor Profile (Protected)
 - **Endpoint**: `PUT /api/vendors/me`
@@ -236,8 +388,61 @@ Base URL: http://localhost:3000
   "name": "KFC East Legon",
   "category_id": 2,
   "logo_url": "https://example.com/newlogo.png",
+  "tags": "drinks, continental",
   "lat": 5.6150,
-  "lng": -0.1900
+  "lng": -0.1900,
+  "is_open": false
+}
+```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "data": {
+    "id": 1,
+    "user_id": 2,
+    "category_id": 2,
+    "name": "KFC East Legon",
+    "logo_url": "https://example.com/newlogo.png",
+    "rating": "4.50",
+    "tags": "drinks, continental",
+    "is_open": false,
+    "lat": 5.6150,
+    "lng": -0.1900,
+    "created_at": "2026-06-04T03:35:00.000Z",
+    "updated_at": "2026-06-04T03:40:00.000Z"
+  }
+}
+```
+
+### Search and Filter Vendors (Public)
+- **Endpoint**: `GET /api/vendors/search`
+- **Description**: Searches vendors by name or category, and allows filtering by category or open status. Can also sort by rating or distance if location is provided.
+- **Query Parameters**:
+  - `q`: Search keyword (matches vendor name or category name)
+  - `is_open`: (true/false) Filter for currently open vendors
+  - `category_id`: Filter by a specific category
+  - `lat`, `lng`: Latitude and longitude (optional, sorts results by distance unless `sort=rating` is provided)
+  - `radius`: Radius in meters (only applied if lat/lng are provided)
+  - `sort`: Sort parameter (optional, use `rating` to sort by highest rating. Defaults to alphabetical, or distance if lat/lng are provided). *NB*: However, if you also provide your lat and lng coordinates, it will intelligently override the default and sort by the closest distance instead.
+- **Example Usage**: `GET /api/vendors/search?q=pizza&is_open=true&lat=5.6037&lng=-0.1870&sort=rating`
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "count": 1,
+  "data": [
+    {
+      "id": 1,
+      "name": "KFC Accra",
+      "logo_url": "https://example.com/logo.png",
+      "rating": "4.50",
+      "is_open": true,
+      "lat": 5.6037,
+      "lng": -0.1870,
+      "distance": 0
+    }
+  ]
 }
 ```
 
@@ -260,6 +465,7 @@ Base URL: http://localhost:3000
       "name": "KFC Accra",
       "logo_url": "https://example.com/logo.png",
       "rating": "4.50",
+      "is_open": true,
       "lat": 5.6037,
       "lng": -0.1870,
       "distance": 0
@@ -281,6 +487,7 @@ Base URL: http://localhost:3000
     "name": "KFC Accra",
     "logo_url": "https://example.com/logo.png",
     "rating": "4.50",
+    "is_open": true,
     "lat": 5.6037,
     "lng": -0.1870,
     "created_at": "2026-06-04T03:35:00.000Z"
@@ -290,7 +497,242 @@ Base URL: http://localhost:3000
 
 ---
 
-## 6. Orders (/api/orders)
+## 6. Vendor Menus (/api/vendors)
+
+### Get Vendor Full Menu (Public)
+- **Endpoint**: `GET /api/vendors/:id/menu`
+- **Description**: Retrieves the full menu for a vendor, grouped by menu categories.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "data": [
+    {
+      "id": 1,
+      "vendor_id": 1,
+      "name": "Starters",
+      "description": "Appetizers and quick bites",
+      "items": [
+        {
+          "id": 1,
+          "menu_category_id": 1,
+          "name": "Spring Rolls",
+          "price": "15.50",
+          "size": "Regular",
+          "is_in_stock": true
+        }
+      ]
+    }
+  ]
+}
+```
+
+### Get My Menu Categories (Vendor Only)
+- **Endpoint**: `GET /api/vendors/me/menu-categories`
+- **Headers**: `Authorization: Bearer <your_vendor_jwt_token>`
+- **Description**: Retrieves all menu categories for the logged-in vendor.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "data": [
+    {
+      "id": 1,
+      "vendor_id": 1,
+      "name": "Starters",
+      "description": "Appetizers and quick bites",
+      "created_at": "2026-06-04T03:30:00.000Z",
+      "updated_at": "2026-06-04T03:30:00.000Z"
+    }
+  ]
+}
+```
+
+### Create Menu Category (Vendor Only)
+- **Endpoint**: `POST /api/vendors/me/menu-categories`
+- **Headers**: `Authorization: Bearer <your_vendor_jwt_token>`
+- **Body payload (JSON)**:
+```json
+{
+  "name": "Starters",
+  "description": "Appetizers and quick bites"
+}
+```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "data": {
+    "id": 1,
+    "vendor_id": 1,
+    "name": "Starters",
+    "description": "Appetizers and quick bites",
+    "created_at": "2026-06-04T03:30:00.000Z",
+    "updated_at": "2026-06-04T03:30:00.000Z"
+  }
+}
+```
+
+### Update Menu Category (Vendor Only)
+- **Endpoint**: `PUT /api/vendors/me/menu-categories/:id`
+- **Headers**: `Authorization: Bearer <your_vendor_jwt_token>`
+- **Body payload (JSON)**:
+```json
+{
+  "name": "Appetizers"
+}
+```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "data": {
+    "id": 1,
+    "vendor_id": 1,
+    "name": "Appetizers",
+    "description": "Appetizers and quick bites",
+    "created_at": "2026-06-04T03:30:00.000Z",
+    "updated_at": "2026-06-04T03:35:00.000Z"
+  }
+}
+```
+
+### Delete Menu Category (Vendor Only)
+- **Endpoint**: `DELETE /api/vendors/me/menu-categories/:id`
+- **Headers**: `Authorization: Bearer <your_vendor_jwt_token>`
+- **Description**: Deletes a specific menu category belonging to the vendor.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Menu category deleted successfully"
+}
+```
+
+### Get My Menu Items (Vendor Only)
+- **Endpoint**: `GET /api/vendors/me/menu-items`
+- **Headers**: `Authorization: Bearer <your_vendor_jwt_token>`
+- **Description**: Retrieves all menu items for the logged-in vendor.
+- **Query Parameters**:
+  - `category_id`: (Optional) Filter items by a specific menu category ID. Example: `?category_id=1`
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "data": [
+    {
+      "id": 1,
+      "vendor_id": 1,
+      "menu_category_id": 1,
+      "name": "Spring Rolls",
+      "description": "Crispy vegetable spring rolls",
+      "price": "15.50",
+      "size": "Regular",
+      "quantity": 3,
+      "image_url": "https://example.com/springrolls.jpg",
+      "extras": [
+        { "name": "Sweet Chili Sauce", "price": 2.00 }
+      ],
+      "is_in_stock": true,
+      "created_at": "2026-06-04T03:30:00.000Z",
+      "updated_at": "2026-06-04T03:30:00.000Z"
+    }
+  ]
+}
+```
+
+### Create Menu Item (Vendor Only)
+- **Endpoint**: `POST /api/vendors/me/menu-items`
+- **Headers**: `Authorization: Bearer <your_vendor_jwt_token>`
+- **Body payload (JSON)**:
+```json
+{
+  "menu_category_id": 1,
+  "name": "Spring Rolls",
+  "description": "Crispy vegetable spring rolls",
+  "price": 15.50,
+  "size": "Regular",
+  "quantity": 3,
+  "image_url": "https://example.com/springrolls.jpg",
+  "extras": [
+    { "name": "Sweet Chili Sauce", "price": 2.00 }
+  ],
+  "is_in_stock": true
+}
+```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "data": {
+    "id": 1,
+    "vendor_id": 1,
+    "menu_category_id": 1,
+    "name": "Spring Rolls",
+    "description": "Crispy vegetable spring rolls",
+    "price": "15.50",
+    "size": "Regular",
+    "quantity": 3,
+    "image_url": "https://example.com/springrolls.jpg",
+    "extras": [
+      { "name": "Sweet Chili Sauce", "price": 2.00 }
+    ],
+    "is_in_stock": true,
+    "created_at": "2026-06-04T03:30:00.000Z",
+    "updated_at": "2026-06-04T03:30:00.000Z"
+  }
+}
+```
+
+### Update Menu Item (Vendor Only)
+- **Endpoint**: `PUT /api/vendors/me/menu-items/:id`
+- **Headers**: `Authorization: Bearer <your_vendor_jwt_token>`
+- **Body payload (JSON)**:
+```json
+{
+  "price": 18.00,
+  "is_in_stock": false
+}
+```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "data": {
+    "id": 1,
+    "vendor_id": 1,
+    "menu_category_id": 1,
+    "name": "Spring Rolls",
+    "description": "Crispy vegetable spring rolls",
+    "price": "18.00",
+    "size": "Regular",
+    "quantity": 3,
+    "image_url": "https://example.com/springrolls.jpg",
+    "extras": [
+      { "name": "Sweet Chili Sauce", "price": 2.00 }
+    ],
+    "is_in_stock": false,
+    "created_at": "2026-06-04T03:30:00.000Z",
+    "updated_at": "2026-06-04T03:40:00.000Z"
+  }
+}
+```
+
+### Delete Menu Item (Vendor Only)
+- **Endpoint**: `DELETE /api/vendors/me/menu-items/:id`
+- **Headers**: `Authorization: Bearer <your_vendor_jwt_token>`
+- **Description**: Deletes a specific menu item belonging to the vendor.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Menu item deleted successfully"
+}
+```
+
+---
+
+## 7. Orders (/api/orders)
 
 ### Create an Order (Protected)
 - **Endpoint**: `POST /api/orders`
@@ -388,7 +830,7 @@ Base URL: http://localhost:3000
 
 ---
 
-## 7. Live Tracking (Socket.io)
+## 8. Delivery Tracking (/api/deliveries)
 
 Connect to the Socket.io server by passing the JWT token. 
 
