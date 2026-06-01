@@ -42,6 +42,7 @@ CREATE TABLE vendors (
     name VARCHAR(255) NOT NULL,
     logo_url VARCHAR(255),
     rating DECIMAL(3, 2) DEFAULT 0.00,
+    tags VARCHAR(255),
     is_open BOOLEAN DEFAULT true,
     location GEOMETRY(Point, 4326) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,

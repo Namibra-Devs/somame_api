@@ -44,7 +44,7 @@ const searchVendors = async (req, res, next) => {
 // @route   POST /api/vendors
 const createVendor = async (req, res, next) => {
   try {
-    const { name, logo_url, rating, lat, lng } = req.body;
+    const { name, logo_url, rating, tags, lat, lng } = req.body;
     const user_id = req.user.id; // Extract from JWT middleware
     const user_role = req.user.role;
 
@@ -56,7 +56,7 @@ const createVendor = async (req, res, next) => {
       return res.status(400).json({ status: 'error', message: 'Please provide name, lat, and lng' });
     }
 
-    const vendor = await Vendor.create({ user_id, name, logo_url, rating, lat, lng });
+    const vendor = await Vendor.create({ user_id, name, logo_url, rating, tags, lat, lng });
 
     res.status(201).json({
       status: 'success',
@@ -114,9 +114,9 @@ const updateMyVendorProfile = async (req, res, next) => {
       return res.status(403).json({ status: 'error', message: 'Forbidden: Vendors only' });
     }
 
-    const { name, category_id, logo_url, lat, lng, is_open } = req.body;
+    const { name, category_id, logo_url, tags, lat, lng, is_open } = req.body;
 
-    const vendor = await Vendor.updateByUserId(req.user.id, { name, category_id, logo_url, lat, lng, is_open });
+    const vendor = await Vendor.updateByUserId(req.user.id, { name, category_id, logo_url, tags, lat, lng, is_open });
 
     if (!vendor) {
       return res.status(404).json({ status: 'error', message: 'Vendor profile not found. Please create one first.' });

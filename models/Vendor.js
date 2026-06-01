@@ -3,7 +3,7 @@ const { pool } = require('../config/db');
 class Vendor {
   static async findById(id) {
     const result = await pool.query(
-      `SELECT id, user_id, category_id, name, logo_url, rating, is_open,
+      `SELECT id, user_id, category_id, name, logo_url, rating, tags, is_open,
               ST_Y(location::geometry) as lat, 
               ST_X(location::geometry) as lng, 
               created_at, updated_at 
@@ -15,7 +15,7 @@ class Vendor {
 
   static async findByUserId(user_id) {
     const result = await pool.query(
-      `SELECT id, user_id, category_id, name, logo_url, rating, is_open,
+      `SELECT id, user_id, category_id, name, logo_url, rating, tags, is_open,
               ST_Y(location::geometry) as lat, 
               ST_X(location::geometry) as lng, 
               created_at, updated_at 
@@ -25,31 +25,32 @@ class Vendor {
     return result.rows[0];
   }
 
-  static async create({ user_id, category_id = null, name, logo_url, rating = 0.00, lat, lng }) {
+  static async create({ user_id, category_id = null, name, logo_url, rating = 0.00, tags, lat, lng }) {
     const result = await pool.query(
-      `INSERT INTO vendors (user_id, category_id, name, logo_url, rating, location) 
-       VALUES ($1, $2, $3, $4, $5, ST_SetSRID(ST_MakePoint($6, $7), 4326)) RETURNING *`,
-      [user_id, category_id, name, logo_url, rating, lng, lat]
+      `INSERT INTO vendors (user_id, category_id, name, logo_url, rating, tags, location) 
+       VALUES ($1, $2, $3, $4, $5, $6, ST_SetSRID(ST_MakePoint($7, $8), 4326)) RETURNING *`,
+      [user_id, category_id, name, logo_url, rating, tags, lng, lat]
     );
     return result.rows[0];
   }
 
-  static async updateByUserId(user_id, { name, category_id, logo_url, lat, lng, is_open }) {
+  static async updateByUserId(user_id, { name, category_id, logo_url, tags, lat, lng, is_open }) {
     const result = await pool.query(
       `UPDATE vendors 
        SET name = COALESCE($1, name), 
            category_id = COALESCE($2, category_id), 
            logo_url = COALESCE($3, logo_url), 
-           is_open = COALESCE($4, is_open),
+           tags = COALESCE($4, tags),
+           is_open = COALESCE($5, is_open),
            updated_at = CURRENT_TIMESTAMP,
            location = CASE 
-                        WHEN $5::numeric IS NOT NULL AND $6::numeric IS NOT NULL 
-                        THEN ST_SetSRID(ST_MakePoint($6, $5), 4326) 
+                        WHEN $6::numeric IS NOT NULL AND $7::numeric IS NOT NULL 
+                        THEN ST_SetSRID(ST_MakePoint($7, $6), 4326) 
                         ELSE location 
                       END
-       WHERE user_id = $7 
-       RETURNING id, user_id, category_id, name, logo_url, rating, is_open, ST_Y(location::geometry) as lat, ST_X(location::geometry) as lng, created_at, updated_at`,
-      [name, category_id, logo_url, is_open, lat, lng, user_id]
+       WHERE user_id = $8 
+       RETURNING id, user_id, category_id, name, logo_url, rating, tags, is_open, ST_Y(location::geometry) as lat, ST_X(location::geometry) as lng, created_at, updated_at`,
+      [name, category_id, logo_url, tags, is_open, lat, lng, user_id]
     );
     return result.rows[0];
   }

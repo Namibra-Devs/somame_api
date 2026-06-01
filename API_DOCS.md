@@ -330,6 +330,7 @@ Base URL: http://localhost:3000
   "name": "KFC Accra",
   "category_id": 1,
   "logo_url": "https://example.com/logo.png",
+  "tags": "fast food, chicken, local",
   "rating": 4.5,
   "lat": 5.6037,
   "lng": -0.1870
@@ -345,6 +346,7 @@ Base URL: http://localhost:3000
     "user_id": 2,
     "logo_url": "https://example.com/logo.png",
     "rating": "4.50",
+    "tags": "fast food, chicken, local",
     "location": "0101000020E610000022204E9484F2C7BF8BC0EB255EE61640",
     "created_at": "2026-06-04T03:35:00.000Z"
   }
@@ -366,6 +368,7 @@ Base URL: http://localhost:3000
     "name": "KFC Accra",
     "logo_url": "https://example.com/logo.png",
     "rating": "4.50",
+    "tags": "fast food, chicken, local",
     "is_open": true,
     "lat": 5.6037,
     "lng": -0.1870,
@@ -385,6 +388,7 @@ Base URL: http://localhost:3000
   "name": "KFC East Legon",
   "category_id": 2,
   "logo_url": "https://example.com/newlogo.png",
+  "tags": "drinks, continental",
   "lat": 5.6150,
   "lng": -0.1900,
   "is_open": false
@@ -401,6 +405,7 @@ Base URL: http://localhost:3000
     "name": "KFC East Legon",
     "logo_url": "https://example.com/newlogo.png",
     "rating": "4.50",
+    "tags": "drinks, continental",
     "is_open": false,
     "lat": 5.6150,
     "lng": -0.1900,
