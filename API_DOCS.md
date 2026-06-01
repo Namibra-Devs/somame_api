@@ -742,12 +742,17 @@ Base URL: http://localhost:3000
 ```json
 {
   "vendor_id": 1,
-  "rider_id": 2, 
-  "total_amount": 55.50,
-  "payment_method": "momo",
+  "rider_id": 2, // this isoptional for now
+  "total_amount": 46.50,
+  "promotion_id": 1,
+  "discount_amount": 9.00, // this is optional for now
+  "rider_tip": 5.00, // optional rider tip amount
+  "estimated_delivery_time": "2026-06-04T04:10:00.000Z", // optional
+  "customer_note": "Please leave at the front door", // optional
+  "payment_method": "momo", // this can be momo, cash, card, stripe
   "items": [
-    { "item_name": "Fried Rice", "quantity": 2, "price": 20.00 },
-    { "item_name": "Chicken", "quantity": 1, "price": 15.50 }
+    { "item_id": 1, "item_name": "Fried Rice", "quantity": 2, "price": 20.00 }, // should be get from the menu_items table using the item_id
+    { "item_id": 2, "item_name": "Chicken", "quantity": 1, "price": 15.50 } // should be get from the menu_items table using the item_id
   ],
   "delivery_location": {
     "lat": 5.6145,
@@ -762,11 +767,17 @@ Base URL: http://localhost:3000
   "data": {
     "order": {
       "id": 1,
+      "order_number": "ORD-1X2Y3Z-1234",
       "customer_id": 3,
       "vendor_id": 1,
       "rider_id": 2,
       "status": "pending",
-      "total_amount": "55.50",
+      "total_amount": "46.50",
+      "promotion_id": 1,
+      "discount_amount": "9.00",
+      "rider_tip": "5.00",
+      "estimated_delivery_time": "2026-06-04T04:10:00.000Z",
+      "customer_note": "Please leave at the front door",
       "payment_method": "momo",
       "payment_status": "pending",
       "created_at": "2026-06-04T03:40:00.000Z"
@@ -793,11 +804,17 @@ Base URL: http://localhost:3000
   "status": "success",
   "data": {
     "id": 1,
+    "order_number": "ORD-1X2Y3Z-1234",
     "customer_id": 3,
     "vendor_id": 1,
     "rider_id": 2,
     "status": "pending",
-    "total_amount": "55.50",
+    "total_amount": "46.50",
+    "promotion_id": 1,
+    "discount_amount": "9.00",
+    "rider_tip": "5.00",
+    "estimated_delivery_time": "2026-06-04T04:10:00.000Z",
+    "customer_note": "Please leave at the front door",
     "payment_method": "momo",
     "payment_status": "pending",
     "created_at": "2026-06-04T03:40:00.000Z",
@@ -805,6 +822,7 @@ Base URL: http://localhost:3000
       {
         "id": 1,
         "order_id": 1,
+        "item_id": 1,
         "item_name": "Fried Rice",
         "quantity": 2,
         "price": "20.00"
@@ -812,6 +830,7 @@ Base URL: http://localhost:3000
       {
         "id": 2,
         "order_id": 1,
+        "item_id": 2,
         "item_name": "Chicken",
         "quantity": 1,
         "price": "15.50"
@@ -976,11 +995,11 @@ Connect to the Socket.io server by passing the JWT token.
 - **Body payload (JSON)**:
 ```json
 {
-  "vendor_id": 1,
-  "code": "SUMMER15",
-  "subtotal": 60.00,
-  "items": [
-    { "id": 1, "menu_category_id": 1, "price": 30.00, "quantity": 2 }
+  "vendor_id": 1, // required (INT - e.g., 1 for vendor ID 1)
+  "code": "SUMMER15", // required (TEXT - e.g., "SUMMER15" for "SUMMER15" promo code)
+  "subtotal": 60.00, // required (DECIMAL - e.g., 60.00 for $60.00)
+  "items": [  // if the promo is for all or category or item this list is required. (ARRAY - e.g., [{ "id": 1, "menu_category_id": 1, "price": 30.00, "quantity": 2 }] for all items)
+    { "id": 1, "menu_category_id": 1, "price": 30.00, "quantity": 2 } // id is item id, menu_category_id is category id, price is item price, quantity is item quantity
   ]
 }
 ```
@@ -989,6 +1008,7 @@ Connect to the Socket.io server by passing the JWT token.
 {
   "status": "success",
   "data": {
+    "promotion_id": 1,
     "code": "SUMMER15",
     "discount_type": "percentage",
     "discount_amount": 9.00,

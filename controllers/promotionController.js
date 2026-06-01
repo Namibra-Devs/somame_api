@@ -152,6 +152,7 @@ const validatePromo = async (req, res, next) => {
     res.status(200).json({
       status: 'success',
       data: {
+        promotion_id: promotion.id,
         code: promotion.code,
         discount_type: promotion.discount_type,
         discount_amount: discountAmount,

@@ -4,7 +4,7 @@ CREATE EXTENSION IF NOT EXISTS postgis;
 -- Create Enums
 CREATE TYPE user_role AS ENUM ('customer', 'rider', 'vendor', 'admin');
 CREATE TYPE order_status AS ENUM ('pending', 'accepted', 'preparing', 'out_for_delivery', 'delivered');
-CREATE TYPE payment_method_type AS ENUM ('momo', 'card', 'cod');
+CREATE TYPE payment_method_type AS ENUM ('momo', 'card', 'cod', 'namibrapay', 'stripe');
 CREATE TYPE payment_status_type AS ENUM ('pending', 'completed', 'failed', 'refunded');
 CREATE TYPE discount_type_enum AS ENUM ('percentage', 'fixed');
 
@@ -98,13 +98,19 @@ CREATE TABLE promotions (
 -- 7. orders table
 CREATE TABLE orders (
     id SERIAL PRIMARY KEY,
+    order_number VARCHAR(50) UNIQUE NOT NULL,
     customer_id INTEGER NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
     vendor_id INTEGER NOT NULL REFERENCES vendors(id) ON DELETE RESTRICT,
     rider_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
     status order_status NOT NULL DEFAULT 'pending',
     total_amount DECIMAL(10, 2) NOT NULL,
+    promotion_id INTEGER REFERENCES promotions(id) ON DELETE SET NULL,
+    discount_amount DECIMAL(10, 2) DEFAULT 0.00,
     payment_method payment_method_type NOT NULL,
     payment_status payment_status_type NOT NULL DEFAULT 'pending',
+    rider_tip DECIMAL(10, 2) DEFAULT 0.00,
+    estimated_delivery_time TIMESTAMP WITH TIME ZONE,
+    customer_note TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -112,6 +118,7 @@ CREATE TABLE orders (
 CREATE TABLE order_items (
     id SERIAL PRIMARY KEY,
     order_id INTEGER NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+    item_id INTEGER REFERENCES menu_items(id) ON DELETE SET NULL,
     item_name VARCHAR(255) NOT NULL,
     quantity INTEGER NOT NULL CHECK (quantity > 0),
     price DECIMAL(10, 2) NOT NULL
