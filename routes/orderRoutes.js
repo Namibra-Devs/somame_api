@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { createOrder, getOrderDetails, getCustomerOrders } = require('../controllers/orderController');
+const { createOrder, getOrderDetails, getCustomerOrders, updateOrderStatus } = require('../controllers/orderController');
 const { validatePromo } = require('../controllers/promotionController');
 const { protect } = require('../middlewares/authMiddleware');
 
@@ -9,5 +9,6 @@ router.route('/validate-promo').post(protect, validatePromo);
 router.route('/').post(protect, createOrder);
 router.route('/me').get(protect, getCustomerOrders);
 router.route('/:id').get(protect, getOrderDetails);
+router.route('/:id/status').patch(protect, updateOrderStatus);
 
 module.exports = router;

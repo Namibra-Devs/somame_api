@@ -12,10 +12,10 @@ setInterval(async () => {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
-    
+
     for (const orderId of updates) {
       const data = locationBatchCache[orderId];
-      
+
       // Update the deliveries table with the new current_location using PostGIS ST_MakePoint
       // Note: ST_MakePoint expects (longitude, latitude)
       await client.query(
@@ -25,7 +25,7 @@ setInterval(async () => {
          WHERE order_id = $3 AND rider_id = $4`,
         [data.lng, data.lat, orderId, data.riderId]
       );
-      
+
       // Record a point in the tracking_history table
       await client.query(
         `INSERT INTO tracking_history (delivery_id, location)
@@ -37,7 +37,7 @@ setInterval(async () => {
       // Remove from cache after successful update
       delete locationBatchCache[orderId];
     }
-    
+
     await client.query('COMMIT');
   } catch (error) {
     await client.query('ROLLBACK');
@@ -78,7 +78,7 @@ module.exports = (io, socket) => {
       // Customer can join if they own the order
       // Vendor can join if the order belongs to them
       // Rider can join if they are assigned to the order
-      const isAuthorized = 
+      const isAuthorized =
         (role === 'customer' && order.customer_id === userId) ||
         (role === 'vendor' && order.vendor_id === userId) ||
         (role === 'rider' && order.rider_id === userId);
@@ -87,7 +87,7 @@ module.exports = (io, socket) => {
         socket.join(`order_${orderId}`);
         socket.emit('room_joined', { orderId, message: 'Successfully joined tracking room' });
       } else {
-        socket.emit('error', { message: 'Unauthorized to join this order room' });
+        socket.emit('error', { message: 'Unauthorized to join this order room, admin roles are not allowed and also you should be the owner of the order' });
       }
     } catch (error) {
       console.error('Error in join_order_room:', error);

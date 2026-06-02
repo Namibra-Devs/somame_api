@@ -132,8 +132,82 @@ const getCustomerOrders = async (req, res, next) => {
   }
 };
 
+// @desc    Get all orders for the logged-in vendor
+// @route   GET /api/vendors/me/orders
+const getVendorOrders = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const vendor = await Vendor.findByUserId(userId);
+    
+    if (!vendor) {
+      return res.status(404).json({ status: 'error', message: 'Vendor profile not found for this user' });
+    }
+
+    const orders = await Order.findByVendorId(vendor.id);
+    
+    res.status(200).json({
+      status: 'success',
+      data: orders
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Update order status
+// @route   PATCH /api/orders/:id/status
+const updateOrderStatus = async (req, res, next) => {
+  try {
+    const orderId = req.params.id;
+    const { status } = req.body;
+    
+    if (!status) {
+      return res.status(400).json({ status: 'error', message: 'Status is required' });
+    }
+
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ status: 'error', message: 'Order not found' });
+    }
+
+    const role = req.user.role;
+    const userId = req.user.id;
+
+    // Authorization checks
+    if (role === 'vendor') {
+      const vendor = await Vendor.findByUserId(userId);
+      if (!vendor || order.vendor_id !== vendor.id) {
+        return res.status(403).json({ status: 'error', message: 'Not authorized to update this order' });
+      }
+      if (!['accepted', 'preparing'].includes(status)) {
+        return res.status(400).json({ status: 'error', message: 'Vendors can only update status to "accepted" or "preparing"' });
+      }
+    } else if (role === 'rider') {
+      if (order.rider_id !== userId) {
+        return res.status(403).json({ status: 'error', message: 'Not authorized to update this order' });
+      }
+      if (!['out_for_delivery', 'delivered'].includes(status)) {
+        return res.status(400).json({ status: 'error', message: 'Riders can only update status to "out_for_delivery" or "delivered"' });
+      }
+    } else if (role !== 'admin') {
+      return res.status(403).json({ status: 'error', message: 'Not authorized to update order status' });
+    }
+
+    const updatedOrder = await Order.updateStatus(orderId, status);
+    
+    res.status(200).json({
+      status: 'success',
+      data: updatedOrder
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createOrder,
   getOrderDetails,
-  getCustomerOrders
+  getCustomerOrders,
+  getVendorOrders,
+  updateOrderStatus
 };

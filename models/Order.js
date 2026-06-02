@@ -11,6 +11,19 @@ class Order {
     return result.rows;
   }
 
+  static async findByVendorId(vendorId) {
+    const result = await pool.query('SELECT * FROM orders WHERE vendor_id = $1 ORDER BY created_at DESC', [vendorId]);
+    return result.rows;
+  }
+
+  static async updateStatus(id, status) {
+    const result = await pool.query(
+      'UPDATE orders SET status = $1 WHERE id = $2 RETURNING *',
+      [status, id]
+    );
+    return result.rows[0];
+  }
+
   static async getItemsByOrderId(orderId) {
     const result = await pool.query('SELECT * FROM order_items WHERE order_id = $1', [orderId]);
     return result.rows;

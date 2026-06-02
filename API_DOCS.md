@@ -641,6 +641,36 @@ Base URL: http://localhost:3000
 }
 ```
 
+### Get My Vendor Orders (Vendor Only)
+- **Endpoint**: `GET /api/vendors/me/orders`
+- **Headers**: `Authorization: Bearer <your_vendor_jwt_token>`
+- **Description**: Retrieves all orders that have been placed with this vendor, sorted from newest to oldest.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "data": [
+    {
+      "id": 1,
+      "order_number": "ORD-1X2Y3Z-1234",
+      "customer_id": 3,
+      "vendor_id": 1,
+      "rider_id": 2,
+      "status": "pending",
+      "total_amount": "46.50",
+      "promotion_id": null,
+      "discount_amount": "0.00",
+      "rider_tip": "5.00",
+      "estimated_delivery_time": null,
+      "customer_note": "Please leave at the front door",
+      "payment_method": "momo",
+      "payment_status": "pending",
+      "created_at": "2026-06-04T03:40:00.000Z"
+    }
+  ]
+}
+```
+
 ### Create Menu Item (Vendor Only)
 - **Endpoint**: `POST /api/vendors/me/menu-items`
 - **Headers**: `Authorization: Bearer <your_vendor_jwt_token>`
@@ -873,6 +903,33 @@ Base URL: http://localhost:3000
       "lat": 5.6145,
       "lng": -0.2057
     }
+  }
+}
+```
+
+### Update Order Status (Vendor / Rider / Admin)
+- **Endpoint**: `PATCH /api/orders/:id/status`
+- **Headers**: `Authorization: Bearer <your_jwt_token>`
+- **Description**: Updates the status of an order. Vendors can update to `accepted` or `preparing`. Riders can update to `out_for_delivery` or `delivered`.
+- **Body payload (JSON)**:
+```json
+{
+  "status": "accepted"
+}
+```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "data": {
+    "id": 1,
+    "order_number": "ORD-1X2Y3Z-1234",
+    "customer_id": 3,
+    "vendor_id": 1,
+    "rider_id": 2,
+    "status": "accepted",
+    "total_amount": "46.50",
+    "created_at": "2026-06-04T03:40:00.000Z"
   }
 }
 ```
