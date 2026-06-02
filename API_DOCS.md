@@ -934,6 +934,27 @@ Base URL: http://localhost:3000
 }
 ```
 
+### Submit Ratings (Customer Only)
+- **Endpoint**: `POST /api/orders/:id/ratings`
+- **Headers**: `Authorization: Bearer <your_customer_jwt_token>`
+- **Description**: Submits ratings and comments for the vendor and/or the rider for a delivered order. Both can be submitted at the same time, or just one.
+- **Body payload (JSON)**:
+```json
+{
+  "vendor_rating": 5,
+  "vendor_comment": "The food was hot and delicious!",
+  "rider_rating": 4,
+  "rider_comment": "Fast delivery, but spilled a little drink."
+}
+```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Ratings submitted successfully"
+}
+```
+
 ---
 
 ## 8. Delivery Tracking (/api/deliveries)

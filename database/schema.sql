@@ -7,6 +7,7 @@ CREATE TYPE order_status AS ENUM ('pending', 'accepted', 'preparing', 'out_for_d
 CREATE TYPE payment_method_type AS ENUM ('momo', 'card', 'cod', 'namibrapay', 'stripe');
 CREATE TYPE payment_status_type AS ENUM ('pending', 'completed', 'failed', 'refunded');
 CREATE TYPE discount_type_enum AS ENUM ('percentage', 'fixed');
+CREATE TYPE target_type_enum AS ENUM ('vendor', 'rider');
 
 -- 1. categories table
 CREATE TABLE categories (
@@ -31,6 +32,7 @@ CREATE TABLE users (
     is_active BOOLEAN DEFAULT true,
     otp_code VARCHAR(6),
     otp_expires_at TIMESTAMP WITH TIME ZONE,
+    rating DECIMAL(3, 2) DEFAULT 0.00,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -154,3 +156,18 @@ CREATE INDEX idx_orders_rider_id ON orders (rider_id);
 CREATE INDEX idx_order_items_order_id ON order_items (order_id);
 CREATE INDEX idx_deliveries_rider_id ON deliveries (rider_id);
 CREATE INDEX idx_tracking_history_delivery_id ON tracking_history (delivery_id);
+
+-- 12. ratings table
+CREATE TABLE ratings (
+    id SERIAL PRIMARY KEY,
+    order_id INTEGER NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+    customer_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    target_id INTEGER NOT NULL, -- references either vendors(id) or users(id) depending on target_type
+    target_type target_type_enum NOT NULL,
+    rating INTEGER CHECK (rating >= 1 AND rating <= 5) NOT NULL,
+    comment TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT unique_order_target_rating UNIQUE (order_id, target_id, target_type)
+);
+
+CREATE INDEX idx_ratings_target ON ratings (target_id, target_type);
