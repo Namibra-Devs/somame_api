@@ -641,6 +641,36 @@ Base URL: http://localhost:3000
 }
 ```
 
+### Get My Vendor Orders (Vendor Only)
+- **Endpoint**: `GET /api/vendors/me/orders`
+- **Headers**: `Authorization: Bearer <your_vendor_jwt_token>`
+- **Description**: Retrieves all orders that have been placed with this vendor, sorted from newest to oldest.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "data": [
+    {
+      "id": 1,
+      "order_number": "ORD-1X2Y3Z-1234",
+      "customer_id": 3,
+      "vendor_id": 1,
+      "rider_id": 2,
+      "status": "pending",
+      "total_amount": "46.50",
+      "promotion_id": null,
+      "discount_amount": "0.00",
+      "rider_tip": "5.00",
+      "estimated_delivery_time": null,
+      "customer_note": "Please leave at the front door",
+      "payment_method": "momo",
+      "payment_status": "pending",
+      "created_at": "2026-06-04T03:40:00.000Z"
+    }
+  ]
+}
+```
+
 ### Create Menu Item (Vendor Only)
 - **Endpoint**: `POST /api/vendors/me/menu-items`
 - **Headers**: `Authorization: Bearer <your_vendor_jwt_token>`
@@ -793,6 +823,36 @@ Base URL: http://localhost:3000
 }
 ```
 
+### Get My Orders (Protected)
+- **Endpoint**: `GET /api/orders/me`
+- **Headers**: `Authorization: Bearer <your_jwt_token>`
+- **Description**: Fetch all orders created by the logged-in customer.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "data": [
+    {
+      "id": 1,
+      "order_number": "ORD-1X2Y3Z-1234",
+      "customer_id": 3,
+      "vendor_id": 1,
+      "rider_id": 2,
+      "status": "pending",
+      "total_amount": "46.50",
+      "promotion_id": 1,
+      "discount_amount": "9.00",
+      "rider_tip": "5.00",
+      "estimated_delivery_time": "2026-06-04T04:10:00.000Z",
+      "customer_note": "Please leave at the front door",
+      "payment_method": "momo",
+      "payment_status": "pending",
+      "created_at": "2026-06-04T03:40:00.000Z"
+    }
+  ]
+}
+```
+
 ### Get Order Details (Protected)
 - **Endpoint**: `GET /api/orders/:id`
 - **Headers**: `Authorization: Bearer <your_jwt_token>`
@@ -847,6 +907,54 @@ Base URL: http://localhost:3000
 }
 ```
 
+### Update Order Status (Vendor / Rider / Admin)
+- **Endpoint**: `PATCH /api/orders/:id/status`
+- **Headers**: `Authorization: Bearer <your_jwt_token>`
+- **Description**: Updates the status of an order. Vendors can update to `accepted` or `preparing`. Riders can update to `out_for_delivery` or `delivered`.
+- **Body payload (JSON)**:
+```json
+{
+  "status": "accepted"
+}
+```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "data": {
+    "id": 1,
+    "order_number": "ORD-1X2Y3Z-1234",
+    "customer_id": 3,
+    "vendor_id": 1,
+    "rider_id": 2,
+    "status": "accepted",
+    "total_amount": "46.50",
+    "created_at": "2026-06-04T03:40:00.000Z"
+  }
+}
+```
+
+### Submit Ratings (Customer Only)
+- **Endpoint**: `POST /api/orders/:id/ratings`
+- **Headers**: `Authorization: Bearer <your_customer_jwt_token>`
+- **Description**: Submits ratings and comments for the vendor and/or the rider for a delivered order. Both can be submitted at the same time, or just one.
+- **Body payload (JSON)**:
+```json
+{
+  "vendor_rating": 5, // integer between 1 and 5 (optional)
+  "vendor_comment": "The food was hot and delicious!", // string (optional)
+  "rider_rating": 4, // integer between 1 and 5 (optional)
+  "rider_comment": "Fast delivery, but spilled a little drink." // string (optional)
+}
+```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Ratings submitted successfully"
+}
+```
+
 ---
 
 ## 8. Delivery Tracking (/api/deliveries)
@@ -857,10 +965,10 @@ Connect to the Socket.io server by passing the JWT token.
 `Authorization: Bearer <your_jwt_token>`
 
 ### Events to Emit (from Postman WebSocket client):
-- `join_order_room`: Emitted by customers/vendors to listen to a specific order.
-  - Payload: `{ "orderId": 1 }`
+- `join_order_room`: Emitted by customers/vendors/riders to listen to a specific order.
+  - Payload: `{ "orderId": 1, "orderType": "food" }` (Note: `orderType` defaults to "food", but for parcels you must send `"orderType": "parcel"`)
 - `update_location`: Emitted continuously by riders.
-  - Payload: `{ "orderId": 1, "latitude": 5.6145, "longitude": -0.2057 }`
+  - Payload: `{ "orderId": 1, "orderType": "food", "latitude": 5.6145, "longitude": -0.2057 }`
 
 ### Events to Listen for:
 - `location_changed`: Received by anyone in the order room when the rider moves.
@@ -868,6 +976,7 @@ Connect to the Socket.io server by passing the JWT token.
 ```json
 {
   "orderId": 1,
+  "orderType": "food",
   "riderId": 2,
   "latitude": 5.6145,
   "longitude": -0.2057,
@@ -1016,4 +1125,85 @@ Connect to the Socket.io server by passing the JWT token.
     "new_subtotal": 51.00
   }
 }
+}
 ```
+
+---
+
+## 10. Admin Configurations (/api/admin)
+
+### Get System Configurations
+- **Endpoint**: `GET /api/admin/configs`
+- **Description**: Retrieves current system configurations (fares, fees).
+
+### Update System Configurations (Admin Only)
+- **Endpoint**: `PUT /api/admin/configs`
+- **Headers**: `Authorization: Bearer <admin_jwt_token>`
+- **Body payload (JSON)**:
+```json
+{
+  "parcel_base_fare": 12.00,
+  "parcel_per_km_fee": 3.00,
+  "parcel_service_fee": 5.00,
+  "parcel_express_multiplier": 1.50
+}
+```
+
+---
+
+## 11. Parcel Delivery (/api/parcels)
+
+### Calculate Parcel Fare (Customer)
+- **Endpoint**: `POST /api/parcels/calculate-fare`
+- **Headers**: `Authorization: Bearer <customer_jwt_token>` (Optional but recommended)
+- **Description**: Calculates the exact price for a parcel delivery based on the Google Maps distance calculated on the frontend.
+- **Body payload (JSON)**:
+```json
+{
+  "distance_km": 15.4,
+  "delivery_speed": "express" // "standard" or "express"
+}
+```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "data": {
+    "distance_km": 15.4,
+    "delivery_speed": "express",
+    "base_fare": "10.00",
+    "distance_fare": "38.50",
+    "service_fee": "5.00",
+    "total_amount": "80.25",
+    "estimated_time_mins": 57
+  }
+}
+```
+
+### Create Parcel Order (Customer Only)
+- **Endpoint**: `POST /api/parcels`
+- **Headers**: `Authorization: Bearer <customer_jwt_token>`
+- **Body payload (JSON)**:
+```json
+{
+  "pickup_location": { "lat": 5.6145, "lng": -0.2057 },
+  "dropoff_location": { "lat": 5.6037, "lng": -0.1870 },
+  "distance_km": 15.4,
+  "item_description": "A fragile vase",
+  "item_value": 250.00,
+  "item_photo_url": "https://example.com/photo.jpg",
+  "recipient_name": "John Doe",
+  "recipient_phone": "+233541234567",
+  "delivery_speed": "express",
+  "payment_method": "momo"
+}
+```
+
+### Get My Parcels (Customer Only)
+- **Endpoint**: `GET /api/parcels/me`
+- **Headers**: `Authorization: Bearer <customer_jwt_token>`
+
+### Get Parcel Details (Customer / Rider)
+- **Endpoint**: `GET /api/parcels/:id`
+- **Headers**: `Authorization: Bearer <jwt_token>`
+- **Description**: Get tracking info, coordinates, and details for the parcel order.
