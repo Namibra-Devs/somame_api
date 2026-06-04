@@ -33,7 +33,11 @@ app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/vendors', require('./routes/vendorRoutes'));
 app.use('/api/orders', require('./routes/orderRoutes'));
 
-// Health check endpoint
+// Health check endpoints
+app.get('/', (req, res) => {
+  res.status(200).json({ status: 'success', message: 'somame_api is running' });
+});
+
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'success', message: 'API is running' });
 });

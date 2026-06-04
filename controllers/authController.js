@@ -2,45 +2,47 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
+// Helper to generate 6 digit OTP
+const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
+
 // @desc    Register a new user
 // @route   POST /api/auth/register
 const register = async (req, res, next) => {
   try {
     const { phone_number, password, role } = req.body;
     
-    // Basic validation
     if (!phone_number || !password || !role) {
       return res.status(400).json({ status: 'error', message: 'Please provide all required fields' });
     }
 
-    // Validate role
     if (!['customer', 'rider', 'vendor'].includes(role)) {
       return res.status(400).json({ status: 'error', message: 'Invalid role specified' });
     }
 
-    // Check if user exists
     const userExists = await User.findByPhoneNumber(phone_number);
     if (userExists) {
       return res.status(400).json({ status: 'error', message: 'User with this phone number already exists' });
     }
 
-    // Hash password
     const salt = await bcrypt.genSalt(10);
     const password_hash = await bcrypt.hash(password, salt);
 
-    // Create user
-    const user = await User.create({ phone_number, password_hash, role });
+    // Generate OTP
+    const otp_code = generateOTP();
+    const otp_expires_at = new Date(Date.now() + 10 * 60000); // 10 minutes from now
 
-    // Generate token
-    const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, {
-      expiresIn: '30d'
-    });
+    // Create user (is_verified defaults to false in schema)
+    const user = await User.create({ phone_number, password_hash, role, otp_code, otp_expires_at });
+
+    // Mock sending SMS
+    console.log(`\n\n[MOCK SMS] To: ${phone_number} | Message: Your Somame API verification code is: ${otp_code}\n\n`);
 
     res.status(201).json({
       status: 'success',
+      message: 'Registration initiated. OTP sent to phone number.',
       data: {
-        user,
-        token
+        userId: user.id,
+        phone_number: user.phone_number
       }
     });
   } catch (error) {
@@ -54,37 +56,72 @@ const login = async (req, res, next) => {
   try {
     const { phone_number, password } = req.body;
 
-    // Validation
     if (!phone_number || !password) {
       return res.status(400).json({ status: 'error', message: 'Please provide phone number and password' });
     }
 
-    // Check user
     const user = await User.findByPhoneNumber(phone_number);
 
     if (!user) {
       return res.status(401).json({ status: 'error', message: 'Invalid credentials' });
     }
 
-    // Check password
     const isMatch = await bcrypt.compare(password, user.password_hash);
     if (!isMatch) {
       return res.status(401).json({ status: 'error', message: 'Invalid credentials' });
     }
 
-    // Generate token
-    const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, {
+    // Generate new OTP for login
+    const otp_code = generateOTP();
+    const otp_expires_at = new Date(Date.now() + 10 * 60000);
+
+    await User.updateOTP(user.id, otp_code, otp_expires_at);
+
+    // Mock sending SMS
+    console.log(`\n\n[MOCK SMS] To: ${phone_number} | Message: Your Somame API login verification code is: ${otp_code}\n\n`);
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Login initiated. OTP sent to phone number.',
+      data: {
+        userId: user.id,
+        phone_number: user.phone_number
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Verify OTP and return JWT token
+// @route   POST /api/auth/verify-otp
+const verifyOTP = async (req, res, next) => {
+  try {
+    const { phone_number, otp_code } = req.body;
+
+    if (!phone_number || !otp_code) {
+      return res.status(400).json({ status: 'error', message: 'Please provide phone number and OTP code' });
+    }
+
+    const result = await User.verifyOTP(phone_number, otp_code);
+
+    if (!result.success) {
+      return res.status(400).json({ status: 'error', message: result.message });
+    }
+
+    // Generate token since OTP is verified
+    const token = jwt.sign({ id: result.user.id, role: result.user.role }, process.env.JWT_SECRET, {
       expiresIn: '30d'
     });
 
     res.status(200).json({
       status: 'success',
+      message: 'OTP verified successfully.',
       data: {
         user: {
-          id: user.id,
-          phone_number: user.phone_number,
-          role: user.role,
-          created_at: user.created_at
+          id: result.user.id,
+          phone_number: result.user.phone_number,
+          role: result.user.role
         },
         token
       }
@@ -96,5 +133,6 @@ const login = async (req, res, next) => {
 
 module.exports = {
   register,
-  login
+  login,
+  verifyOTP
 };
