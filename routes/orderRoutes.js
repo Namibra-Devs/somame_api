@@ -1,12 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const { getNearbyVendors, createOrder, getOrderDetails } = require('../controllers/orderController');
+const { createOrder, getOrderDetails } = require('../controllers/orderController');
+const { protect } = require('../middlewares/authMiddleware');
 
-// Vendor routes (Mapped here as part of the order API phase)
-router.get('/vendors/nearby', getNearbyVendors);
-
-// Order routes
-router.post('/orders', createOrder);
-router.get('/orders/:id', getOrderDetails);
+// Order routes protected by JWT middleware
+router.route('/').post(protect, createOrder);
+router.route('/:id').get(protect, getOrderDetails);
 
 module.exports = router;

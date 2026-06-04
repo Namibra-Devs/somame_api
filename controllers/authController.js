@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { pool } = require('../config/db');
+const User = require('../models/User');
 
 // @desc    Register a new user
 // @route   POST /api/auth/register
@@ -19,8 +19,8 @@ const register = async (req, res, next) => {
     }
 
     // Check if user exists
-    const userExists = await pool.query('SELECT id FROM users WHERE phone_number = $1', [phone_number]);
-    if (userExists.rows.length > 0) {
+    const userExists = await User.findByPhoneNumber(phone_number);
+    if (userExists) {
       return res.status(400).json({ status: 'error', message: 'User with this phone number already exists' });
     }
 
@@ -29,12 +29,7 @@ const register = async (req, res, next) => {
     const password_hash = await bcrypt.hash(password, salt);
 
     // Create user
-    const result = await pool.query(
-      'INSERT INTO users (phone_number, password_hash, role) VALUES ($1, $2, $3) RETURNING id, phone_number, role, created_at',
-      [phone_number, password_hash, role]
-    );
-
-    const user = result.rows[0];
+    const user = await User.create({ phone_number, password_hash, role });
 
     // Generate token
     const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, {
@@ -65,8 +60,7 @@ const login = async (req, res, next) => {
     }
 
     // Check user
-    const result = await pool.query('SELECT * FROM users WHERE phone_number = $1', [phone_number]);
-    const user = result.rows[0];
+    const user = await User.findByPhoneNumber(phone_number);
 
     if (!user) {
       return res.status(401).json({ status: 'error', message: 'Invalid credentials' });

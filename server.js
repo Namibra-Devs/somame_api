@@ -30,7 +30,8 @@ app.use(express.urlencoded({ extended: true }));
 
 // Setup API Routes
 app.use('/api/auth', require('./routes/authRoutes')); 
-app.use('/api', require('./routes/orderRoutes'));
+app.use('/api/vendors', require('./routes/vendorRoutes'));
+app.use('/api/orders', require('./routes/orderRoutes'));
 
 // Health check endpoint
 app.get('/health', (req, res) => {
