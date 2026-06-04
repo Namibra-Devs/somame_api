@@ -28,9 +28,9 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Setup API Routes (Placeholders for future implementation)
-// app.use('/api/users', require('./routes/users')); 
-// app.use('/api/orders', require('./routes/orders'));
+// Setup API Routes
+app.use('/api/auth', require('./routes/authRoutes')); 
+app.use('/api', require('./routes/orderRoutes'));
 
 // Health check endpoint
 app.get('/health', (req, res) => {
