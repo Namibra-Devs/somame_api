@@ -54,22 +54,25 @@ const register = async (req, res, next) => {
 // @route   POST /api/auth/login
 const login = async (req, res, next) => {
   try {
-    const { phone_number, password } = req.body;
+    const { phone_number } = req.body; // Password removed
 
-    if (!phone_number || !password) {
-      return res.status(400).json({ status: 'error', message: 'Please provide phone number and password' });
+    if (!phone_number) {
+      return res.status(400).json({ status: 'error', message: 'Please provide a phone number' });
     }
 
     const user = await User.findByPhoneNumber(phone_number);
 
     if (!user) {
-      return res.status(401).json({ status: 'error', message: 'Invalid credentials' });
+      return res.status(401).json({ status: 'error', message: 'User not found' });
     }
 
+    /* 
+    // Commented out password check for passwordless OTP login
     const isMatch = await bcrypt.compare(password, user.password_hash);
     if (!isMatch) {
       return res.status(401).json({ status: 'error', message: 'Invalid credentials' });
     }
+    */
 
     // Generate new OTP for login
     const otp_code = generateOTP();

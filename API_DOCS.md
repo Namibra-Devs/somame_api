@@ -29,7 +29,7 @@ Base URL: http://localhost:3000
 {
   "phone_number": "1234567890",
   "password": "securepassword123",
-  "role": "customer" 
+  "role": "customer" // Can be "customer", "rider", or "vendor"
 }
 ```
 - **Example Response**:
@@ -46,12 +46,11 @@ Base URL: http://localhost:3000
 
 ### Step 1b: Login User
 - **Endpoint**: `POST /api/auth/login`
-- **Description**: Authenticate with password and trigger a 6-digit SMS OTP.
+- **Description**: Authenticate using ONLY a phone number and trigger a 6-digit SMS OTP (passwordless).
 - **Body payload (JSON)**:
 ```json
 {
-  "phone_number": "1234567890",
-  "password": "securepassword123"
+  "phone_number": "1234567890"
 }
 ```
 - **Example Response**: 
