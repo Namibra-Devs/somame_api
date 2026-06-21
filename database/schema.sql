@@ -10,6 +10,7 @@ CREATE TYPE discount_type_enum AS ENUM ('percentage', 'fixed');
 CREATE TYPE target_type_enum AS ENUM ('vendor', 'rider');
 CREATE TYPE parcel_status_enum AS ENUM ('pending', 'accepted', 'picked_up', 'in_transit', 'delivered', 'cancelled');
 CREATE TYPE delivery_speed_enum AS ENUM ('standard', 'express');
+CREATE TYPE address_type_enum AS ENUM ('home', 'work', 'custom');
 
 -- 1. categories table
 CREATE TABLE categories (
@@ -239,3 +240,17 @@ CREATE TABLE parcel_tracking_history (
 
 CREATE INDEX idx_parcel_tracking_history_delivery_id ON parcel_tracking_history (parcel_delivery_id);
 CREATE INDEX idx_parcel_tracking_history_location ON parcel_tracking_history USING GIST (location);
+
+-- 17. saved_addresses table
+CREATE TABLE saved_addresses (
+    id SERIAL PRIMARY KEY,
+    customer_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    type address_type_enum NOT NULL DEFAULT 'custom',
+    name VARCHAR(100) NOT NULL,
+    address_text TEXT NOT NULL,
+    location GEOMETRY(Point, 4326) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_saved_addresses_customer_id ON saved_addresses(customer_id);

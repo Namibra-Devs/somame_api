@@ -5,7 +5,7 @@ const Category = require('../models/Category');
 const getCategories = async (req, res, next) => {
   try {
     const categories = await Category.findAll();
-    res.status(200).json({ status: 'success', count: categories.length, data: categories });
+    res.status(200).json({ status: 'success', message: 'Categories retrieved successfully', count: categories.length, data: categories });
   } catch (error) {
     next(error);
   }
@@ -19,7 +19,7 @@ const getCategoryById = async (req, res, next) => {
     if (!category) {
       return res.status(404).json({ status: 'error', message: 'Category not found' });
     }
-    res.status(200).json({ status: 'success', data: category });
+    res.status(200).json({ status: 'success', message: 'Category retrieved successfully', data: category });
   } catch (error) {
     next(error);
   }
@@ -39,7 +39,7 @@ const createCategory = async (req, res, next) => {
     }
 
     const category = await Category.create({ name, description });
-    res.status(201).json({ status: 'success', data: category });
+    res.status(201).json({ status: 'success', message: 'Category created successfully', data: category });
   } catch (error) {
     if (error.code === '23505') { // unique violation
       return res.status(400).json({ status: 'error', message: 'Category name already exists' });
@@ -66,7 +66,7 @@ const updateCategory = async (req, res, next) => {
       return res.status(404).json({ status: 'error', message: 'Category not found' });
     }
 
-    res.status(200).json({ status: 'success', data: category });
+    res.status(200).json({ status: 'success', message: 'Category updated successfully', data: category });
   } catch (error) {
     next(error);
   }
@@ -85,7 +85,7 @@ const patchCategory = async (req, res, next) => {
       return res.status(404).json({ status: 'error', message: 'Category not found or no fields provided' });
     }
 
-    res.status(200).json({ status: 'success', data: category });
+    res.status(200).json({ status: 'success', message: 'Category updated successfully', data: category });
   } catch (error) {
     next(error);
   }

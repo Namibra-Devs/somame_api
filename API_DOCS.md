@@ -122,6 +122,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": {
     "id": 1,
     "first_name": "Hamza",
@@ -151,6 +152,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": {
     "id": 1,
     "first_name": "Hamza",
@@ -198,6 +200,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": {
     "id": 1,
     "phone_number": "1234567890",
@@ -205,6 +208,97 @@ Base URL: http://localhost:3000
   }
 }
 ```
+
+### Get My Saved Addresses (Customer)
+- **Endpoint**: `GET /api/users/me/addresses`
+- **Headers**: `Authorization: Bearer <your_jwt_token>`
+- **Description**: Retrieves all saved addresses for the logged-in user.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Request processed successfully",
+  "data": [
+    {
+      "id": 1,
+      "customer_id": 3,
+      "type": "home",
+      "name": "Home",
+      "address_text": "123 Main St, Accra",
+      "lat": 5.6145,
+      "lng": -0.2057,
+      "created_at": "2026-06-21T08:00:00.000Z",
+      "updated_at": "2026-06-21T08:00:00.000Z"
+    }
+  ]
+}
+```
+
+### Add a Saved Address (Customer)
+- **Endpoint**: `POST /api/users/me/addresses`
+- **Headers**: `Authorization: Bearer <your_jwt_token>`
+- **Body payload (JSON)**:
+```json
+{
+  "type": "custom", // "home", "work", or "custom"
+  "name": "Mom's Place", // required (TEXT - e.g., "Mom's Place" for Mom's Place)
+  "address_text": "456 Market Road, Kumasi", // required (TEXT - e.g., "456 Market Road, Kumasi" for 456 Market Road, Kumasi)
+  "location": {
+    "lat": 6.6885, // required (DECIMAL - e.g., 6.6885 for 6.6885)
+    "lng": -1.6244 // required (DECIMAL - e.g., -1.6244 for -1.6244)
+  }
+}
+```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Request processed successfully",
+  "data": {
+    "id": 1,
+    "customer_id": 3,
+    "type": "home",
+    "name": "Home",
+    "address_text": "123 Main St, Accra",
+    "lat": 5.6145,
+    "lng": -0.2057,
+    "created_at": "2026-06-21T08:00:00.000Z",
+    "updated_at": "2026-06-21T08:00:00.000Z"
+  }
+}
+```
+
+### Update a Saved Address (Customer)
+- **Endpoint**: `PUT /api/users/me/addresses/:id`
+- **Headers**: `Authorization: Bearer <your_jwt_token>`
+- **Body payload (JSON)**:
+```json
+{
+  "name": "Mother's House" // optional (TEXT - e.g., "Mother's House" for Mother's House)
+}
+```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Request processed successfully",
+  "data": {
+    "id": 1,
+    "customer_id": 3,
+    "type": "home",
+    "name": "Home",
+    "address_text": "123 Main St, Accra",
+    "lat": 5.6145,
+    "lng": -0.2057,
+    "created_at": "2026-06-21T08:00:00.000Z",
+    "updated_at": "2026-06-21T08:00:00.000Z"
+  }
+}
+```
+
+### Delete a Saved Address (Customer)
+- **Endpoint**: `DELETE /api/users/me/addresses/:id`
+- **Headers**: `Authorization: Bearer <your_jwt_token>`
 
 ---
 
@@ -217,6 +311,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": [
     {
       "id": 1,
@@ -244,6 +339,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": {
     "id": 1,
     "name": "Fast Food",
@@ -270,6 +366,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": {
     "id": 1,
     "name": "Fast Food",
@@ -294,6 +391,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": {
     "id": 1,
     "name": "Fast Food",
@@ -340,6 +438,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": {
     "id": 1,
     "name": "KFC Accra",
@@ -361,6 +460,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": {
     "id": 1,
     "user_id": 2,
@@ -398,6 +498,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": {
     "id": 1,
     "user_id": 2,
@@ -430,6 +531,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "count": 1,
   "data": [
     {
@@ -458,6 +560,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "count": 1,
   "data": [
     {
@@ -482,6 +585,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": {
     "id": 1,
     "name": "KFC Accra",
@@ -506,6 +610,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": [
     {
       "id": 1,
@@ -535,6 +640,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": [
     {
       "id": 1,
@@ -562,6 +668,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": {
     "id": 1,
     "vendor_id": 1,
@@ -586,6 +693,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": {
     "id": 1,
     "vendor_id": 1,
@@ -619,6 +727,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": [
     {
       "id": 1,
@@ -649,6 +758,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": [
     {
       "id": 1,
@@ -694,6 +804,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": {
     "id": 1,
     "vendor_id": 1,
@@ -728,6 +839,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": {
     "id": 1,
     "vendor_id": 1,
@@ -794,6 +906,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": {
     "order": {
       "id": 1,
@@ -831,6 +944,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": [
     {
       "id": 1,
@@ -862,6 +976,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": {
     "id": 1,
     "order_number": "ORD-1X2Y3Z-1234",
@@ -921,6 +1036,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": {
     "id": 1,
     "order_number": "ORD-1X2Y3Z-1234",
@@ -1009,6 +1125,7 @@ Connect to the Socket.io server by passing the JWT token.
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": {
     "id": 1,
     "vendor_id": 1,
@@ -1034,6 +1151,7 @@ Connect to the Socket.io server by passing the JWT token.
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": [
     {
       "id": 1,
@@ -1068,6 +1186,7 @@ Connect to the Socket.io server by passing the JWT token.
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": {
     "id": 1,
     "vendor_id": 1,
@@ -1116,6 +1235,7 @@ Connect to the Socket.io server by passing the JWT token.
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": {
     "promotion_id": 1,
     "code": "SUMMER15",
@@ -1135,6 +1255,19 @@ Connect to the Socket.io server by passing the JWT token.
 ### Get System Configurations
 - **Endpoint**: `GET /api/admin/configs`
 - **Description**: Retrieves current system configurations (fares, fees).
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Request processed successfully",
+  "data": {
+    "parcel_base_fare": 10.00,
+    "parcel_per_km_fee": 2.50,
+    "parcel_service_fee": 5.00,
+    "parcel_express_multiplier": 1.50
+  }
+}
+```
 
 ### Update System Configurations (Admin Only)
 - **Endpoint**: `PUT /api/admin/configs`
@@ -1142,10 +1275,23 @@ Connect to the Socket.io server by passing the JWT token.
 - **Body payload (JSON)**:
 ```json
 {
-  "parcel_base_fare": 12.00,
-  "parcel_per_km_fee": 3.00,
-  "parcel_service_fee": 5.00,
-  "parcel_express_multiplier": 1.50
+  "parcel_base_fare": 12.00, // optional (DECIMAL - e.g., 12.00 for $12.00 base fare)
+  "parcel_per_km_fee": 3.00, // optional (DECIMAL - e.g., 3.00 for $3.00 per km)
+  "parcel_service_fee": 5.00, // optional (DECIMAL - e.g., 5.00 for $5.00 service fee)
+  "parcel_express_multiplier": 1.50 // optional (DECIMAL - e.g., 1.50 for 1.50x express multiplier)
+}
+```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "System configurations updated successfully",
+  "data": {
+    "parcel_base_fare": 12.00,
+    "parcel_per_km_fee": 3.00,
+    "parcel_service_fee": 5.00,
+    "parcel_express_multiplier": 1.50
+  }
 }
 ```
 
@@ -1168,6 +1314,7 @@ Connect to the Socket.io server by passing the JWT token.
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": {
     "distance_km": 15.4,
     "delivery_speed": "express",
@@ -1186,24 +1333,91 @@ Connect to the Socket.io server by passing the JWT token.
 - **Body payload (JSON)**:
 ```json
 {
-  "pickup_location": { "lat": 5.6145, "lng": -0.2057 },
-  "dropoff_location": { "lat": 5.6037, "lng": -0.1870 },
-  "distance_km": 15.4,
-  "item_description": "A fragile vase",
-  "item_value": 250.00,
-  "item_photo_url": "https://example.com/photo.jpg",
-  "recipient_name": "John Doe",
-  "recipient_phone": "+233541234567",
-  "delivery_speed": "express",
-  "payment_method": "momo"
+  "pickup_location": { "lat": 5.6145, "lng": -0.2057 }, // required
+  "dropoff_location": { "lat": 5.6037, "lng": -0.1870 }, // required
+  "distance_km": 15.4, // required
+  "item_description": "A fragile vase", // optional
+  "item_value": 250.00, // optional
+  "item_photo_url": "https://example.com/photo.jpg", // optional
+  "recipient_name": "John Doe", // required
+  "recipient_phone": "+233541234567", // required
+  "delivery_speed": "express", // required 
+  "payment_method": "momo" // required
+}
+```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Request processed successfully",
+  "data": {
+    "id": 1,
+    "order_number": "PAR-A1B2C3-5678",
+    "status": "pending",
+    "total_amount": "80.25",
+    "created_at": "2026-06-21T08:00:00.000Z"
+  }
 }
 ```
 
 ### Get My Parcels (Customer Only)
 - **Endpoint**: `GET /api/parcels/me`
 - **Headers**: `Authorization: Bearer <customer_jwt_token>`
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Request processed successfully",
+  "data": [
+    {
+      "id": 1,
+      "order_number": "PAR-A1B2C3-5678",
+      "distance_km": "15.40",
+      "estimated_time_mins": 57,
+      "item_description": "A fragile vase",
+      "delivery_speed": "express",
+      "status": "pending",
+      "total_amount": "80.25",
+      "created_at": "2026-06-21T08:00:00.000Z"
+    }
+  ]
+}
+```
 
 ### Get Parcel Details (Customer / Rider)
 - **Endpoint**: `GET /api/parcels/:id`
 - **Headers**: `Authorization: Bearer <jwt_token>`
 - **Description**: Get tracking info, coordinates, and details for the parcel order.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Request processed successfully",
+  "data": {
+    "id": 1,
+    "order_number": "PAR-A1B2C3-5678",
+    "customer_id": 3,
+    "rider_id": null,
+    "pickup_lat": 5.6145,
+    "pickup_lng": -0.2057,
+    "dropoff_lat": 5.6037,
+    "dropoff_lng": -0.1870,
+    "distance_km": "15.40",
+    "estimated_time_mins": 57,
+    "item_description": "A fragile vase",
+    "item_value": "250.00",
+    "item_photo_url": "https://example.com/photo.jpg",
+    "recipient_name": "John Doe",
+    "recipient_phone": "+233541234567",
+    "delivery_speed": "express",
+    "status": "pending",
+    "total_amount": "80.25",
+    "payment_method": "momo",
+    "payment_status": "pending",
+    "created_at": "2026-06-21T08:00:00.000Z",
+    "customer_first_name": "Jane",
+    "customer_last_name": "Doe",
+    "customer_phone": "+233540000000"
+  }
+}
+```

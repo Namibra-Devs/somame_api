@@ -9,7 +9,7 @@ const getProfile = async (req, res, next) => {
     if (!user) {
       return res.status(404).json({ status: 'error', message: 'User not found' });
     }
-    res.status(200).json({ status: 'success', data: user });
+    res.status(200).json({ status: 'success', message: 'User profile retrieved successfully', data: user });
   } catch (error) {
     next(error);
   }
@@ -27,7 +27,7 @@ const updateProfile = async (req, res, next) => {
       return res.status(404).json({ status: 'error', message: 'User not found' });
     }
 
-    res.status(200).json({ status: 'success', data: user });
+    res.status(200).json({ status: 'success', message: 'User profile updated successfully', data: user });
   } catch (error) {
     if (error.code === '23505') { // unique violation for email
       return res.status(400).json({ status: 'error', message: 'Email already exists' });
@@ -86,7 +86,7 @@ const updateUserStatus = async (req, res, next) => {
       return res.status(404).json({ status: 'error', message: 'User not found' });
     }
 
-    res.status(200).json({ status: 'success', data: user });
+    res.status(200).json({ status: 'success', message: 'User status updated successfully', data: user });
   } catch (error) {
     next(error);
   }

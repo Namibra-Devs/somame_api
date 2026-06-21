@@ -40,6 +40,7 @@ const calculateFare = async (req, res, next) => {
 
     res.status(200).json({
       status: 'success',
+      message: 'Fare calculated successfully',
       data: {
         distance_km,
         delivery_speed,
@@ -122,6 +123,7 @@ const createParcelOrder = async (req, res, next) => {
 
     res.status(201).json({
       status: 'success',
+      message: 'Parcel order created successfully',
       data: newOrder
     });
   } catch (error) {
@@ -139,6 +141,7 @@ const getMyParcels = async (req, res, next) => {
 
     res.status(200).json({
       status: 'success',
+      message: 'Parcels retrieved successfully',
       data: parcels
     });
   } catch (error) {
@@ -168,6 +171,7 @@ const getParcelDetails = async (req, res, next) => {
 
     res.status(200).json({
       status: 'success',
+      message: 'Parcel details retrieved successfully',
       data: parcel
     });
   } catch (error) {
