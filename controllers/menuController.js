@@ -17,7 +17,7 @@ const createMenuCategory = async (req, res, next) => {
     if (!vendor) return res.status(404).json({ status: 'error', message: 'Vendor profile not found' });
 
     const category = await MenuCategory.create({ vendor_id: vendor.id, name, description });
-    res.status(201).json({ status: 'success', data: category });
+    res.status(201).json({ status: 'success', message: 'Menu category created successfully', data: category });
   } catch (error) {
     if (error.code === '23505') { // unique violation
       return res.status(400).json({ status: 'error', message: 'Category name already exists for your menu' });
@@ -34,7 +34,7 @@ const getMyMenuCategories = async (req, res, next) => {
     if (!vendor) return res.status(404).json({ status: 'error', message: 'Vendor profile not found' });
 
     const categories = await MenuCategory.findByVendorId(vendor.id);
-    res.status(200).json({ status: 'success', data: categories });
+    res.status(200).json({ status: 'success', message: 'Menu categories retrieved successfully', data: categories });
   } catch (error) {
     next(error);
   }
@@ -52,7 +52,7 @@ const updateMenuCategory = async (req, res, next) => {
 
     if (!category) return res.status(404).json({ status: 'error', message: 'Menu category not found' });
 
-    res.status(200).json({ status: 'success', data: category });
+    res.status(200).json({ status: 'success', message: 'Menu category updated successfully', data: category });
   } catch (error) {
     if (error.code === '23505') {
       return res.status(400).json({ status: 'error', message: 'Category name already exists for your menu' });
@@ -103,7 +103,7 @@ const createMenuItem = async (req, res, next) => {
       vendor_id: vendor.id, menu_category_id, name, description, price, size, quantity, image_url, extras, is_in_stock 
     });
 
-    res.status(201).json({ status: 'success', data: item });
+    res.status(201).json({ status: 'success', message: 'Menu item created successfully', data: item });
   } catch (error) {
     next(error);
   }
@@ -119,7 +119,7 @@ const getMyMenuItems = async (req, res, next) => {
     const { category_id } = req.query;
     const items = await MenuItem.findByVendorId(vendor.id, category_id);
 
-    res.status(200).json({ status: 'success', data: items });
+    res.status(200).json({ status: 'success', message: 'Menu items retrieved successfully', data: items });
   } catch (error) {
     next(error);
   }
@@ -147,7 +147,7 @@ const updateMenuItem = async (req, res, next) => {
 
     if (!item) return res.status(404).json({ status: 'error', message: 'Menu item not found' });
 
-    res.status(200).json({ status: 'success', data: item });
+    res.status(200).json({ status: 'success', message: 'Menu item updated successfully', data: item });
   } catch (error) {
     next(error);
   }
@@ -201,7 +201,7 @@ const getVendorMenu = async (req, res, next) => {
       });
     }
 
-    res.status(200).json({ status: 'success', data: menu });
+    res.status(200).json({ status: 'success', message: 'Vendor menu retrieved successfully', data: menu });
   } catch (error) {
     next(error);
   }

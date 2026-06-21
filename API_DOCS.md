@@ -122,6 +122,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": {
     "id": 1,
     "first_name": "Hamza",
@@ -151,6 +152,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": {
     "id": 1,
     "first_name": "Hamza",
@@ -198,6 +200,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": {
     "id": 1,
     "phone_number": "1234567890",
@@ -214,6 +217,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": [
     {
       "id": 1,
@@ -249,6 +253,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": {
     "id": 1,
     "customer_id": 3,
@@ -276,6 +281,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": {
     "id": 1,
     "customer_id": 3,
@@ -305,6 +311,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": [
     {
       "id": 1,
@@ -332,6 +339,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": {
     "id": 1,
     "name": "Fast Food",
@@ -358,6 +366,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": {
     "id": 1,
     "name": "Fast Food",
@@ -382,6 +391,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": {
     "id": 1,
     "name": "Fast Food",
@@ -428,6 +438,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": {
     "id": 1,
     "name": "KFC Accra",
@@ -449,6 +460,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": {
     "id": 1,
     "user_id": 2,
@@ -486,6 +498,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": {
     "id": 1,
     "user_id": 2,
@@ -518,6 +531,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "count": 1,
   "data": [
     {
@@ -546,6 +560,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "count": 1,
   "data": [
     {
@@ -570,6 +585,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": {
     "id": 1,
     "name": "KFC Accra",
@@ -594,6 +610,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": [
     {
       "id": 1,
@@ -623,6 +640,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": [
     {
       "id": 1,
@@ -650,6 +668,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": {
     "id": 1,
     "vendor_id": 1,
@@ -674,6 +693,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": {
     "id": 1,
     "vendor_id": 1,
@@ -707,6 +727,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": [
     {
       "id": 1,
@@ -737,6 +758,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": [
     {
       "id": 1,
@@ -782,6 +804,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": {
     "id": 1,
     "vendor_id": 1,
@@ -816,6 +839,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": {
     "id": 1,
     "vendor_id": 1,
@@ -882,6 +906,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": {
     "order": {
       "id": 1,
@@ -919,6 +944,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": [
     {
       "id": 1,
@@ -950,6 +976,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": {
     "id": 1,
     "order_number": "ORD-1X2Y3Z-1234",
@@ -1009,6 +1036,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": {
     "id": 1,
     "order_number": "ORD-1X2Y3Z-1234",
@@ -1097,6 +1125,7 @@ Connect to the Socket.io server by passing the JWT token.
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": {
     "id": 1,
     "vendor_id": 1,
@@ -1122,6 +1151,7 @@ Connect to the Socket.io server by passing the JWT token.
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": [
     {
       "id": 1,
@@ -1156,6 +1186,7 @@ Connect to the Socket.io server by passing the JWT token.
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": {
     "id": 1,
     "vendor_id": 1,
@@ -1204,6 +1235,7 @@ Connect to the Socket.io server by passing the JWT token.
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": {
     "promotion_id": 1,
     "code": "SUMMER15",
@@ -1227,6 +1259,7 @@ Connect to the Socket.io server by passing the JWT token.
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": {
     "parcel_base_fare": 10.00,
     "parcel_per_km_fee": 2.50,
@@ -1281,6 +1314,7 @@ Connect to the Socket.io server by passing the JWT token.
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": {
     "distance_km": 15.4,
     "delivery_speed": "express",
@@ -1315,6 +1349,7 @@ Connect to the Socket.io server by passing the JWT token.
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": {
     "id": 1,
     "order_number": "PAR-A1B2C3-5678",
@@ -1332,6 +1367,7 @@ Connect to the Socket.io server by passing the JWT token.
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": [
     {
       "id": 1,
@@ -1356,6 +1392,7 @@ Connect to the Socket.io server by passing the JWT token.
 ```json
 {
   "status": "success",
+  "message": "Request processed successfully",
   "data": {
     "id": 1,
     "order_number": "PAR-A1B2C3-5678",

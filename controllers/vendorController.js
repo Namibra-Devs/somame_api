@@ -14,6 +14,7 @@ const getNearbyVendors = async (req, res, next) => {
 
     res.status(200).json({
       status: 'success',
+      message: 'Nearby vendors retrieved successfully',
       count: vendors.length,
       data: vendors
     });
@@ -32,6 +33,7 @@ const searchVendors = async (req, res, next) => {
 
     res.status(200).json({
       status: 'success',
+      message: 'Vendors retrieved successfully',
       count: vendors.length,
       data: vendors
     });
@@ -60,6 +62,7 @@ const createVendor = async (req, res, next) => {
 
     res.status(201).json({
       status: 'success',
+      message: 'Vendor profile created successfully',
       data: vendor
     });
   } catch (error) {
@@ -79,6 +82,7 @@ const getVendorById = async (req, res, next) => {
 
     res.status(200).json({
       status: 'success',
+      message: 'Vendor details retrieved successfully',
       data: vendor
     });
   } catch (error) {
@@ -100,7 +104,7 @@ const getMyVendorProfile = async (req, res, next) => {
       return res.status(404).json({ status: 'error', message: 'Vendor profile not found. Please create one.' });
     }
 
-    res.status(200).json({ status: 'success', data: vendor });
+    res.status(200).json({ status: 'success', message: 'Vendor profile retrieved successfully', data: vendor });
   } catch (error) {
     next(error);
   }
@@ -122,7 +126,7 @@ const updateMyVendorProfile = async (req, res, next) => {
       return res.status(404).json({ status: 'error', message: 'Vendor profile not found. Please create one first.' });
     }
 
-    res.status(200).json({ status: 'success', data: vendor });
+    res.status(200).json({ status: 'success', message: 'Vendor profile updated successfully', data: vendor });
   } catch (error) {
     next(error);
   }

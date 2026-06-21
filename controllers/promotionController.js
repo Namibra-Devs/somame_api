@@ -18,7 +18,7 @@ const createPromotion = async (req, res, next) => {
       vendor_id: vendor.id, code, discount_type, discount_value, min_order_subtotal, max_discount_limit, applicable_to, expires_at, is_active
     });
 
-    res.status(201).json({ status: 'success', data: promotion });
+    res.status(201).json({ status: 'success', message: 'Promotion created successfully', data: promotion });
   } catch (error) {
     if (error.code === '23505') {
       return res.status(400).json({ status: 'error', message: 'Promotion code already exists for your vendor' });
@@ -35,7 +35,7 @@ const getMyPromotions = async (req, res, next) => {
     if (!vendor) return res.status(404).json({ status: 'error', message: 'Vendor profile not found' });
 
     const promotions = await Promotion.findByVendorId(vendor.id);
-    res.status(200).json({ status: 'success', data: promotions });
+    res.status(200).json({ status: 'success', message: 'Promotions retrieved successfully', data: promotions });
   } catch (error) {
     next(error);
   }
@@ -56,7 +56,7 @@ const updatePromotion = async (req, res, next) => {
 
     if (!promotion) return res.status(404).json({ status: 'error', message: 'Promotion not found' });
 
-    res.status(200).json({ status: 'success', data: promotion });
+    res.status(200).json({ status: 'success', message: 'Promotion updated successfully', data: promotion });
   } catch (error) {
     if (error.code === '23505') {
       return res.status(400).json({ status: 'error', message: 'Promotion code already exists for your vendor' });
@@ -151,6 +151,7 @@ const validatePromo = async (req, res, next) => {
 
     res.status(200).json({
       status: 'success',
+      message: 'Promo code applied successfully',
       data: {
         promotion_id: promotion.id,
         code: promotion.code,

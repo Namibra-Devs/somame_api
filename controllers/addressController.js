@@ -6,7 +6,7 @@ const SavedAddress = require('../models/SavedAddress');
 exports.getAddresses = async (req, res) => {
     try {
         const addresses = await SavedAddress.findByCustomerId(req.user.id);
-        res.json({ status: 'success', data: addresses });
+        res.json({ status: 'success', message: 'Addresses retrieved successfully', data: addresses });
     } catch (err) {
         console.error('Error in getAddresses:', err);
         res.status(500).json({ status: 'error', message: 'Server error' });
@@ -32,7 +32,7 @@ exports.addAddress = async (req, res) => {
             location
         });
 
-        res.status(201).json({ status: 'success', data: newAddress });
+        res.status(201).json({ status: 'success', message: 'Address added successfully', data: newAddress });
     } catch (err) {
         console.error('Error in addAddress:', err);
         res.status(500).json({ status: 'error', message: 'Server error' });
@@ -56,7 +56,7 @@ exports.updateAddress = async (req, res) => {
         }
 
         const updatedAddress = await SavedAddress.update(addressId, req.body);
-        res.json({ status: 'success', data: updatedAddress });
+        res.json({ status: 'success', message: 'Address updated successfully', data: updatedAddress });
     } catch (err) {
         console.error('Error in updateAddress:', err);
         res.status(500).json({ status: 'error', message: 'Server error' });

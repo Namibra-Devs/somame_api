@@ -82,6 +82,7 @@ const createOrder = async (req, res, next) => {
 
     res.status(201).json({
       status: 'success',
+      message: 'Order created successfully',
       data: result
     });
   } catch (error) {
@@ -105,6 +106,7 @@ const getOrderDetails = async (req, res, next) => {
 
     res.status(200).json({
       status: 'success',
+      message: 'Order details retrieved successfully',
       data: {
         ...order,
         items,
@@ -125,6 +127,7 @@ const getCustomerOrders = async (req, res, next) => {
     
     res.status(200).json({
       status: 'success',
+      message: 'Customer orders retrieved successfully',
       data: orders
     });
   } catch (error) {
@@ -147,6 +150,7 @@ const getVendorOrders = async (req, res, next) => {
     
     res.status(200).json({
       status: 'success',
+      message: 'Vendor orders retrieved successfully',
       data: orders
     });
   } catch (error) {
@@ -197,6 +201,7 @@ const updateOrderStatus = async (req, res, next) => {
     
     res.status(200).json({
       status: 'success',
+      message: 'Order status updated successfully',
       data: updatedOrder
     });
   } catch (error) {
