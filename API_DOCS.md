@@ -206,6 +206,94 @@ Base URL: http://localhost:3000
 }
 ```
 
+### Get My Saved Addresses (Customer)
+- **Endpoint**: `GET /api/users/me/addresses`
+- **Headers**: `Authorization: Bearer <your_jwt_token>`
+- **Description**: Retrieves all saved addresses for the logged-in user.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "data": [
+    {
+      "id": 1,
+      "customer_id": 3,
+      "type": "home",
+      "name": "Home",
+      "address_text": "123 Main St, Accra",
+      "lat": 5.6145,
+      "lng": -0.2057,
+      "created_at": "2026-06-21T08:00:00.000Z",
+      "updated_at": "2026-06-21T08:00:00.000Z"
+    }
+  ]
+}
+```
+
+### Add a Saved Address (Customer)
+- **Endpoint**: `POST /api/users/me/addresses`
+- **Headers**: `Authorization: Bearer <your_jwt_token>`
+- **Body payload (JSON)**:
+```json
+{
+  "type": "custom", // "home", "work", or "custom"
+  "name": "Mom's Place", // required (TEXT - e.g., "Mom's Place" for Mom's Place)
+  "address_text": "456 Market Road, Kumasi", // required (TEXT - e.g., "456 Market Road, Kumasi" for 456 Market Road, Kumasi)
+  "location": {
+    "lat": 6.6885, // required (DECIMAL - e.g., 6.6885 for 6.6885)
+    "lng": -1.6244 // required (DECIMAL - e.g., -1.6244 for -1.6244)
+  }
+}
+```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "data": {
+    "id": 1,
+    "customer_id": 3,
+    "type": "home",
+    "name": "Home",
+    "address_text": "123 Main St, Accra",
+    "lat": 5.6145,
+    "lng": -0.2057,
+    "created_at": "2026-06-21T08:00:00.000Z",
+    "updated_at": "2026-06-21T08:00:00.000Z"
+  }
+}
+```
+
+### Update a Saved Address (Customer)
+- **Endpoint**: `PUT /api/users/me/addresses/:id`
+- **Headers**: `Authorization: Bearer <your_jwt_token>`
+- **Body payload (JSON)**:
+```json
+{
+  "name": "Mother's House" // optional (TEXT - e.g., "Mother's House" for Mother's House)
+}
+```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "data": {
+    "id": 1,
+    "customer_id": 3,
+    "type": "home",
+    "name": "Home",
+    "address_text": "123 Main St, Accra",
+    "lat": 5.6145,
+    "lng": -0.2057,
+    "created_at": "2026-06-21T08:00:00.000Z",
+    "updated_at": "2026-06-21T08:00:00.000Z"
+  }
+}
+```
+
+### Delete a Saved Address (Customer)
+- **Endpoint**: `DELETE /api/users/me/addresses/:id`
+- **Headers**: `Authorization: Bearer <your_jwt_token>`
+
 ---
 
 ## 4. Categories (/api/categories)

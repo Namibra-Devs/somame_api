@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { getProfile, updateProfile, updatePassword, updateUserStatus } = require('../controllers/userController');
+const { getAddresses, addAddress, updateAddress, deleteAddress } = require('../controllers/addressController');
 const { protect } = require('../middlewares/authMiddleware');
 
 router.route('/profile')
@@ -9,6 +10,15 @@ router.route('/profile')
 
 router.route('/password')
   .put(protect, updatePassword);
+
+// Saved Addresses routes
+router.route('/me/addresses')
+  .get(protect, getAddresses)
+  .post(protect, addAddress);
+
+router.route('/me/addresses/:id')
+  .put(protect, updateAddress)
+  .delete(protect, deleteAddress);
 
 // Admin only route
 router.route('/:id/status')
