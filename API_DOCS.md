@@ -1508,3 +1508,88 @@ Connect to the Socket.io server by passing the JWT token.
   }
 }
 ```
+
+---
+
+## 9. Riders (/api/riders)
+
+### Submit Rider Registration (Rider)
+- **Endpoint**: `POST /api/riders/register`
+- **Headers**: `Authorization: Bearer <your_jwt_token>` (Must have `rider` role)
+- **Description**: Submits or updates rider registration details (personal info, vehicle, and documents). Updates the user's name and upserts their rider profile. Status resets to `pending` upon submission.
+- **Body payload (JSON)**:
+```json
+{
+  "first_name": "John",
+  "last_name": "Doe",
+  "date_of_birth": "1990-01-01",
+  "vehicle_type": "motorbike", // "motorbike" or "car"
+  "id_document_type": "ghana_card", // "ghana_card" or "passport"
+  "id_front_image_url": "https://storage.googleapis.com/.../id_front.jpg",
+  "id_back_image_url": "https://storage.googleapis.com/.../id_back.jpg",
+  "license_front_image_url": "https://storage.googleapis.com/.../license_front.jpg",
+  "license_back_image_url": "https://storage.googleapis.com/.../license_back.jpg",
+  "road_worthy_image_url": "https://storage.googleapis.com/.../road_worthy.jpg",
+  "insurance_image_url": "https://storage.googleapis.com/.../insurance.jpg",
+  "selfie_image_url": "https://storage.googleapis.com/.../selfie.jpg"
+}
+```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Rider registration submitted successfully. Your profile is pending verification.",
+  "data": {
+    "id": 1,
+    "user_id": 4,
+    "first_name": "John",
+    "last_name": "Doe",
+    "phone_number": "+233541234567",
+    "date_of_birth": "1990-01-01T00:00:00.000Z",
+    "vehicle_type": "motorbike",
+    "id_document_type": "ghana_card",
+    "id_front_image_url": "https://...",
+    "id_back_image_url": "https://...",
+    "license_front_image_url": "https://...",
+    "license_back_image_url": "https://...",
+    "road_worthy_image_url": "https://...",
+    "insurance_image_url": "https://...",
+    "selfie_image_url": "https://...",
+    "verification_status": "pending",
+    "created_at": "2026-06-21T08:00:00.000Z",
+    "updated_at": "2026-06-21T08:00:00.000Z"
+  }
+}
+```
+
+### Get My Rider Profile (Rider)
+- **Endpoint**: `GET /api/riders/me`
+- **Headers**: `Authorization: Bearer <your_jwt_token>` (Must have `rider` role)
+- **Description**: Retrieves the logged-in rider's profile, including their `verification_status`.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Rider profile retrieved successfully",
+  "data": {
+    "id": 1,
+    "user_id": 4,
+    "first_name": "John",
+    "last_name": "Doe",
+    "phone_number": "+233541234567",
+    "date_of_birth": "1990-01-01T00:00:00.000Z",
+    "vehicle_type": "motorbike",
+    "id_document_type": "ghana_card",
+    "id_front_image_url": "https://...",
+    "id_back_image_url": "https://...",
+    "license_front_image_url": "https://...",
+    "license_back_image_url": "https://...",
+    "road_worthy_image_url": "https://...",
+    "insurance_image_url": "https://...",
+    "selfie_image_url": "https://...",
+    "verification_status": "pending",
+    "created_at": "2026-06-21T08:00:00.000Z",
+    "updated_at": "2026-06-21T08:00:00.000Z"
+  }
+}
+```
