@@ -302,6 +302,93 @@ Base URL: http://localhost:3000
 
 ---
 
+### Get My Payment Methods (Customer)
+- **Endpoint**: `GET /api/users/me/payment-methods`
+- **Headers**: `Authorization: Bearer <your_jwt_token>`
+- **Description**: Retrieves all saved payment methods for the logged-in user.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Payment methods retrieved successfully",
+  "data": [
+    {
+      "id": 1,
+      "customer_id": 3,
+      "provider": "card",
+      "account_name": "John Doe",
+      "account_number": "************2334",
+      "expiry_date": "12/26",
+      "is_default": true,
+      "created_at": "2026-06-21T08:00:00.000Z",
+      "updated_at": "2026-06-21T08:00:00.000Z"
+    }
+  ]
+}
+```
+
+### Add a Payment Method (Customer)
+- **Endpoint**: `POST /api/users/me/payment-methods`
+- **Headers**: `Authorization: Bearer <your_jwt_token>`
+- **Body payload (JSON)**:
+```json
+{
+  "provider": "card", // "momo", "card", or "namibrapay"
+  "account_name": "John Doe",
+  "account_number": "1234567890123456", // Card number or Phone number
+  "expiry_date": "12/26", // Required for cards only
+  "is_default": true // Optional
+}
+```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Payment method added successfully",
+  "data": {
+    "id": 1,
+    "customer_id": 3,
+    "provider": "card",
+    "account_name": "John Doe",
+    "account_number": "************3456",
+    "expiry_date": "12/26",
+    "is_default": true,
+    "created_at": "2026-06-21T08:00:00.000Z",
+    "updated_at": "2026-06-21T08:00:00.000Z"
+  }
+}
+```
+
+### Set Default Payment Method (Customer)
+- **Endpoint**: `PUT /api/users/me/payment-methods/:id/default`
+- **Headers**: `Authorization: Bearer <your_jwt_token>`
+- **Description**: Sets a specific payment method as the default.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Default payment method updated successfully",
+  "data": {
+    "id": 1,
+    "customer_id": 3,
+    "provider": "card",
+    "account_name": "John Doe",
+    "account_number": "************3456",
+    "expiry_date": "12/26",
+    "is_default": true,
+    "created_at": "2026-06-21T08:00:00.000Z",
+    "updated_at": "2026-06-21T08:00:00.000Z"
+  }
+}
+```
+
+### Delete a Payment Method (Customer)
+- **Endpoint**: `DELETE /api/users/me/payment-methods/:id`
+- **Headers**: `Authorization: Bearer <your_jwt_token>`
+- **Description**: Deletes a specific payment method.
+
+---
+
 ## 4. Categories (/api/categories)
 
 ### Get All Categories (Public)
