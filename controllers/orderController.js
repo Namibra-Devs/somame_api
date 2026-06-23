@@ -209,10 +209,84 @@ const updateOrderStatus = async (req, res, next) => {
   }
 };
 
+const JobDecline = require('../models/JobDecline');
+
+// @desc    Accept an unassigned job (Targeted Dispatch)
+// @route   POST /api/orders/:id/accept-job
+const acceptJob = async (req, res, next) => {
+  try {
+    if (req.user.role !== 'rider') {
+      return res.status(403).json({ status: 'error', message: 'Only riders can accept jobs' });
+    }
+
+    const orderId = req.params.id;
+    const riderId = req.user.id;
+    const { lat, lng } = req.body; // Rider's current location
+
+    if (!lat || !lng) {
+      return res.status(400).json({ status: 'error', message: 'lat and lng are required to accept a job' });
+    }
+
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ status: 'error', message: 'Order not found' });
+    }
+
+    if (order.rider_id) {
+      return res.status(400).json({ status: 'error', message: 'Order has already been assigned to a rider' });
+    }
+
+    const updatedOrder = await Order.assignRider(orderId, riderId);
+    if (!updatedOrder) {
+      return res.status(400).json({ status: 'error', message: 'Failed to assign rider. Job might have been taken.' });
+    }
+
+    // Initialize delivery tracking
+    const delivery = await Delivery.create(orderId, riderId, lat, lng);
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Job accepted successfully',
+      data: { order: updatedOrder, delivery }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Decline an unassigned job (Targeted Dispatch)
+// @route   POST /api/orders/:id/decline-job
+const declineJob = async (req, res, next) => {
+  try {
+    if (req.user.role !== 'rider') {
+      return res.status(403).json({ status: 'error', message: 'Only riders can decline jobs' });
+    }
+
+    const orderId = req.params.id;
+    const riderId = req.user.id;
+
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ status: 'error', message: 'Order not found' });
+    }
+
+    await JobDecline.recordDecline(order.order_number, riderId);
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Job declined successfully'
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createOrder,
   getOrderDetails,
   getCustomerOrders,
   getVendorOrders,
-  updateOrderStatus
+  updateOrderStatus,
+  acceptJob,
+  declineJob
 };

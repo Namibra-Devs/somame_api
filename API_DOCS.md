@@ -1511,6 +1511,52 @@ Connect to the Socket.io server by passing the JWT token.
 
 ---
 
+
+### Accept Parcel Job (Targeted Dispatch)
+- **Endpoint**: `POST /api/parcels/:id/accept-job`
+- **Headers**: `Authorization: Bearer <your_jwt_token>` (Must have `rider` role)
+- **Description**: Allows a rider to accept an unassigned parcel order. Requires rider's current location to initialize delivery tracking.
+- **Body payload (JSON)**:
+```json
+{
+  "lat": 5.6037,
+  "lng": -0.1870
+}
+```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Parcel job accepted successfully",
+  "data": {
+    "parcel": {
+      "id": 1,
+      "order_number": "PAR-ABCDEF-1234",
+      "rider_id": 4,
+      "status": "accepted"
+    },
+    "delivery": {
+      "id": 1,
+      "rider_id": 4,
+      "lat": 5.6037,
+      "lng": -0.1870
+    }
+  }
+}
+```
+
+### Decline Parcel Job (Targeted Dispatch)
+- **Endpoint**: `POST /api/parcels/:id/decline-job`
+- **Headers**: `Authorization: Bearer <your_jwt_token>` (Must have `rider` role)
+- **Description**: Allows a rider to decline an unassigned parcel order. Records the decline so the dispatch engine won't re-assign it.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Parcel job declined successfully"
+}
+```
+
 ## 9. Riders (/api/riders)
 
 ### Submit Rider Registration (Rider)

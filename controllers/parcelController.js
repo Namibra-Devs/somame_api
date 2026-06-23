@@ -179,9 +179,84 @@ const getParcelDetails = async (req, res, next) => {
   }
 };
 
+const JobDecline = require('../models/JobDecline');
+const ParcelDelivery = require('../models/ParcelDelivery');
+
+// @desc    Accept an unassigned parcel job (Targeted Dispatch)
+// @route   POST /api/parcels/:id/accept-job
+const acceptJob = async (req, res, next) => {
+  try {
+    if (req.user.role !== 'rider') {
+      return res.status(403).json({ status: 'error', message: 'Only riders can accept jobs' });
+    }
+
+    const parcelId = req.params.id;
+    const riderId = req.user.id;
+    const { lat, lng } = req.body; // Rider's current location
+
+    if (!lat || !lng) {
+      return res.status(400).json({ status: 'error', message: 'lat and lng are required to accept a job' });
+    }
+
+    const parcel = await ParcelOrder.findById(parcelId);
+    if (!parcel) {
+      return res.status(404).json({ status: 'error', message: 'Parcel order not found' });
+    }
+
+    if (parcel.rider_id) {
+      return res.status(400).json({ status: 'error', message: 'Parcel has already been assigned to a rider' });
+    }
+
+    const updatedParcel = await ParcelOrder.assignRider(parcelId, riderId);
+    if (!updatedParcel) {
+      return res.status(400).json({ status: 'error', message: 'Failed to assign rider. Job might have been taken.' });
+    }
+
+    // Initialize delivery tracking
+    const delivery = await ParcelDelivery.create(parcelId, riderId, lat, lng);
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Parcel job accepted successfully',
+      data: { parcel: updatedParcel, delivery }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Decline an unassigned parcel job (Targeted Dispatch)
+// @route   POST /api/parcels/:id/decline-job
+const declineJob = async (req, res, next) => {
+  try {
+    if (req.user.role !== 'rider') {
+      return res.status(403).json({ status: 'error', message: 'Only riders can decline jobs' });
+    }
+
+    const parcelId = req.params.id;
+    const riderId = req.user.id;
+
+    const parcel = await ParcelOrder.findById(parcelId);
+    if (!parcel) {
+      return res.status(404).json({ status: 'error', message: 'Parcel order not found' });
+    }
+
+    await JobDecline.recordDecline(parcel.order_number, riderId);
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Parcel job declined successfully'
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   calculateFare,
   createParcelOrder,
   getMyParcels,
-  getParcelDetails
+  getParcelDetails,
+  acceptJob,
+  declineJob
 };

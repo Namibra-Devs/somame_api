@@ -97,7 +97,7 @@ class ParcelOrder {
 
   static async assignRider(id, riderId) {
     const result = await pool.query(
-      'UPDATE parcel_orders SET rider_id = $1, status = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3 RETURNING *',
+      'UPDATE parcel_orders SET rider_id = $1, status = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3 AND rider_id IS NULL RETURNING *',
       [riderId, 'accepted', id]
     );
     return result.rows[0];

@@ -24,6 +24,17 @@ class Order {
     return result.rows[0];
   }
 
+  static async assignRider(id, riderId) {
+    const result = await pool.query(
+      `UPDATE orders 
+       SET rider_id = $1 
+       WHERE id = $2 AND rider_id IS NULL 
+       RETURNING *`,
+      [riderId, id]
+    );
+    return result.rows[0];
+  }
+
   static async getItemsByOrderId(orderId) {
     const result = await pool.query('SELECT * FROM order_items WHERE order_id = $1', [orderId]);
     return result.rows;
