@@ -97,7 +97,14 @@ class ParcelOrder {
 
   static async assignRider(id, riderId) {
     const result = await pool.query(
-      'UPDATE parcel_orders SET rider_id = $1, status = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3 AND rider_id IS NULL RETURNING *',
+      `UPDATE parcel_orders 
+       SET rider_id = $1, status = $2, updated_at = CURRENT_TIMESTAMP 
+       WHERE id = $3 AND rider_id IS NULL 
+       RETURNING *,
+       ST_Y(pickup_location::geometry) as pickup_lat,
+       ST_X(pickup_location::geometry) as pickup_lng,
+       ST_Y(dropoff_location::geometry) as dropoff_lat,
+       ST_X(dropoff_location::geometry) as dropoff_lng`,
       [riderId, 'accepted', id]
     );
     return result.rows[0];

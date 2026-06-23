@@ -17,7 +17,9 @@ class Delivery {
       `INSERT INTO deliveries (order_id, rider_id, current_location) 
        VALUES ($1, $2, ST_SetSRID(ST_MakePoint($3, $4), 4326)) 
        ON CONFLICT (order_id) DO UPDATE SET rider_id = EXCLUDED.rider_id, current_location = EXCLUDED.current_location
-       RETURNING *`,
+       RETURNING *,
+       ST_Y(current_location::geometry) as current_lat,
+       ST_X(current_location::geometry) as current_lng`,
       [orderId, riderId, lng, lat]
     );
     return result.rows[0];

@@ -1160,6 +1160,53 @@ Base URL: http://localhost:3000
 
 ---
 
+
+### Accept Food Job (Targeted Dispatch)
+- **Endpoint**: `POST /api/orders/:id/accept-job`
+- **Headers**: `Authorization: Bearer <your_jwt_token>` (Must have `rider` role)
+- **Description**: Allows a rider to accept an unassigned job order. Requires rider's current location to initialize delivery tracking.
+- **Body payload (JSON)**:
+```json
+{
+  "lat": 5.6037,
+  "lng": -0.1870
+}
+```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Job accepted successfully",
+  "data": {
+    "order": {
+      "id": 1,
+      "order_number": "ORD-12345678-1234",
+      "rider_id": 4,
+      "status": "accepted"
+    },
+    "delivery": {
+      "id": 1,
+      "rider_id": 4,
+      "current_location": "0101000020E6100000560E...",
+      "current_lat": 5.6037,
+      "current_lng": -0.1870
+    }
+  }
+}
+```
+
+### Decline Food Job (Targeted Dispatch)
+- **Endpoint**: `POST /api/orders/:id/decline-job`
+- **Headers**: `Authorization: Bearer <your_jwt_token>` (Must have `rider` role)
+- **Description**: Allows a rider to decline an unassigned job order. Records the decline so the dispatch engine won't re-assign it.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Job declined successfully"
+}
+```
+
 ## 8. Delivery Tracking (/api/deliveries)
 
 Connect to the Socket.io server by passing the JWT token. 
@@ -1538,8 +1585,9 @@ Connect to the Socket.io server by passing the JWT token.
     "delivery": {
       "id": 1,
       "rider_id": 4,
-      "lat": 5.6037,
-      "lng": -0.1870
+      "current_location": "0101000020E6100000560E...",
+      "current_lat": 5.6037,
+      "current_lng": -0.1870
     }
   }
 }
