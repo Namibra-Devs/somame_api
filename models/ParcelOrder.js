@@ -109,6 +109,30 @@ class ParcelOrder {
     );
     return result.rows[0];
   }
+  static async findById(id) {
+    const result = await pool.query(
+      `SELECT *, 
+              ST_Y(pickup_location::geometry) as pickup_lat, ST_X(pickup_location::geometry) as pickup_lng,
+              ST_Y(dropoff_location::geometry) as dropoff_lat, ST_X(dropoff_location::geometry) as dropoff_lng
+       FROM parcel_orders 
+       WHERE id = $1`, 
+      [id]
+    );
+    return result.rows[0];
+  }
+
+  static async findRiderDeliveries(riderId) {
+    const result = await pool.query(
+      `SELECT id, order_number, pickup_address, dropoff_address, distance_km, total_amount, status, created_at,
+              ST_Y(pickup_location::geometry) as pickup_lat, ST_X(pickup_location::geometry) as pickup_lng,
+              ST_Y(dropoff_location::geometry) as dropoff_lat, ST_X(dropoff_location::geometry) as dropoff_lng
+       FROM parcel_orders 
+       WHERE rider_id = $1 
+       ORDER BY created_at DESC`,
+      [riderId]
+    );
+    return result.rows;
+  }
 }
 
 module.exports = ParcelOrder;

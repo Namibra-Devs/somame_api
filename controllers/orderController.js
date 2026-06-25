@@ -418,6 +418,28 @@ const confirmDelivery = async (req, res, next) => {
   }
 };
 
+
+// @desc    Get rider's food deliveries history
+// @route   GET /api/orders/rider-history
+// @access  Private/Rider
+const getRiderFoodDeliveries = async (req, res, next) => {
+  try {
+    if (req.user.role !== 'rider') {
+      return res.status(403).json({ status: 'error', message: 'Forbidden: Riders only' });
+    }
+    
+    const deliveries = await Order.findRiderDeliveries(req.user.id);
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Rider food deliveries retrieved successfully',
+      data: deliveries
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createOrder,
   getOrderDetails,
@@ -429,5 +451,6 @@ module.exports = {
   arriveMerchant,
   confirmPickup,
   arriveCustomer,
-  confirmDelivery
+  confirmDelivery,
+  getRiderFoodDeliveries
 };
