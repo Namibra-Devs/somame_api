@@ -250,7 +250,7 @@ const acceptJob = async (req, res, next) => {
       return res.status(400).json({ status: 'error', message: 'Order has already been assigned to a rider' });
     }
 
-    const updatedOrder = await Order.assignRider(orderId, riderId);
+    const updatedOrder = await Order.assignRider(orderId, riderId, lat, lng);
     if (!updatedOrder) {
       return res.status(400).json({ status: 'error', message: 'Failed to assign rider. Job might have been taken.' });
     }
@@ -311,7 +311,7 @@ const arriveMerchant = async (req, res, next) => {
     if (!order) return res.status(404).json({ status: 'error', message: 'Order not found' });
     if (order.rider_id !== riderId) return res.status(403).json({ status: 'error', message: 'You are not assigned to this order' });
 
-    const updatedOrder = await Order.updateStatus(orderId, 'arrived_at_vendor');
+    const updatedOrder = await Order.arriveMerchant(orderId);
 
     res.status(200).json({
       status: 'success',

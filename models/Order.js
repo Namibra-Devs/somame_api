@@ -24,9 +24,8 @@ class Order {
     return result.rows[0];
   }
 
-  static async assignRider(id, riderId) {
-    const result = await pool.query(
-      `WITH updated_order AS (
+  static async assignRider(id, riderId, riderLat = null, riderLng = null) {
+    const query = `WITH updated_order AS (
          UPDATE orders 
          SET rider_id = $1, status = 'accepted'
          WHERE id = $2 AND rider_id IS NULL 
@@ -37,13 +36,17 @@ class Order {
               ST_X(o.delivery_location::geometry) as delivery_lng,
               v.name as vendor_name, 
               vu.phone_number as vendor_phone, 
+              v.address as vendor_address,
               ST_Y(v.location::geometry) as vendor_lat, 
-              ST_X(v.location::geometry) as vendor_lng 
+              ST_X(v.location::geometry) as vendor_lng
+              ${riderLat && riderLng ? `, ST_DistanceSphere(v.location::geometry, ST_SetSRID(ST_MakePoint($4, $3), 4326)) / 1000 as distance_to_vendor_km,
+              CEIL(ST_DistanceSphere(v.location::geometry, ST_SetSRID(ST_MakePoint($4, $3), 4326)) / 1000 * 3) as estimated_time_to_vendor_mins` : ''}
        FROM updated_order o 
        JOIN vendors v ON o.vendor_id = v.id
-       JOIN users vu ON v.user_id = vu.id`,
-      [riderId, id]
-    );
+       JOIN users vu ON v.user_id = vu.id`;
+       
+    const params = riderLat && riderLng ? [riderId, id, riderLat, riderLng] : [riderId, id];
+    const result = await pool.query(query, params);
     return result.rows[0];
   }
 
@@ -112,10 +115,32 @@ class Order {
               ST_X(o.delivery_location::geometry) as delivery_lng,
               u.first_name as customer_first_name,
               u.last_name as customer_last_name,
-              u.phone_number as customer_phone
+              u.phone_number as customer_phone,
+              vu.phone_number as vendor_phone,
+              ST_DistanceSphere(v.location::geometry, o.delivery_location::geometry) / 1000 as distance_to_customer_km,
+              CEIL(ST_DistanceSphere(v.location::geometry, o.delivery_location::geometry) / 1000 * 3) as estimated_time_to_customer_mins
        FROM updated_order o
-       JOIN users u ON o.customer_id = u.id`,
+       JOIN users u ON o.customer_id = u.id
+       JOIN vendors v ON o.vendor_id = v.id
+       JOIN users vu ON v.user_id = vu.id`,
       [id, proofImageUrl]
+    );
+    return result.rows[0];
+  }
+  static async arriveMerchant(id) {
+    const result = await pool.query(
+      `WITH updated_order AS (
+         UPDATE orders 
+         SET status = 'arrived_at_vendor'
+         WHERE id = $1
+         RETURNING *
+       )
+       SELECT o.*, 
+              v.name as vendor_name, 
+              v.address as vendor_address
+       FROM updated_order o
+       JOIN vendors v ON o.vendor_id = v.id`,
+      [id]
     );
     return result.rows[0];
   }

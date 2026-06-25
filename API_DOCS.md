@@ -512,13 +512,14 @@ Base URL: http://localhost:3000
 - **Body payload (JSON)**:
 ```json
 {
-  "name": "KFC Accra",
-  "category_id": 1,
-  "logo_url": "https://example.com/logo.png",
-  "tags": "fast food, chicken, local",
-  "rating": 4.5,
-  "lat": 5.6037,
-  "lng": -0.1870
+  "name": "KFC Accra", // Store name
+  "category_id": 1, // Category ID from the categories table
+  "logo_url": "https://example.com/logo.png", // Logo URL of the vendor
+  "tags": "fast food, chicken, local", // Tags for the vendor
+  "rating": 4.5, // Rating of the vendor
+  "lat": 5.6037, // Latitude of the vendor
+  "lng": -0.1870, // Longitude of the vendor
+  "address": "Rowi Junction" // Address of the vendor
 }
 ```
 - **Example Response**:
@@ -971,7 +972,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "vendor_id": 1,
-  "rider_id": 2, // this isoptional for now
+  "rider_id": 2, // this is optional for now
   "total_amount": 46.50,
   "promotion_id": 1,
   "discount_amount": 9.00, // this is optional for now
@@ -986,7 +987,8 @@ Base URL: http://localhost:3000
   "delivery_location": {
     "lat": 5.6145,
     "lng": -0.2057
-  }
+  },
+  "delivery_address": "123 Main St, Accra" // Address of the delivery location
 }
 ```
 - **Example Response**:
@@ -1185,8 +1187,11 @@ Base URL: http://localhost:3000
       "status": "accepted",
       "vendor_name": "PIZZA HUB ADENTA",
       "vendor_phone": "+233541234567",
+      "vendor_address": "Rowi Junction",
       "vendor_lat": 5.6050,
-      "vendor_lng": -0.1880
+      "vendor_lng": -0.1880,
+      "distance_to_vendor_km": 1.5,
+      "estimated_time_to_vendor_mins": 5
     },
     "delivery": {
       "id": 1,
@@ -1224,7 +1229,9 @@ Base URL: http://localhost:3000
   "data": {
     "order": {
       "id": 1,
-      "status": "arrived_at_vendor"
+      "status": "arrived_at_vendor",
+      "vendor_name": "KFC Accra",
+      "vendor_address": "Rowi Junction"
     }
   }
 }
