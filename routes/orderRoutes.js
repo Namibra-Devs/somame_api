@@ -11,7 +11,8 @@ const {
   arriveMerchant,
   confirmPickup,
   arriveCustomer,
-  confirmDelivery
+  confirmDelivery,
+  getRiderFoodDeliveries
 } = require('../controllers/orderController');
 const { validatePromo } = require('../controllers/promotionController');
 const { protect } = require('../middlewares/authMiddleware');
@@ -20,6 +21,7 @@ const { protect } = require('../middlewares/authMiddleware');
 router.route('/validate-promo').post(protect, validatePromo);
 router.route('/').post(protect, createOrder);
 router.route('/me').get(protect, getCustomerOrders);
+router.route('/rider-history').get(protect, getRiderFoodDeliveries);
 router.route('/:id').get(protect, getOrderDetails);
 router.route('/:id/status').patch(protect, updateOrderStatus);
 router.route('/:id/accept-job').post(protect, acceptJob);

@@ -2,7 +2,21 @@ const { pool } = require('../config/db');
 
 class Order {
   static async findById(id) {
-    const result = await pool.query('SELECT * FROM orders WHERE id = $1', [id]);
+    const result = await pool.query(`
+      SELECT o.*, 
+             ST_Y(o.delivery_location::geometry) as delivery_lat, 
+             ST_X(o.delivery_location::geometry) as delivery_lng,
+             v.name as vendor_name, 
+             v.address as vendor_address,
+             v.logo_url as vendor_logo_url,
+             ST_Y(v.location::geometry) as vendor_lat, 
+             ST_X(v.location::geometry) as vendor_lng,
+             vu.phone_number as vendor_phone
+      FROM orders o
+      JOIN vendors v ON o.vendor_id = v.id
+      JOIN users vu ON v.user_id = vu.id
+      WHERE o.id = $1
+    `, [id]);
     return result.rows[0];
   }
 
@@ -143,6 +157,20 @@ class Order {
       [id]
     );
     return result.rows[0];
+  }
+  static async findRiderDeliveries(riderId) {
+    const result = await pool.query(
+      `SELECT o.id, o.order_number, o.status, o.total_amount, o.created_at, o.delivery_address,
+              v.name as vendor_name, v.logo_url as vendor_logo_url, v.address as vendor_address,
+              ST_Y(o.delivery_location::geometry) as delivery_lat, ST_X(o.delivery_location::geometry) as delivery_lng,
+              ST_Y(v.location::geometry) as vendor_lat, ST_X(v.location::geometry) as vendor_lng
+       FROM orders o
+       JOIN vendors v ON o.vendor_id = v.id
+       WHERE o.rider_id = $1 
+       ORDER BY o.created_at DESC`,
+      [riderId]
+    );
+    return result.rows;
   }
 }
 

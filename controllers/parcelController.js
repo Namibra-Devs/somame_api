@@ -252,11 +252,34 @@ const declineJob = async (req, res, next) => {
   }
 };
 
+
+// @desc    Get rider's parcel deliveries history
+// @route   GET /api/parcels/rider-history
+// @access  Private/Rider
+const getRiderParcelDeliveries = async (req, res, next) => {
+  try {
+    if (req.user.role !== 'rider') {
+      return res.status(403).json({ status: 'error', message: 'Forbidden: Riders only' });
+    }
+    
+    const deliveries = await ParcelOrder.findRiderDeliveries(req.user.id);
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Rider parcel deliveries retrieved successfully',
+      data: deliveries
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   calculateFare,
   createParcelOrder,
   getMyParcels,
   getParcelDetails,
+  getRiderParcelDeliveries,
   acceptJob,
   declineJob
 };

@@ -1570,7 +1570,9 @@ Connect to the Socket.io server by passing the JWT token.
 ```json
 {
   "pickup_location": { "lat": 5.6145, "lng": -0.2057 }, // required
+  "pickup_address": "Adenta- Dodowa Road", // required
   "dropoff_location": { "lat": 5.6037, "lng": -0.1870 }, // required
+  "dropoff_address": "Madina", // required
   "distance_km": 15.4, // required
   "item_description": "A fragile vase", // optional
   "item_value": 250.00, // optional
@@ -1787,5 +1789,62 @@ Connect to the Socket.io server by passing the JWT token.
     "created_at": "2026-06-21T08:00:00.000Z",
     "updated_at": "2026-06-21T08:00:00.000Z"
   }
+}
+```
+
+### Get Rider Food Deliveries History
+- **Endpoint**: `GET /api/orders/rider-history`
+- **Headers**: `Authorization: Bearer <your_jwt_token>` (Must have `rider` role)
+- **Description**: Returns a list of all food deliveries assigned to the logged-in rider, ordered by date.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Rider food deliveries retrieved successfully",
+  "data": [
+    {
+      "id": 1,
+      "order_number": "ORD-12345",
+      "status": "delivered",
+      "total_amount": "101.34",
+      "created_at": "2026-06-04T13:34:00.000Z",
+      "delivery_address": "Madina",
+      "vendor_name": "KFC - Adenta",
+      "vendor_logo_url": "...",
+      "vendor_address": "Adenta- Dodowa Road",
+      "delivery_lat": 5.6030,
+      "delivery_lng": -0.1860,
+      "vendor_lat": 5.6145,
+      "vendor_lng": -0.2057
+    }
+  ]
+}
+```
+
+### Get Rider Parcel Deliveries History
+- **Endpoint**: `GET /api/parcels/rider-history`
+- **Headers**: `Authorization: Bearer <your_jwt_token>` (Must have `rider` role)
+- **Description**: Returns a list of all parcel deliveries assigned to the logged-in rider, ordered by date.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Rider parcel deliveries retrieved successfully",
+  "data": [
+    {
+      "id": 1,
+      "order_number": "PAR-ABC-1234",
+      "pickup_address": "Adenta- Dodowa Road",
+      "dropoff_address": "Madina",
+      "distance_km": "3.50",
+      "total_amount": "23.50",
+      "status": "delivered",
+      "created_at": "2026-06-04T13:34:00.000Z",
+      "pickup_lat": 5.6145,
+      "pickup_lng": -0.2057,
+      "dropoff_lat": 5.6030,
+      "dropoff_lng": -0.1860
+    }
+  ]
 }
 ```
