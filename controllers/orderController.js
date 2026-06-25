@@ -9,7 +9,7 @@ const MenuItem = require('../models/MenuItem');
 // @route   POST /api/orders
 const createOrder = async (req, res, next) => {
   try {
-    const { vendor_id, rider_id, items, total_amount, promotion_id, discount_amount, rider_tip, estimated_delivery_time, customer_note, payment_method, delivery_location } = req.body;
+    const { vendor_id, rider_id, items, total_amount, promotion_id, discount_amount, rider_tip, estimated_delivery_time, customer_note, payment_method, delivery_location, delivery_address } = req.body;
     
     // Fetch customer_id from the authenticated user token
     const customer_id = req.user.id;
@@ -77,7 +77,21 @@ const createOrder = async (req, res, next) => {
 
     // Let the Order model handle the database transaction
     const result = await Order.createWithItems({
-      order_number, customer_id, vendor_id, rider_id, items, total_amount, promotion_id, discount_amount, rider_tip, estimated_delivery_time, customer_note, payment_method, delivery_location
+      order_number,
+      customer_id,
+      vendor_id,
+      rider_id,
+      status: 'pending',
+      total_amount,
+      promotion_id,
+      discount_amount,
+      rider_tip,
+      estimated_delivery_time,
+      customer_note,
+      payment_method,
+      items,
+      delivery_location,
+      delivery_address
     });
 
     res.status(201).json({
@@ -209,10 +223,211 @@ const updateOrderStatus = async (req, res, next) => {
   }
 };
 
+const JobDecline = require('../models/JobDecline');
+
+// @desc    Accept an unassigned job (Targeted Dispatch)
+// @route   POST /api/orders/:id/accept-job
+const acceptJob = async (req, res, next) => {
+  try {
+    if (req.user.role !== 'rider') {
+      return res.status(403).json({ status: 'error', message: 'Only riders can accept jobs' });
+    }
+
+    const orderId = req.params.id;
+    const riderId = req.user.id;
+    const { lat, lng } = req.body; // Rider's current location
+
+    if (!lat || !lng) {
+      return res.status(400).json({ status: 'error', message: 'lat and lng are required to accept a job' });
+    }
+
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ status: 'error', message: 'Order not found' });
+    }
+
+    if (order.rider_id) {
+      return res.status(400).json({ status: 'error', message: 'Order has already been assigned to a rider' });
+    }
+
+    const updatedOrder = await Order.assignRider(orderId, riderId, lat, lng);
+    if (!updatedOrder) {
+      return res.status(400).json({ status: 'error', message: 'Failed to assign rider. Job might have been taken.' });
+    }
+
+    // Initialize delivery tracking
+    const delivery = await Delivery.create(orderId, riderId, lat, lng);
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Job accepted successfully',
+      data: { order: updatedOrder, delivery }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Decline an unassigned job (Targeted Dispatch)
+// @route   POST /api/orders/:id/decline-job
+const declineJob = async (req, res, next) => {
+  try {
+    if (req.user.role !== 'rider') {
+      return res.status(403).json({ status: 'error', message: 'Only riders can decline jobs' });
+    }
+
+    const orderId = req.params.id;
+    const riderId = req.user.id;
+
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ status: 'error', message: 'Order not found' });
+    }
+
+    await JobDecline.recordDecline(order.order_number, riderId);
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Job declined successfully'
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+// @desc    Rider marks arrival at vendor
+// @route   POST /api/orders/:id/arrive-merchant
+const arriveMerchant = async (req, res, next) => {
+  try {
+    if (req.user.role !== 'rider') {
+      return res.status(403).json({ status: 'error', message: 'Only riders can update delivery statuses' });
+    }
+
+    const orderId = req.params.id;
+    const riderId = req.user.id;
+
+    const order = await Order.findById(orderId);
+    if (!order) return res.status(404).json({ status: 'error', message: 'Order not found' });
+    if (order.rider_id !== riderId) return res.status(403).json({ status: 'error', message: 'You are not assigned to this order' });
+
+    const updatedOrder = await Order.arriveMerchant(orderId);
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Rider arrived at merchant',
+      data: { order: updatedOrder }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Rider confirms pickup (uploads photo, vendor confirms OTP on their end)
+// @route   POST /api/orders/:id/confirm-pickup
+const confirmPickup = async (req, res, next) => {
+  try {
+    if (req.user.role !== 'rider') {
+      return res.status(403).json({ status: 'error', message: 'Only riders can update delivery statuses' });
+    }
+
+    const orderId = req.params.id;
+    const riderId = req.user.id;
+    const { proof_image_url } = req.body;
+
+    if (!proof_image_url) {
+      return res.status(400).json({ status: 'error', message: 'Proof image is required' });
+    }
+
+    const order = await Order.findById(orderId);
+    if (!order) return res.status(404).json({ status: 'error', message: 'Order not found' });
+    if (order.rider_id !== riderId) return res.status(403).json({ status: 'error', message: 'You are not assigned to this order' });
+
+    const updatedOrder = await Order.confirmPickup(orderId, proof_image_url);
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Pickup confirmed. Proceed to customer.',
+      data: { order: updatedOrder }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Rider marks arrival at customer
+// @route   POST /api/orders/:id/arrive-customer
+const arriveCustomer = async (req, res, next) => {
+  try {
+    if (req.user.role !== 'rider') {
+      return res.status(403).json({ status: 'error', message: 'Only riders can update delivery statuses' });
+    }
+
+    const orderId = req.params.id;
+    const riderId = req.user.id;
+
+    const order = await Order.findById(orderId);
+    if (!order) return res.status(404).json({ status: 'error', message: 'Order not found' });
+    if (order.rider_id !== riderId) return res.status(403).json({ status: 'error', message: 'You are not assigned to this order' });
+
+    const updatedOrder = await Order.updateStatus(orderId, 'arrived_at_customer');
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Rider arrived at customer',
+      data: { order: updatedOrder }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Rider confirms delivery with customer OTP
+// @route   POST /api/orders/:id/confirm-delivery
+const confirmDelivery = async (req, res, next) => {
+  try {
+    if (req.user.role !== 'rider') {
+      return res.status(403).json({ status: 'error', message: 'Only riders can update delivery statuses' });
+    }
+
+    const orderId = req.params.id;
+    const riderId = req.user.id;
+    const { delivery_otp } = req.body;
+
+    if (!delivery_otp) {
+      return res.status(400).json({ status: 'error', message: 'Delivery OTP is required' });
+    }
+
+    const order = await Order.findById(orderId);
+    if (!order) return res.status(404).json({ status: 'error', message: 'Order not found' });
+    if (order.rider_id !== riderId) return res.status(403).json({ status: 'error', message: 'You are not assigned to this order' });
+
+    if (order.delivery_otp !== delivery_otp) {
+      return res.status(400).json({ status: 'error', message: 'Invalid delivery OTP' });
+    }
+
+    const updatedOrder = await Order.updateStatus(orderId, 'delivered');
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Delivery confirmed successfully',
+      data: { order: updatedOrder }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createOrder,
   getOrderDetails,
   getCustomerOrders,
   getVendorOrders,
-  updateOrderStatus
+  updateOrderStatus,
+  acceptJob,
+  declineJob,
+  arriveMerchant,
+  confirmPickup,
+  arriveCustomer,
+  confirmDelivery
 };

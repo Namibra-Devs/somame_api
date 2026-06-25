@@ -512,13 +512,14 @@ Base URL: http://localhost:3000
 - **Body payload (JSON)**:
 ```json
 {
-  "name": "KFC Accra",
-  "category_id": 1,
-  "logo_url": "https://example.com/logo.png",
-  "tags": "fast food, chicken, local",
-  "rating": 4.5,
-  "lat": 5.6037,
-  "lng": -0.1870
+  "name": "KFC Accra", // Store name
+  "category_id": 1, // Category ID from the categories table
+  "logo_url": "https://example.com/logo.png", // Logo URL of the vendor
+  "tags": "fast food, chicken, local", // Tags for the vendor
+  "rating": 4.5, // Rating of the vendor
+  "lat": 5.6037, // Latitude of the vendor
+  "lng": -0.1870, // Longitude of the vendor
+  "address": "Rowi Junction" // Address of the vendor
 }
 ```
 - **Example Response**:
@@ -971,7 +972,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "vendor_id": 1,
-  "rider_id": 2, // this isoptional for now
+  "rider_id": 2, // this is optional for now
   "total_amount": 46.50,
   "promotion_id": 1,
   "discount_amount": 9.00, // this is optional for now
@@ -986,7 +987,8 @@ Base URL: http://localhost:3000
   "delivery_location": {
     "lat": 5.6145,
     "lng": -0.2057
-  }
+  },
+  "delivery_address": "123 Main St, Accra" // Address of the delivery location
 }
 ```
 - **Example Response**:
@@ -1159,6 +1161,153 @@ Base URL: http://localhost:3000
 ```
 
 ---
+
+
+### Accept Food Job (Targeted Dispatch)
+- **Endpoint**: `POST /api/orders/:id/accept-job`
+- **Headers**: `Authorization: Bearer <your_jwt_token>` (Must have `rider` role)
+- **Description**: Allows a rider to accept an unassigned job order. Requires rider's current location to initialize delivery tracking.
+- **Body payload (JSON)**:
+```json
+{
+  "lat": 5.6037,
+  "lng": -0.1870
+}
+```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Job accepted successfully",
+  "data": {
+    "order": {
+      "id": 1,
+      "order_number": "ORD-12345678-1234",
+      "rider_id": 4,
+      "status": "accepted",
+      "vendor_name": "PIZZA HUB ADENTA",
+      "vendor_phone": "+233541234567",
+      "vendor_address": "Rowi Junction",
+      "vendor_lat": 5.6050,
+      "vendor_lng": -0.1880,
+      "distance_to_vendor_km": 1.5,
+      "estimated_time_to_vendor_mins": 5
+    },
+    "delivery": {
+      "id": 1,
+      "rider_id": 4,
+      "current_location": "0101000020E6100000560E...",
+      "current_lat": 5.6037,
+      "current_lng": -0.1870
+    }
+  }
+}
+```
+
+### Decline Food Job (Targeted Dispatch)
+- **Endpoint**: `POST /api/orders/:id/decline-job`
+- **Headers**: `Authorization: Bearer <your_jwt_token>` (Must have `rider` role)
+- **Description**: Allows a rider to decline an unassigned job order. Records the decline so the dispatch engine won't re-assign it.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Job declined successfully"
+}
+```
+
+
+### Arrive at Merchant (Rider)
+- **Endpoint**: `POST /api/orders/:id/arrive-merchant`
+- **Headers**: `Authorization: Bearer <your_jwt_token>` (Must have `rider` role)
+- **Description**: Allows a rider to mark that they have arrived at the vendor's location to pick up the food.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Rider arrived at merchant",
+  "data": {
+    "order": {
+      "id": 1,
+      "status": "arrived_at_vendor",
+      "vendor_name": "KFC Accra",
+      "vendor_address": "Rowi Junction"
+    }
+  }
+}
+```
+
+### Confirm Pickup (Rider)
+- **Endpoint**: `POST /api/orders/:id/confirm-pickup`
+- **Headers**: `Authorization: Bearer <your_jwt_token>` (Must have `rider` role)
+- **Description**: Rider submits a photo proof of the pickup. Note: the merchant confirms the OTP separately. Returns customer delivery details.
+- **Body payload (JSON)**:
+```json
+{
+  "proof_image_url": "https://storage.googleapis.com/.../proof.jpg"
+}
+```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Pickup confirmed. Proceed to customer.",
+  "data": {
+    "order": {
+      "id": 1,
+      "status": "out_for_delivery",
+      "customer_first_name": "John",
+      "customer_last_name": "Doe",
+      "customer_phone": "+233541234567",
+      "delivery_address": "Ring Road Central, Accra",
+      "delivery_lat": 5.6030,
+      "delivery_lng": -0.1860
+    }
+  }
+}
+```
+
+### Arrive at Customer (Rider)
+- **Endpoint**: `POST /api/orders/:id/arrive-customer`
+- **Headers**: `Authorization: Bearer <your_jwt_token>` (Must have `rider` role)
+- **Description**: Allows a rider to mark that they have arrived at the customer's delivery location.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Rider arrived at customer",
+  "data": {
+    "order": {
+      "id": 1,
+      "status": "arrived_at_customer"
+    }
+  }
+}
+```
+
+### Confirm Delivery (Rider)
+- **Endpoint**: `POST /api/orders/:id/confirm-delivery`
+- **Headers**: `Authorization: Bearer <your_jwt_token>` (Must have `rider` role)
+- **Description**: Rider confirms the delivery by entering the 4-digit OTP provided by the customer.
+- **Body payload (JSON)**:
+```json
+{
+  "delivery_otp": "7392"
+}
+```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Delivery confirmed successfully",
+  "data": {
+    "order": {
+      "id": 1,
+      "status": "delivered"
+    }
+  }
+}
+```
 
 ## 8. Delivery Tracking (/api/deliveries)
 
@@ -1510,6 +1659,53 @@ Connect to the Socket.io server by passing the JWT token.
 ```
 
 ---
+
+
+### Accept Parcel Job (Targeted Dispatch)
+- **Endpoint**: `POST /api/parcels/:id/accept-job`
+- **Headers**: `Authorization: Bearer <your_jwt_token>` (Must have `rider` role)
+- **Description**: Allows a rider to accept an unassigned parcel order. Requires rider's current location to initialize delivery tracking.
+- **Body payload (JSON)**:
+```json
+{
+  "lat": 5.6037,
+  "lng": -0.1870
+}
+```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Parcel job accepted successfully",
+  "data": {
+    "parcel": {
+      "id": 1,
+      "order_number": "PAR-ABCDEF-1234",
+      "rider_id": 4,
+      "status": "accepted"
+    },
+    "delivery": {
+      "id": 1,
+      "rider_id": 4,
+      "current_location": "0101000020E6100000560E...",
+      "current_lat": 5.6037,
+      "current_lng": -0.1870
+    }
+  }
+}
+```
+
+### Decline Parcel Job (Targeted Dispatch)
+- **Endpoint**: `POST /api/parcels/:id/decline-job`
+- **Headers**: `Authorization: Bearer <your_jwt_token>` (Must have `rider` role)
+- **Description**: Allows a rider to decline an unassigned parcel order. Records the decline so the dispatch engine won't re-assign it.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Parcel job declined successfully"
+}
+```
 
 ## 9. Riders (/api/riders)
 
