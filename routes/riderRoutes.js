@@ -2,6 +2,11 @@ const express = require('express');
 const router = express.Router();
 const { submitRiderRegistration, getMyRiderProfile } = require('../controllers/riderController');
 const { 
+  getEarningsDashboard, 
+  getPayoutHistory, 
+  requestPayout 
+} = require('../controllers/riderEarningsController');
+const { 
   getPaymentMethods, 
   addPaymentMethod, 
   updatePaymentMethod, 
@@ -24,5 +29,14 @@ router.route('/me/payment-methods')
 router.route('/me/payment-methods/:id')
   .put(protect, updatePaymentMethod)
   .delete(protect, deletePaymentMethod);
+
+
+// Earnings & Payout Routes
+router.route('/me/earnings')
+  .get(protect, getEarningsDashboard);
+
+router.route('/me/payouts')
+  .get(protect, getPayoutHistory)
+  .post(protect, requestPayout);
 
 module.exports = router;

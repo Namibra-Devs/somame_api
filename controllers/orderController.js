@@ -4,6 +4,8 @@ const Vendor = require('../models/Vendor');
 const User = require('../models/User');
 const Promotion = require('../models/Promotion');
 const MenuItem = require('../models/MenuItem');
+const RiderWallet = require('../models/RiderWallet');
+const RiderEarning = require('../models/RiderEarning');
 
 // @desc    Create a new order transaction
 // @route   POST /api/orders
@@ -407,6 +409,27 @@ const confirmDelivery = async (req, res, next) => {
     }
 
     const updatedOrder = await Order.updateStatus(orderId, 'delivered');
+
+    // Calculate Earnings
+    const basePay = 10.00; // Mock base pay
+    const distanceBonus = 2.00; // Mock distance bonus
+    const tip = parseFloat(updatedOrder.rider_tip || 0);
+    const totalAmount = basePay + distanceBonus + tip;
+
+    // Record Earning
+    await RiderEarning.create({
+      rider_id: riderId,
+      order_id: orderId,
+      parcel_order_id: null,
+      earning_type: 'delivery',
+      base_pay: basePay,
+      distance_bonus: distanceBonus,
+      tip: tip,
+      amount: totalAmount
+    });
+
+    // Update Wallet
+    await RiderWallet.addEarning(riderId, totalAmount);
 
     res.status(200).json({
       status: 'success',
