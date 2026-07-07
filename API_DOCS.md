@@ -1008,6 +1008,7 @@ Base URL: http://localhost:3000
       "promotion_id": 1,
       "discount_amount": "9.00",
       "rider_tip": "5.00",
+      "service_fee": "2.00",
       "estimated_delivery_time": "2026-06-04T04:10:00.000Z",
       "customer_note": "Please leave at the front door",
       "payment_method": "momo",
@@ -1818,6 +1819,27 @@ Connect to the Socket.io server by passing the JWT token.
       "vendor_lng": -0.2057
     }
   ]
+}
+```
+
+
+### Confirm Parcel Delivery
+- **Endpoint**: `POST /api/parcels/:id/confirm-delivery`
+- **Headers**: `Authorization: Bearer <your_jwt_token>` (Must have `rider` role)
+- **Description**: Allows a rider to confirm they have delivered the parcel. Updates the parcel status to `delivered`, calculates earnings (base pay + distance bonus) based on System Configs, records the transaction in `rider_earnings`, and credits the rider's `rider_wallets` balance.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Parcel delivery confirmed successfully",
+  "data": {
+    "parcel": {
+      "id": 1,
+      "order_number": "PRC-...",
+      "status": "delivered",
+      "updated_at": "..."
+    }
+  }
 }
 ```
 

@@ -6,6 +6,7 @@ const Promotion = require('../models/Promotion');
 const MenuItem = require('../models/MenuItem');
 const RiderWallet = require('../models/RiderWallet');
 const RiderEarning = require('../models/RiderEarning');
+const SystemConfig = require('../models/SystemConfig');
 
 // @desc    Create a new order transaction
 // @route   POST /api/orders
@@ -74,6 +75,13 @@ const createOrder = async (req, res, next) => {
       }
     }
 
+    // Fetch order service fee
+    const configs = await SystemConfig.getAll();
+    const service_fee = configs.order_service_fee || 2.00;
+
+    // Add service fee to total amount
+    const final_total_amount = parseFloat(total_amount) + service_fee;
+
     // Generate a unique order tracking number
     const order_number = 'ORD-' + Date.now().toString(36).toUpperCase() + '-' + Math.floor(Math.random() * 10000).toString().padStart(4, '0');
 
@@ -84,10 +92,11 @@ const createOrder = async (req, res, next) => {
       vendor_id,
       rider_id,
       status: 'pending',
-      total_amount,
+      total_amount: final_total_amount,
       promotion_id,
       discount_amount,
       rider_tip,
+      service_fee,
       estimated_delivery_time,
       customer_note,
       payment_method,
@@ -410,9 +419,12 @@ const confirmDelivery = async (req, res, next) => {
 
     const updatedOrder = await Order.updateStatus(orderId, 'delivered');
 
+    // Fetch configs
+    const configs = await SystemConfig.getAll();
+    const basePay = configs.rider_base_pay || 10.00;
+    const distanceBonus = configs.rider_distance_bonus || 2.00;
+    
     // Calculate Earnings
-    const basePay = 10.00; // Mock base pay
-    const distanceBonus = 2.00; // Mock distance bonus
     const tip = parseFloat(updatedOrder.rider_tip || 0);
     const totalAmount = basePay + distanceBonus + tip;
 

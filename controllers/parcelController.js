@@ -1,5 +1,7 @@
 const ParcelOrder = require('../models/ParcelOrder');
 const SystemConfig = require('../models/SystemConfig');
+const RiderWallet = require('../models/RiderWallet');
+const RiderEarning = require('../models/RiderEarning');
 const crypto = require('crypto');
 
 const generateOrderNumber = () => {
@@ -252,6 +254,58 @@ const declineJob = async (req, res, next) => {
   }
 };
 
+// @desc    Rider confirms parcel delivery
+// @route   POST /api/parcels/:id/confirm-delivery
+// @access  Private/Rider
+const confirmDelivery = async (req, res, next) => {
+  try {
+    if (req.user.role !== 'rider') {
+      return res.status(403).json({ status: 'error', message: 'Only riders can update delivery statuses' });
+    }
+
+    const parcelId = req.params.id;
+    const riderId = req.user.id;
+
+    const parcel = await ParcelOrder.findById(parcelId);
+    if (!parcel) return res.status(404).json({ status: 'error', message: 'Parcel order not found' });
+    if (parcel.rider_id !== riderId) return res.status(403).json({ status: 'error', message: 'You are not assigned to this parcel' });
+
+    const updatedParcel = await ParcelOrder.updateStatus(parcelId, 'delivered');
+
+    // Fetch configs
+    const configs = await SystemConfig.getAll();
+    const basePay = configs.rider_base_pay || 10.00;
+    const distanceBonus = configs.rider_distance_bonus || 2.00;
+    
+    // Calculate Earnings
+    const tip = 0; // Parcels might not have tips implemented yet, defaulting to 0
+    const totalAmount = basePay + distanceBonus + tip;
+
+    // Record Earning
+    await RiderEarning.create({
+      rider_id: riderId,
+      order_id: null,
+      parcel_order_id: parcelId,
+      earning_type: 'delivery',
+      base_pay: basePay,
+      distance_bonus: distanceBonus,
+      tip: tip,
+      amount: totalAmount
+    });
+
+    // Update Wallet
+    await RiderWallet.addEarning(riderId, totalAmount);
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Parcel delivery confirmed successfully',
+      data: { parcel: updatedParcel }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 
 // @desc    Get rider's parcel deliveries history
 // @route   GET /api/parcels/rider-history
@@ -281,5 +335,6 @@ module.exports = {
   getParcelDetails,
   getRiderParcelDeliveries,
   acceptJob,
-  declineJob
+  declineJob,
+  confirmDelivery
 };

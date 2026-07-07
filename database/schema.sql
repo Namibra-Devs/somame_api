@@ -114,6 +114,7 @@ CREATE TABLE orders (
     payment_method payment_method_type NOT NULL,
     payment_status payment_status_type NOT NULL DEFAULT 'pending',
     rider_tip DECIMAL(10, 2) DEFAULT 0.00,
+    service_fee DECIMAL(10, 2) DEFAULT 0.00,
     estimated_delivery_time TIMESTAMP WITH TIME ZONE,
     customer_note TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
@@ -189,7 +190,10 @@ INSERT INTO system_configs (key, value) VALUES
 ('parcel_base_fare', 10.00),
 ('parcel_per_km_fee', 2.50),
 ('parcel_service_fee', 5.00),
-('parcel_express_multiplier', 1.50) ON CONFLICT (key) DO NOTHING;
+('parcel_express_multiplier', 1.50),
+('rider_base_pay', 10.00),
+('rider_distance_bonus', 2.00),
+('order_service_fee', 2.00) ON CONFLICT (key) DO NOTHING;
 
 -- 14. parcel_orders table
 CREATE TABLE parcel_orders (
