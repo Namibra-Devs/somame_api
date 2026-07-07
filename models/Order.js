@@ -69,7 +69,7 @@ class Order {
     return result.rows;
   }
 
-  static async createWithItems({ order_number, customer_id, vendor_id, rider_id, status, total_amount, promotion_id, discount_amount, rider_tip, estimated_delivery_time, customer_note, payment_method, items, delivery_location, delivery_address }) {
+  static async createWithItems({ order_number, customer_id, vendor_id, rider_id, status, total_amount, promotion_id, discount_amount, rider_tip, service_fee, estimated_delivery_time, customer_note, payment_method, items, delivery_location, delivery_address }) {
     const client = await pool.connect();
     try {
       await client.query('BEGIN');
@@ -77,14 +77,14 @@ class Order {
       const merchant_otp = Math.floor(1000 + Math.random() * 9000).toString();
       const delivery_otp = Math.floor(1000 + Math.random() * 9000).toString();
 
-      let orderQuery = `INSERT INTO orders (order_number, customer_id, vendor_id, rider_id, status, total_amount, promotion_id, discount_amount, rider_tip, estimated_delivery_time, customer_note, payment_method, merchant_otp, delivery_otp, delivery_address`;
-      let orderValues = [order_number, customer_id, vendor_id, rider_id || null, status || 'pending', total_amount, promotion_id || null, discount_amount || 0.00, rider_tip || 0.00, estimated_delivery_time || null, customer_note || null, payment_method, merchant_otp, delivery_otp, delivery_address || null];
+      let orderQuery = `INSERT INTO orders (order_number, customer_id, vendor_id, rider_id, status, total_amount, promotion_id, discount_amount, rider_tip, service_fee, estimated_delivery_time, customer_note, payment_method, merchant_otp, delivery_otp, delivery_address`;
+      let orderValues = [order_number, customer_id, vendor_id, rider_id || null, status || 'pending', total_amount, promotion_id || null, discount_amount || 0.00, rider_tip || 0.00, service_fee || 0.00, estimated_delivery_time || null, customer_note || null, payment_method, merchant_otp, delivery_otp, delivery_address || null];
       
       if (delivery_location && delivery_location.lat && delivery_location.lng) {
-          orderQuery += `, delivery_location) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, ST_SetSRID(ST_MakePoint($16, $17), 4326)) RETURNING *, ST_Y(delivery_location::geometry) as delivery_lat, ST_X(delivery_location::geometry) as delivery_lng`;
+          orderQuery += `, delivery_location) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, ST_SetSRID(ST_MakePoint($17, $18), 4326)) RETURNING *, ST_Y(delivery_location::geometry) as delivery_lat, ST_X(delivery_location::geometry) as delivery_lng`;
           orderValues.push(delivery_location.lng, delivery_location.lat);
       } else {
-          orderQuery += `) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING *`;
+          orderQuery += `) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING *`;
       }
 
       const orderResult = await client.query(orderQuery, orderValues);

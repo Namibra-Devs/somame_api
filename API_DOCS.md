@@ -1008,6 +1008,7 @@ Base URL: http://localhost:3000
       "promotion_id": 1,
       "discount_amount": "9.00",
       "rider_tip": "5.00",
+      "service_fee": "2.00",
       "estimated_delivery_time": "2026-06-04T04:10:00.000Z",
       "customer_note": "Please leave at the front door",
       "payment_method": "momo",
@@ -1821,6 +1822,27 @@ Connect to the Socket.io server by passing the JWT token.
 }
 ```
 
+
+### Confirm Parcel Delivery
+- **Endpoint**: `POST /api/parcels/:id/confirm-delivery`
+- **Headers**: `Authorization: Bearer <your_jwt_token>` (Must have `rider` role)
+- **Description**: Allows a rider to confirm they have delivered the parcel. Updates the parcel status to `delivered`, calculates earnings (base pay + distance bonus) based on System Configs, records the transaction in `rider_earnings`, and credits the rider's `rider_wallets` balance.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Parcel delivery confirmed successfully",
+  "data": {
+    "parcel": {
+      "id": 1,
+      "order_number": "PRC-...",
+      "status": "delivered",
+      "updated_at": "..."
+    }
+  }
+}
+```
+
 ### Get Rider Parcel Deliveries History
 - **Endpoint**: `GET /api/parcels/rider-history`
 - **Headers**: `Authorization: Bearer <your_jwt_token>` (Must have `rider` role)
@@ -1844,6 +1866,180 @@ Connect to the Socket.io server by passing the JWT token.
       "pickup_lng": -0.2057,
       "dropoff_lat": 5.6030,
       "dropoff_lng": -0.1860
+    }
+  ]
+}
+```
+
+## Rider Payment Methods
+
+### Get Rider Payment Methods
+- **Endpoint**: `GET /api/riders/me/payment-methods`
+- **Headers**: `Authorization: Bearer <your_jwt_token>` (Must have `rider` role)
+- **Description**: Returns a list of all saved payment methods for the logged-in rider.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Rider payment methods retrieved successfully",
+  "data": [
+    {
+      "id": 1,
+      "rider_id": 2,
+      "provider": "bank",
+      "account_name": "John Doe",
+      "account_number": "0023423423423",
+      "bank_name": "GCB Bank",
+      "branch": "Madina",
+      "is_default": true,
+      "created_at": "2026-07-01T10:00:00.000Z"
+    }
+  ]
+}
+```
+
+### Add Rider Payment Method
+- **Endpoint**: `POST /api/riders/me/payment-methods`
+- **Headers**: `Authorization: Bearer <your_jwt_token>` (Must have `rider` role)
+- **Description**: Adds a new payment method (bank or momo) for the rider.
+- **Body payload (JSON)**:
+  - For Bank:
+    ```json
+    {
+      "provider": "bank", // required
+      "account_name": "John Doe", // required
+      "account_number": "1234567890123", // required
+      "bank_name": "GCB Bank", // required
+      "branch": "Madina", // required
+      "is_default": true // optional
+    }
+    ```
+  - For Mobile Money (momo):
+    ```json
+    {
+      "provider": "momo",
+      "account_name": "John Doe",
+      "account_number": "+233541234567",
+      "is_default": false
+    }
+    ```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Payment method added successfully",
+  "data": { ... }
+}
+```
+
+### Update Rider Payment Method
+- **Endpoint**: `PUT /api/riders/me/payment-methods/:id`
+- **Headers**: `Authorization: Bearer <your_jwt_token>` (Must have `rider` role)
+- **Description**: Updates an existing payment method for the rider. Send only the fields to update.
+- **Body payload (JSON)**:
+```json
+{
+  "account_name": "Jonathan Doe",
+  "branch": "East Legon"
+}
+```
+
+### Delete Rider Payment Method
+- **Endpoint**: `DELETE /api/riders/me/payment-methods/:id`
+- **Headers**: `Authorization: Bearer <your_jwt_token>` (Must have `rider` role)
+- **Description**: Deletes an existing payment method.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Payment method deleted successfully"
+}
+```
+
+## Rider Earnings & Payouts
+
+### Get Earnings Dashboard
+- **Endpoint**: `GET /api/riders/me/earnings`
+- **Headers**: `Authorization: Bearer <your_jwt_token>` (Must have `rider` role)
+- **Description**: Returns today's earnings, percentage change vs yesterday, a weekly chart breakdown, and categorised earnings components.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Earnings dashboard retrieved successfully",
+  "data": {
+    "available_balance": "245.00",
+    "today_earnings": "1200.50",
+    "percentage_change_vs_yesterday": "18.00",
+    "breakdown": {
+      "chart_data": {
+        "Mon": 180,
+        "Tue": 300,
+        "Wed": 240,
+        "Thu": 70,
+        "Fri": 210,
+        "Sat": 210,
+        "Sun": 180
+      },
+      "base_pay": 200,
+      "distance_bonuses": 40,
+      "tips": 2,
+      "streak_bonuses": 20,
+      "total": 262
+    }
+  }
+}
+```
+
+### Request Payout
+- **Endpoint**: `POST /api/riders/me/payouts`
+- **Headers**: `Authorization: Bearer <your_jwt_token>` (Must have `rider` role)
+- **Description**: Submits a request to withdraw funds from the available balance.
+- **Body payload (JSON)**:
+```json
+{
+  "amount": 200, // required
+  "payment_method_id": 1 // required (must belong to rider)
+}
+```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Payout requested successfully",
+  "data": {
+    "payout": {
+      "id": 1,
+      "rider_id": 2,
+      "amount": "200.00",
+      "status": "pending",
+      "payout_method_name": "Mobile Money",
+      "payout_account_info": "****234",
+      "created_at": "..."
+    },
+    "remaining_balance": "45.00"
+  }
+}
+```
+
+### Get Payout History
+- **Endpoint**: `GET /api/riders/me/payouts`
+- **Headers**: `Authorization: Bearer <your_jwt_token>` (Must have `rider` role)
+- **Description**: Returns a history of payout requests.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Payout history retrieved successfully",
+  "data": [
+    {
+      "id": 1,
+      "rider_id": 2,
+      "amount": "200.00",
+      "status": "success",
+      "payout_method_name": "Mobile Money",
+      "payout_account_info": "****234",
+      "created_at": "2026-06-16T09:08:00.000Z"
     }
   ]
 }

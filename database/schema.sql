@@ -114,6 +114,7 @@ CREATE TABLE orders (
     payment_method payment_method_type NOT NULL,
     payment_status payment_status_type NOT NULL DEFAULT 'pending',
     rider_tip DECIMAL(10, 2) DEFAULT 0.00,
+    service_fee DECIMAL(10, 2) DEFAULT 0.00,
     estimated_delivery_time TIMESTAMP WITH TIME ZONE,
     customer_note TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
@@ -189,7 +190,10 @@ INSERT INTO system_configs (key, value) VALUES
 ('parcel_base_fare', 10.00),
 ('parcel_per_km_fee', 2.50),
 ('parcel_service_fee', 5.00),
-('parcel_express_multiplier', 1.50) ON CONFLICT (key) DO NOTHING;
+('parcel_express_multiplier', 1.50),
+('rider_base_pay', 10.00),
+('rider_distance_bonus', 2.00),
+('order_service_fee', 2.00) ON CONFLICT (key) DO NOTHING;
 
 -- 14. parcel_orders table
 CREATE TABLE parcel_orders (
@@ -307,3 +311,62 @@ CREATE TABLE job_declines (
 
 CREATE INDEX idx_job_declines_order_number ON job_declines(order_number);
 CREATE INDEX idx_job_declines_rider_id ON job_declines(rider_id);
+
+-- 21. rider_payment_methods table
+CREATE TABLE rider_payment_methods (
+    id SERIAL PRIMARY KEY,
+    rider_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    provider VARCHAR(50) NOT NULL, -- 'bank' or 'momo'
+    account_name VARCHAR(255) NOT NULL,
+    account_number VARCHAR(255) NOT NULL,
+    bank_name VARCHAR(255),
+    branch VARCHAR(255),
+    is_default BOOLEAN DEFAULT false,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_rider_payment_methods_rider_id ON rider_payment_methods(rider_id);
+
+-- 22. rider_wallets table
+CREATE TABLE rider_wallets (
+    id SERIAL PRIMARY KEY,
+    rider_id INTEGER NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+    balance DECIMAL(10, 2) DEFAULT 0.00,
+    total_earned DECIMAL(10, 2) DEFAULT 0.00,
+    total_withdrawn DECIMAL(10, 2) DEFAULT 0.00,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 23. rider_earnings table
+CREATE TABLE rider_earnings (
+    id SERIAL PRIMARY KEY,
+    rider_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    order_id INTEGER REFERENCES orders(id) ON DELETE SET NULL,
+    parcel_order_id INTEGER REFERENCES parcel_orders(id) ON DELETE SET NULL,
+    earning_type VARCHAR(50) NOT NULL, -- 'delivery', 'tip', 'streak_bonus'
+    base_pay DECIMAL(10, 2) DEFAULT 0.00,
+    distance_bonus DECIMAL(10, 2) DEFAULT 0.00,
+    tip DECIMAL(10, 2) DEFAULT 0.00,
+    amount DECIMAL(10, 2) NOT NULL, -- total earning for this row
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_rider_earnings_rider_id ON rider_earnings(rider_id);
+
+-- 24. rider_payouts table
+CREATE TABLE rider_payouts (
+    id SERIAL PRIMARY KEY,
+    rider_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    amount DECIMAL(10, 2) NOT NULL,
+    payment_method_id INTEGER REFERENCES rider_payment_methods(id) ON DELETE SET NULL,
+    payout_method_name VARCHAR(50), -- e.g., 'Mobile Money' or 'Bank'
+    payout_account_info VARCHAR(100), -- e.g., '*****234' or 'ABSA *******098'
+    status VARCHAR(50) DEFAULT 'pending', -- 'pending', 'success', 'failed'
+    reference_id VARCHAR(100), -- optional payout gateway ref
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_rider_payouts_rider_id ON rider_payouts(rider_id);
