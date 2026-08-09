@@ -132,11 +132,38 @@ const updateMyVendorProfile = async (req, res, next) => {
   }
 };
 
+// @desc    Get dashboard statistics for a vendor
+// @route   GET /api/vendors/me/dashboard
+// @access  Private/Vendor
+const getVendorDashboard = async (req, res, next) => {
+  try {
+    if (req.user.role !== 'vendor') {
+      return res.status(403).json({ status: 'error', message: 'Only vendors can access this' });
+    }
+
+    const vendor = await Vendor.findByUserId(req.user.id);
+    if (!vendor) {
+      return res.status(404).json({ status: 'error', message: 'Vendor profile not found' });
+    }
+
+    const stats = await Vendor.getDashboardStats(vendor.id);
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Dashboard statistics retrieved successfully',
+      data: stats
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getNearbyVendors,
   searchVendors,
   createVendor,
   getVendorById,
   getMyVendorProfile,
-  updateMyVendorProfile
+  updateMyVendorProfile,
+  getVendorDashboard
 };

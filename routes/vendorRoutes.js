@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const { getNearbyVendors, searchVendors, createVendor, getVendorById, getMyVendorProfile, updateMyVendorProfile } = require('../controllers/vendorController');
+const { getNearbyVendors, searchVendors, createVendor, getVendorById, getMyVendorProfile, updateMyVendorProfile, getVendorDashboard } = require('../controllers/vendorController');
 const { protect } = require('../middlewares/authMiddleware');
 
 const { 
   createMenuCategory, getMyMenuCategories, updateMenuCategory, deleteMenuCategory,
-  createMenuItem, getMyMenuItems, updateMenuItem, deleteMenuItem, getVendorMenu 
+  createMenuItem, getMyMenuItems, getMenuItemDetails, updateMenuItem, deleteMenuItem, getVendorMenu 
 } = require('../controllers/menuController');
 
 const {
@@ -16,8 +16,9 @@ router.route('/search').get(searchVendors);
 router.route('/nearby').get(getNearbyVendors);
 router.route('/').post(protect, createVendor); // Protected route
 
-// Vendor Profile
+// Vendor Profile and Dashboard
 router.route('/me').get(protect, getMyVendorProfile).put(protect, updateMyVendorProfile);
+router.route('/me/dashboard').get(protect, getVendorDashboard);
 
 // Menu Management (Vendor specific)
 router.route('/me/menu-categories')
@@ -31,6 +32,7 @@ router.route('/me/menu-items')
   .post(protect, createMenuItem)
   .get(protect, getMyMenuItems);
 router.route('/me/menu-items/:id')
+  .get(protect, getMenuItemDetails)
   .put(protect, updateMenuItem)
   .delete(protect, deleteMenuItem);
 
@@ -46,7 +48,8 @@ router.route('/me/promotions/:id')
 router.route('/:id').get(getVendorById);
 router.route('/:id/menu').get(getVendorMenu);
 
-const { getVendorOrders } = require('../controllers/orderController');
+const { getVendorOrders, getOrderDetails } = require('../controllers/orderController');
 router.route('/me/orders').get(protect, getVendorOrders);
+router.route('/me/orders/:id').get(protect, getOrderDetails);
 
 module.exports = router;

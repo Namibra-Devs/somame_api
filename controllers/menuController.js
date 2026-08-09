@@ -85,8 +85,21 @@ const deleteMenuCategory = async (req, res, next) => {
 // @route   POST /api/vendors/me/menu-items
 const createMenuItem = async (req, res, next) => {
   try {
-    const { menu_category_id, name, description, price, size, quantity, image_url, extras, is_in_stock } = req.body;
-    if (!name || !price) return res.status(400).json({ status: 'error', message: 'Name and price are required' });
+    let { menu_category_id, name, description, price, size, sizes, quantity, image_url, extras, is_in_stock } = req.body;
+    
+    if (!name) return res.status(400).json({ status: 'error', message: 'Name is required' });
+    
+    if (sizes && Array.isArray(sizes) && sizes.length > 0) {
+      for (const s of sizes) {
+        if (!s.size || s.price === undefined) {
+          return res.status(400).json({ status: 'error', message: 'Each size variation must have a size and a price' });
+        }
+      }
+      if (price === undefined) price = sizes[0].price;
+      if (!size) size = sizes[0].size;
+    } else if (price === undefined) {
+      return res.status(400).json({ status: 'error', message: 'Price or sizes array is required' });
+    }
 
     const vendor = await Vendor.findByUserId(req.user.id);
     if (!vendor) return res.status(404).json({ status: 'error', message: 'Vendor profile not found' });
@@ -100,7 +113,7 @@ const createMenuItem = async (req, res, next) => {
     }
 
     const item = await MenuItem.create({ 
-      vendor_id: vendor.id, menu_category_id, name, description, price, size, quantity, image_url, extras, is_in_stock 
+      vendor_id: vendor.id, menu_category_id, name, description, price, size, sizes, quantity, image_url, extras, is_in_stock 
     });
 
     res.status(201).json({ status: 'success', message: 'Menu item created successfully', data: item });
@@ -116,10 +129,33 @@ const getMyMenuItems = async (req, res, next) => {
     const vendor = await Vendor.findByUserId(req.user.id);
     if (!vendor) return res.status(404).json({ status: 'error', message: 'Vendor profile not found' });
 
-    const { category_id } = req.query;
-    const items = await MenuItem.findByVendorId(vendor.id, category_id);
+    const { category_id, search } = req.query;
+    const items = await MenuItem.findByVendorId(vendor.id, category_id, search);
 
     res.status(200).json({ status: 'success', message: 'Menu items retrieved successfully', data: items });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get details of a specific menu item for vendor
+// @route   GET /api/vendors/me/menu-items/:id
+const getMenuItemDetails = async (req, res, next) => {
+  try {
+    const vendor = await Vendor.findByUserId(req.user.id);
+    if (!vendor) return res.status(404).json({ status: 'error', message: 'Vendor profile not found' });
+
+    const item = await MenuItem.findById(req.params.id);
+    
+    if (!item) {
+      return res.status(404).json({ status: 'error', message: 'Menu item not found' });
+    }
+
+    if (item.vendor_id !== vendor.id) {
+      return res.status(403).json({ status: 'error', message: 'Not authorized to view this item' });
+    }
+
+    res.status(200).json({ status: 'success', message: 'Menu item details retrieved successfully', data: item });
   } catch (error) {
     next(error);
   }
@@ -132,7 +168,17 @@ const updateMenuItem = async (req, res, next) => {
     const vendor = await Vendor.findByUserId(req.user.id);
     if (!vendor) return res.status(404).json({ status: 'error', message: 'Vendor profile not found' });
 
-    const { menu_category_id, name, description, price, size, quantity, image_url, extras, is_in_stock } = req.body;
+    let { menu_category_id, name, description, price, size, sizes, quantity, image_url, extras, is_in_stock } = req.body;
+
+    if (sizes && Array.isArray(sizes) && sizes.length > 0) {
+      for (const s of sizes) {
+        if (!s.size || s.price === undefined) {
+          return res.status(400).json({ status: 'error', message: 'Each size variation must have a size and a price' });
+        }
+      }
+      if (price === undefined) price = sizes[0].price;
+      if (!size) size = sizes[0].size;
+    }
 
     if (menu_category_id) {
       const category = await MenuCategory.findById(menu_category_id);
@@ -142,7 +188,7 @@ const updateMenuItem = async (req, res, next) => {
     }
 
     const item = await MenuItem.update(req.params.id, vendor.id, { 
-      menu_category_id, name, description, price, size, quantity, image_url, extras, is_in_stock 
+      menu_category_id, name, description, price, size, sizes, quantity, image_url, extras, is_in_stock 
     });
 
     if (!item) return res.status(404).json({ status: 'error', message: 'Menu item not found' });
@@ -214,6 +260,7 @@ module.exports = {
   deleteMenuCategory,
   createMenuItem,
   getMyMenuItems,
+  getMenuItemDetails,
   updateMenuItem,
   deleteMenuItem,
   getVendorMenu

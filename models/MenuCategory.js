@@ -11,7 +11,12 @@ class MenuCategory {
 
   static async findByVendorId(vendor_id) {
     const result = await pool.query(
-      'SELECT * FROM menu_categories WHERE vendor_id = $1 ORDER BY name ASC',
+      `SELECT mc.*, COUNT(mi.id) as item_count
+       FROM menu_categories mc
+       LEFT JOIN menu_items mi ON mc.id = mi.menu_category_id
+       WHERE mc.vendor_id = $1
+       GROUP BY mc.id
+       ORDER BY mc.name ASC`,
       [vendor_id]
     );
     return result.rows;

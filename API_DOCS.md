@@ -689,6 +689,115 @@ Base URL: http://localhost:3000
 
 ---
 
+
+### Get Vendor Dashboard Statistics
+- **Endpoint**: `GET /api/vendors/me/dashboard`
+- **Headers**: `Authorization: Bearer <your_jwt_token>` (Must have `vendor` role)
+- **Description**: Returns dashboard statistics for the authenticated vendor, including summary cards (New, Preparing, Completed, Cancelled orders), recent orders, monthly sales overview for the current year, and top-selling menu items.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Dashboard statistics retrieved successfully",
+  "data": {
+    "cards": [
+      { "status": "pending", "count": "23" },
+      { "status": "preparing", "count": "23" },
+      { "status": "delivered", "count": "23" },
+      { "status": "cancelled", "count": "23" }
+    ],
+    "recentOrders": [
+      {
+        "id": 35,
+        "order_number": "ORD-...",
+        "status": "preparing",
+        "total_amount": "235.00",
+        "created_at": "2026-06-04T14:23:00.000Z",
+        "first_name": "Paul",
+        "last_name": "Amegah"
+      }
+    ],
+    "salesOverview": [
+      {
+        "month": "1",
+        "total_sales": "750.00"
+      },
+      {
+        "month": "2",
+        "total_sales": "910.00"
+      }
+    ],
+    "topItems": [
+      {
+        "id": 1,
+        "name": "Streetwise 2",
+        "image_url": "https://...",
+        "units_sold": "150"
+      }
+    ]
+  }
+}
+```
+
+### Get Vendor Orders
+- **Endpoint**: `GET /api/vendors/me/orders`
+- **Headers**: `Authorization: Bearer <your_vendor_jwt_token>` (Must have `vendor` role)
+- **Query Parameters**:
+  - `search` (optional): Search by order number or customer name.
+  - `status` (optional): Filter by status (e.g., `pending`, `preparing`, `delivered`). Use `all` for no status filter.
+  - `dateFilter` (optional): Filter by date (`today`, `yesterday`, `this_week`, `this_month`).
+  - `page` (optional): Page number for pagination (default: 1).
+  - `limit` (optional): Items per page (default: 10).
+- **Description**: Retrieves a paginated list of orders for the logged-in vendor.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Vendor orders retrieved successfully",
+  "totalCount": 40,
+  "data": [
+    {
+      "id": 35,
+      "order_number": "ORD-123",
+      "status": "preparing",
+      "total_amount": "235.00",
+      "first_name": "Paul",
+      "last_name": "Amegah",
+      "created_at": "2026-06-04T14:23:00.000Z"
+    }
+  ]
+}
+```
+
+### Get Vendor Order Details
+- **Endpoint**: `GET /api/vendors/me/orders/:id`
+- **Headers**: `Authorization: Bearer <your_vendor_jwt_token>` (Must have `vendor` role)
+- **Description**: Retrieves full details of a specific order, including customer info and menu item images.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Order details retrieved successfully",
+  "data": {
+    "id": 35,
+    "order_number": "ORD-123",
+    "status": "preparing",
+    "customer_first_name": "Paul",
+    "customer_last_name": "Amegah",
+    "customer_phone": "05555555",
+    "items": [
+      {
+        "id": 1,
+        "item_name": "Streetwise 2",
+        "quantity": 2,
+        "price": "127.50",
+        "image_url": "https://..."
+      }
+    ]
+  }
+}
+```
+
 ## 6. Vendor Menus (/api/vendors)
 
 ### Get Vendor Full Menu (Public)
@@ -735,6 +844,7 @@ Base URL: http://localhost:3000
       "vendor_id": 1,
       "name": "Starters",
       "description": "Appetizers and quick bites",
+      "item_count": "40",
       "created_at": "2026-06-04T03:30:00.000Z",
       "updated_at": "2026-06-04T03:30:00.000Z"
     }
@@ -762,7 +872,8 @@ Base URL: http://localhost:3000
     "vendor_id": 1,
     "name": "Starters",
     "description": "Appetizers and quick bites",
-    "created_at": "2026-06-04T03:30:00.000Z",
+      "item_count": "40",
+      "created_at": "2026-06-04T03:30:00.000Z",
     "updated_at": "2026-06-04T03:30:00.000Z"
   }
 }
@@ -787,7 +898,8 @@ Base URL: http://localhost:3000
     "vendor_id": 1,
     "name": "Appetizers",
     "description": "Appetizers and quick bites",
-    "created_at": "2026-06-04T03:30:00.000Z",
+      "item_count": "40",
+      "created_at": "2026-06-04T03:30:00.000Z",
     "updated_at": "2026-06-04T03:35:00.000Z"
   }
 }
@@ -811,6 +923,7 @@ Base URL: http://localhost:3000
 - **Description**: Retrieves all menu items for the logged-in vendor.
 - **Query Parameters**:
   - `category_id`: (Optional) Filter items by a specific menu category ID. Example: `?category_id=1`
+  - `search`: (Optional) Search items by name. Example: `?search=rice`
 - **Example Response**:
 ```json
 {
@@ -869,6 +982,39 @@ Base URL: http://localhost:3000
 }
 ```
 
+### Get Menu Item Details (Vendor Only)
+- **Endpoint**: `GET /api/vendors/me/menu-items/:id`
+- **Headers**: `Authorization: Bearer <your_vendor_jwt_token>`
+- **Description**: Retrieves full details of a specific menu item including its sizes and prices.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Menu item details retrieved successfully",
+  "data": {
+    "id": 1,
+    "vendor_id": 1,
+    "menu_category_id": 1,
+    "name": "Spring Rolls",
+    "description": "Crispy vegetable spring rolls",
+    "price": "15.50",
+    "size": "Regular",
+    "sizes": [
+      { "size": "Small", "price": 10.00 },
+      { "size": "Regular", "price": 15.50 }
+    ],
+    "quantity": 3,
+    "image_url": "https://example.com/springrolls.jpg",
+    "extras": [
+      { "name": "Sweet Chili Sauce", "price": 2.00 }
+    ],
+    "is_in_stock": true,
+    "created_at": "2026-06-04T03:30:00.000Z",
+    "updated_at": "2026-06-04T03:30:00.000Z"
+  }
+}
+```
+
 ### Create Menu Item (Vendor Only)
 - **Endpoint**: `POST /api/vendors/me/menu-items`
 - **Headers**: `Authorization: Bearer <your_vendor_jwt_token>`
@@ -878,8 +1024,10 @@ Base URL: http://localhost:3000
   "menu_category_id": 1,
   "name": "Spring Rolls",
   "description": "Crispy vegetable spring rolls",
-  "price": 15.50,
-  "size": "Regular",
+  "sizes": [
+    { "size": "Small", "price": 10.00 },
+    { "size": "Regular", "price": 15.50 }
+  ],
   "quantity": 3,
   "image_url": "https://example.com/springrolls.jpg",
   "extras": [
@@ -919,7 +1067,10 @@ Base URL: http://localhost:3000
 - **Body payload (JSON)**:
 ```json
 {
-  "price": 18.00,
+  "sizes": [
+    { "size": "Small", "price": 12.00 },
+    { "size": "Regular", "price": 18.00 }
+  ],
   "is_in_stock": false
 }
 ```
@@ -1515,7 +1666,10 @@ Connect to the Socket.io server by passing the JWT token.
   "parcel_base_fare": 12.00, // optional (DECIMAL - e.g., 12.00 for $12.00 base fare)
   "parcel_per_km_fee": 3.00, // optional (DECIMAL - e.g., 3.00 for $3.00 per km)
   "parcel_service_fee": 5.00, // optional (DECIMAL - e.g., 5.00 for $5.00 service fee)
-  "parcel_express_multiplier": 1.50 // optional (DECIMAL - e.g., 1.50 for 1.50x express multiplier)
+  "parcel_express_multiplier": 1.50, // optional (DECIMAL - e.g., 1.50 for 1.50x express multiplier)
+  "rider_base_pay": 10.00, // optional (DECIMAL - e.g., 10.00 for $10.00 base pay)
+  "rider_distance_bonus": 2.00, // optional (DECIMAL - e.g., 2.00 for $2.00 distance bonus)
+  "order_service_fee": 2.00 // optional (DECIMAL - e.g., 2.00 for $2.00 service fee)
 }
 ```
 - **Example Response**:
