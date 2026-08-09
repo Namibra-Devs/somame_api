@@ -54,6 +54,6 @@ const dashboard_docs = `
 \`\`\`
 `;
 
-content = content.replace("## 3. Menu Categories", dashboard_docs + "\n## 3. Menu Categories");
+content = content.replace("## 6. Vendor Menus (/api/vendors)", dashboard_docs + "\n## 6. Vendor Menus (/api/vendors)");
 fs.writeFileSync(path, content, 'utf-8');
 console.log("Added Vendor Dashboard Docs");
