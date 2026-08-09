@@ -844,6 +844,7 @@ Base URL: http://localhost:3000
       "vendor_id": 1,
       "name": "Starters",
       "description": "Appetizers and quick bites",
+      "item_count": "40",
       "created_at": "2026-06-04T03:30:00.000Z",
       "updated_at": "2026-06-04T03:30:00.000Z"
     }
@@ -871,7 +872,8 @@ Base URL: http://localhost:3000
     "vendor_id": 1,
     "name": "Starters",
     "description": "Appetizers and quick bites",
-    "created_at": "2026-06-04T03:30:00.000Z",
+      "item_count": "40",
+      "created_at": "2026-06-04T03:30:00.000Z",
     "updated_at": "2026-06-04T03:30:00.000Z"
   }
 }
@@ -896,7 +898,8 @@ Base URL: http://localhost:3000
     "vendor_id": 1,
     "name": "Appetizers",
     "description": "Appetizers and quick bites",
-    "created_at": "2026-06-04T03:30:00.000Z",
+      "item_count": "40",
+      "created_at": "2026-06-04T03:30:00.000Z",
     "updated_at": "2026-06-04T03:35:00.000Z"
   }
 }
