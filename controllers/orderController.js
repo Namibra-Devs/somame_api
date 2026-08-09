@@ -171,11 +171,20 @@ const getVendorOrders = async (req, res, next) => {
       return res.status(404).json({ status: 'error', message: 'Vendor profile not found for this user' });
     }
 
-    const orders = await Order.findByVendorId(vendor.id);
+    const { search, status, dateFilter, page, limit } = req.query;
+
+    const { orders, totalCount } = await Order.findByVendorId(vendor.id, {
+      search,
+      status,
+      dateFilter,
+      page: page ? parseInt(page) : 1,
+      limit: limit ? parseInt(limit) : 10
+    });
     
     res.status(200).json({
       status: 'success',
       message: 'Vendor orders retrieved successfully',
+      totalCount,
       data: orders
     });
   } catch (error) {

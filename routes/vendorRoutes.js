@@ -47,7 +47,8 @@ router.route('/me/promotions/:id')
 router.route('/:id').get(getVendorById);
 router.route('/:id/menu').get(getVendorMenu);
 
-const { getVendorOrders } = require('../controllers/orderController');
+const { getVendorOrders, getOrderDetails } = require('../controllers/orderController');
 router.route('/me/orders').get(protect, getVendorOrders);
+router.route('/me/orders/:id').get(protect, getOrderDetails);
 
 module.exports = router;

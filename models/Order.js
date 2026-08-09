@@ -11,10 +11,14 @@ class Order {
              v.logo_url as vendor_logo_url,
              ST_Y(v.location::geometry) as vendor_lat, 
              ST_X(v.location::geometry) as vendor_lng,
-             vu.phone_number as vendor_phone
+             vu.phone_number as vendor_phone,
+             cu.first_name as customer_first_name,
+             cu.last_name as customer_last_name,
+             cu.phone_number as customer_phone
       FROM orders o
       JOIN vendors v ON o.vendor_id = v.id
       JOIN users vu ON v.user_id = vu.id
+      JOIN users cu ON o.customer_id = cu.id
       WHERE o.id = $1
     `, [id]);
     return result.rows[0];
@@ -25,9 +29,75 @@ class Order {
     return result.rows;
   }
 
-  static async findByVendorId(vendorId) {
-    const result = await pool.query('SELECT * FROM orders WHERE vendor_id = $1 ORDER BY created_at DESC', [vendorId]);
-    return result.rows;
+  static async findByVendorId(vendorId, options = {}) {
+    let query = `
+      SELECT o.*, u.first_name, u.last_name 
+      FROM orders o
+      JOIN users u ON o.customer_id = u.id
+      WHERE o.vendor_id = $1
+    `;
+    let countQuery = `
+      SELECT COUNT(*)
+      FROM orders o
+      JOIN users u ON o.customer_id = u.id
+      WHERE o.vendor_id = $1
+    `;
+    
+    let queryParams = [vendorId];
+    let countParams = [vendorId];
+    let paramIndex = 2;
+
+    const { search, status, dateFilter, page = 1, limit = 10 } = options;
+
+    if (search) {
+      query += ` AND (o.order_number ILIKE $${paramIndex} OR u.first_name ILIKE $${paramIndex} OR u.last_name ILIKE $${paramIndex})`;
+      countQuery += ` AND (o.order_number ILIKE $${paramIndex} OR u.first_name ILIKE $${paramIndex} OR u.last_name ILIKE $${paramIndex})`;
+      queryParams.push(`%${search}%`);
+      countParams.push(`%${search}%`);
+      paramIndex++;
+    }
+
+    if (status && status !== 'all') {
+      query += ` AND o.status = $${paramIndex}`;
+      countQuery += ` AND o.status = $${paramIndex}`;
+      queryParams.push(status);
+      countParams.push(status);
+      paramIndex++;
+    }
+
+    if (dateFilter) {
+      if (dateFilter === 'today') {
+        query += ` AND DATE(o.created_at) = CURRENT_DATE`;
+        countQuery += ` AND DATE(o.created_at) = CURRENT_DATE`;
+      } else if (dateFilter === 'yesterday') {
+        query += ` AND DATE(o.created_at) = CURRENT_DATE - INTERVAL '1 day'`;
+        countQuery += ` AND DATE(o.created_at) = CURRENT_DATE - INTERVAL '1 day'`;
+      } else if (dateFilter === 'this_week') {
+        query += ` AND date_trunc('week', o.created_at) = date_trunc('week', CURRENT_DATE)`;
+        countQuery += ` AND date_trunc('week', o.created_at) = date_trunc('week', CURRENT_DATE)`;
+      } else if (dateFilter === 'this_month') {
+        query += ` AND date_trunc('month', o.created_at) = date_trunc('month', CURRENT_DATE)`;
+        countQuery += ` AND date_trunc('month', o.created_at) = date_trunc('month', CURRENT_DATE)`;
+      }
+    }
+
+    query += ` ORDER BY o.created_at DESC`;
+    
+    if (page && limit) {
+      const offset = (page - 1) * limit;
+      query += ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+      queryParams.push(limit, offset);
+    }
+
+    const [result, countResult] = await Promise.all([
+      pool.query(query, queryParams),
+      pool.query(countQuery, countParams)
+    ]);
+
+    return {
+      orders: result.rows,
+      totalCount: parseInt(countResult.rows[0].count)
+    };
   }
 
   static async updateStatus(id, status) {
@@ -65,7 +135,12 @@ class Order {
   }
 
   static async getItemsByOrderId(orderId) {
-    const result = await pool.query('SELECT * FROM order_items WHERE order_id = $1', [orderId]);
+    const result = await pool.query(`
+      SELECT oi.*, m.image_url 
+      FROM order_items oi
+      LEFT JOIN menu_items m ON oi.item_id = m.id
+      WHERE oi.order_id = $1
+    `, [orderId]);
     return result.rows;
   }
 
