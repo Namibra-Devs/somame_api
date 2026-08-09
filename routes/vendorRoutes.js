@@ -5,7 +5,7 @@ const { protect } = require('../middlewares/authMiddleware');
 
 const { 
   createMenuCategory, getMyMenuCategories, updateMenuCategory, deleteMenuCategory,
-  createMenuItem, getMyMenuItems, updateMenuItem, deleteMenuItem, getVendorMenu 
+  createMenuItem, getMyMenuItems, getMenuItemDetails, updateMenuItem, deleteMenuItem, getVendorMenu 
 } = require('../controllers/menuController');
 
 const {
@@ -32,6 +32,7 @@ router.route('/me/menu-items')
   .post(protect, createMenuItem)
   .get(protect, getMyMenuItems);
 router.route('/me/menu-items/:id')
+  .get(protect, getMenuItemDetails)
   .put(protect, updateMenuItem)
   .delete(protect, deleteMenuItem);
 

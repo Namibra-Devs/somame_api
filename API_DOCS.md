@@ -982,6 +982,39 @@ Base URL: http://localhost:3000
 }
 ```
 
+### Get Menu Item Details (Vendor Only)
+- **Endpoint**: `GET /api/vendors/me/menu-items/:id`
+- **Headers**: `Authorization: Bearer <your_vendor_jwt_token>`
+- **Description**: Retrieves full details of a specific menu item including its sizes and prices.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Menu item details retrieved successfully",
+  "data": {
+    "id": 1,
+    "vendor_id": 1,
+    "menu_category_id": 1,
+    "name": "Spring Rolls",
+    "description": "Crispy vegetable spring rolls",
+    "price": "15.50",
+    "size": "Regular",
+    "sizes": [
+      { "size": "Small", "price": 10.00 },
+      { "size": "Regular", "price": 15.50 }
+    ],
+    "quantity": 3,
+    "image_url": "https://example.com/springrolls.jpg",
+    "extras": [
+      { "name": "Sweet Chili Sauce", "price": 2.00 }
+    ],
+    "is_in_stock": true,
+    "created_at": "2026-06-04T03:30:00.000Z",
+    "updated_at": "2026-06-04T03:30:00.000Z"
+  }
+}
+```
+
 ### Create Menu Item (Vendor Only)
 - **Endpoint**: `POST /api/vendors/me/menu-items`
 - **Headers**: `Authorization: Bearer <your_vendor_jwt_token>`
@@ -991,8 +1024,10 @@ Base URL: http://localhost:3000
   "menu_category_id": 1,
   "name": "Spring Rolls",
   "description": "Crispy vegetable spring rolls",
-  "price": 15.50,
-  "size": "Regular",
+  "sizes": [
+    { "size": "Small", "price": 10.00 },
+    { "size": "Regular", "price": 15.50 }
+  ],
   "quantity": 3,
   "image_url": "https://example.com/springrolls.jpg",
   "extras": [
@@ -1032,7 +1067,10 @@ Base URL: http://localhost:3000
 - **Body payload (JSON)**:
 ```json
 {
-  "price": 18.00,
+  "sizes": [
+    { "size": "Small", "price": 12.00 },
+    { "size": "Regular", "price": 18.00 }
+  ],
   "is_in_stock": false
 }
 ```

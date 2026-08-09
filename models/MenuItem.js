@@ -1,12 +1,13 @@
 const { pool } = require('../config/db');
 
 class MenuItem {
-  static async create({ vendor_id, menu_category_id, name, description, price, size, quantity, image_url, extras, is_in_stock }) {
+  static async create({ vendor_id, menu_category_id, name, description, price, size, sizes, quantity, image_url, extras, is_in_stock }) {
     const extrasJson = extras ? JSON.stringify(extras) : '[]';
+    const sizesJson = sizes ? JSON.stringify(sizes) : '[]';
     const result = await pool.query(
-      `INSERT INTO menu_items (vendor_id, menu_category_id, name, description, price, size, quantity, image_url, extras, is_in_stock) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
-      [vendor_id, menu_category_id, name, description, price, size, quantity, image_url, extrasJson, is_in_stock ?? true]
+      `INSERT INTO menu_items (vendor_id, menu_category_id, name, description, price, size, sizes, quantity, image_url, extras, is_in_stock) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
+      [vendor_id, menu_category_id, name, description, price, size, sizesJson, quantity, image_url, extrasJson, is_in_stock ?? true]
     );
     return result.rows[0];
   }
@@ -39,8 +40,9 @@ class MenuItem {
     return result.rows[0];
   }
 
-  static async update(id, vendor_id, { menu_category_id, name, description, price, size, quantity, image_url, extras, is_in_stock }) {
+  static async update(id, vendor_id, { menu_category_id, name, description, price, size, sizes, quantity, image_url, extras, is_in_stock }) {
     const extrasJson = extras ? JSON.stringify(extras) : undefined;
+    const sizesJson = sizes ? JSON.stringify(sizes) : undefined;
     
     // We only update provided fields using COALESCE
     const result = await pool.query(
@@ -50,14 +52,15 @@ class MenuItem {
            description = COALESCE($3, description),
            price = COALESCE($4, price),
            size = COALESCE($5, size),
-           quantity = COALESCE($6, quantity),
-           image_url = COALESCE($7, image_url),
-           extras = COALESCE($8, extras),
-           is_in_stock = COALESCE($9, is_in_stock),
+           sizes = COALESCE($6, sizes),
+           quantity = COALESCE($7, quantity),
+           image_url = COALESCE($8, image_url),
+           extras = COALESCE($9, extras),
+           is_in_stock = COALESCE($10, is_in_stock),
            updated_at = CURRENT_TIMESTAMP
-       WHERE id = $10 AND vendor_id = $11
+       WHERE id = $11 AND vendor_id = $12
        RETURNING *`,
-      [menu_category_id, name, description, price, size, quantity, image_url, extrasJson, is_in_stock, id, vendor_id]
+      [menu_category_id, name, description, price, size, sizesJson, quantity, image_url, extrasJson, is_in_stock, id, vendor_id]
     );
     return result.rows[0];
   }
