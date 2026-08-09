@@ -1515,7 +1515,10 @@ Connect to the Socket.io server by passing the JWT token.
   "parcel_base_fare": 12.00, // optional (DECIMAL - e.g., 12.00 for $12.00 base fare)
   "parcel_per_km_fee": 3.00, // optional (DECIMAL - e.g., 3.00 for $3.00 per km)
   "parcel_service_fee": 5.00, // optional (DECIMAL - e.g., 5.00 for $5.00 service fee)
-  "parcel_express_multiplier": 1.50 // optional (DECIMAL - e.g., 1.50 for 1.50x express multiplier)
+  "parcel_express_multiplier": 1.50, // optional (DECIMAL - e.g., 1.50 for 1.50x express multiplier)
+  "rider_base_pay": 10.00, // optional (DECIMAL - e.g., 10.00 for $10.00 base pay)
+  "rider_distance_bonus": 2.00, // optional (DECIMAL - e.g., 2.00 for $2.00 distance bonus)
+  "order_service_fee": 2.00 // optional (DECIMAL - e.g., 2.00 for $2.00 service fee)
 }
 ```
 - **Example Response**:

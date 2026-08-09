@@ -122,6 +122,60 @@ class Vendor {
     const result = await pool.query(query, queryParams);
     return result.rows;
   }
+
+  static async getDashboardStats(vendorId) {
+    const cardsQuery = `
+      SELECT status, COUNT(*) as count 
+      FROM orders 
+      WHERE vendor_id = $1 
+      GROUP BY status
+    `;
+    const cardsResult = await pool.query(cardsQuery, [vendorId]);
+    
+    const recentOrdersQuery = `
+      SELECT o.id, o.order_number, o.status, o.total_amount, o.created_at, u.first_name, u.last_name 
+      FROM orders o
+      JOIN users u ON o.customer_id = u.id
+      WHERE o.vendor_id = $1
+      ORDER BY o.created_at DESC
+      LIMIT 5
+    `;
+    const recentOrdersResult = await pool.query(recentOrdersQuery, [vendorId]);
+
+    const salesQuery = `
+      SELECT 
+        EXTRACT(MONTH FROM created_at) as month,
+        SUM(total_amount) as total_sales
+      FROM orders
+      WHERE vendor_id = $1 AND status = 'delivered' AND EXTRACT(YEAR FROM created_at) = EXTRACT(YEAR FROM CURRENT_DATE)
+      GROUP BY month
+      ORDER BY month
+    `;
+    const salesResult = await pool.query(salesQuery, [vendorId]);
+
+    const topItemsQuery = `
+      SELECT 
+        m.id, 
+        m.name, 
+        m.image_url, 
+        SUM(oi.quantity) as units_sold
+      FROM order_items oi
+      JOIN orders o ON oi.order_id = o.id
+      JOIN menu_items m ON oi.item_id = m.id
+      WHERE o.vendor_id = $1 AND o.status = 'delivered'
+      GROUP BY m.id, m.name, m.image_url
+      ORDER BY units_sold DESC
+      LIMIT 5
+    `;
+    const topItemsResult = await pool.query(topItemsQuery, [vendorId]);
+
+    return {
+      cards: cardsResult.rows,
+      recentOrders: recentOrdersResult.rows,
+      salesOverview: salesResult.rows,
+      topItems: topItemsResult.rows
+    };
+  }
 }
 
 module.exports = Vendor;
