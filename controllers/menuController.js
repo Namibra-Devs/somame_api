@@ -116,8 +116,8 @@ const getMyMenuItems = async (req, res, next) => {
     const vendor = await Vendor.findByUserId(req.user.id);
     if (!vendor) return res.status(404).json({ status: 'error', message: 'Vendor profile not found' });
 
-    const { category_id } = req.query;
-    const items = await MenuItem.findByVendorId(vendor.id, category_id);
+    const { category_id, search } = req.query;
+    const items = await MenuItem.findByVendorId(vendor.id, category_id, search);
 
     res.status(200).json({ status: 'success', message: 'Menu items retrieved successfully', data: items });
   } catch (error) {

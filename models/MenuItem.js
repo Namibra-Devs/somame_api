@@ -11,13 +11,21 @@ class MenuItem {
     return result.rows[0];
   }
 
-  static async findByVendorId(vendor_id, category_id = null) {
+  static async findByVendorId(vendor_id, category_id = null, search = null) {
     let query = 'SELECT * FROM menu_items WHERE vendor_id = $1';
     const params = [vendor_id];
+    let paramIndex = 2;
 
     if (category_id) {
-      query += ' AND menu_category_id = $2';
+      query += ` AND menu_category_id = $${paramIndex}`;
       params.push(category_id);
+      paramIndex++;
+    }
+
+    if (search) {
+      query += ` AND name ILIKE $${paramIndex}`;
+      params.push(`%${search}%`);
+      paramIndex++;
     }
 
     query += ' ORDER BY created_at DESC';

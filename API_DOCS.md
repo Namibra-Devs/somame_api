@@ -923,6 +923,7 @@ Base URL: http://localhost:3000
 - **Description**: Retrieves all menu items for the logged-in vendor.
 - **Query Parameters**:
   - `category_id`: (Optional) Filter items by a specific menu category ID. Example: `?category_id=1`
+  - `search`: (Optional) Search items by name. Example: `?search=rice`
 - **Example Response**:
 ```json
 {
