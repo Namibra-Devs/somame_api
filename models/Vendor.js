@@ -270,6 +270,98 @@ class Vendor {
       recentOrders: ordersResult.rows
     };
   }
+
+  static async getAnalytics(vendorId, startDate, endDate) {
+    // If no dates provided, default to current year (Custom default)
+    if (!startDate || !endDate) {
+      const year = new Date().getFullYear();
+      startDate = `${year}-01-01 00:00:00`;
+      endDate = `${year}-12-31 23:59:59`;
+    } else {
+      // Append time to dates if they are just YYYY-MM-DD
+      if (startDate.length <= 10) startDate += ' 00:00:00';
+      if (endDate.length <= 10) endDate += ' 23:59:59';
+    }
+
+    const params = [vendorId, startDate, endDate];
+
+    // Summary Metrics
+    const summaryQuery = `
+      SELECT 
+        COUNT(id) as orders,
+        COALESCE(SUM(total_amount), 0) as revenue
+      FROM orders
+      WHERE vendor_id = $1 AND status = 'delivered' AND created_at >= $2 AND created_at <= $3
+    `;
+    const summaryResult = await pool.query(summaryQuery, params);
+    let orders = parseInt(summaryResult.rows[0].orders, 10);
+    let revenue = parseFloat(summaryResult.rows[0].revenue);
+    let avg_order_value = orders > 0 ? (revenue / orders).toFixed(2) : "0.00";
+
+    const newCustomersQuery = `
+      SELECT COUNT(*) as new_customers FROM (
+        SELECT customer_id FROM orders 
+        WHERE vendor_id = $1 
+        GROUP BY customer_id 
+        HAVING MIN(created_at) >= $2 AND MIN(created_at) <= $3
+      ) AS nc
+    `;
+    const newCustomersResult = await pool.query(newCustomersQuery, params);
+    let new_customers = parseInt(newCustomersResult.rows[0].new_customers, 10);
+
+    // Revenue Over Time (grouped by month)
+    const chartQuery = `
+      SELECT 
+        TO_CHAR(created_at, 'Mon') as label,
+        EXTRACT(MONTH FROM created_at) as month_num,
+        COUNT(id) as orders,
+        COALESCE(SUM(total_amount), 0) as revenue
+      FROM orders
+      WHERE vendor_id = $1 AND status = 'delivered' AND created_at >= $2 AND created_at <= $3
+      GROUP BY label, month_num
+      ORDER BY month_num
+    `;
+    const chartResult = await pool.query(chartQuery, params);
+
+    // Top Items
+    const topItemsQuery = `
+      SELECT 
+        m.name as item,
+        SUM(oi.quantity) as units_sold,
+        SUM(oi.price * oi.quantity) as revenue
+      FROM order_items oi
+      JOIN orders o ON oi.order_id = o.id
+      JOIN menu_items m ON oi.item_id = m.id
+      WHERE o.vendor_id = $1 AND o.status = 'delivered' AND o.created_at >= $2 AND o.created_at <= $3
+      GROUP BY m.id, m.name
+      ORDER BY units_sold DESC
+      LIMIT 5
+    `;
+    const topItemsResult = await pool.query(topItemsQuery, params);
+
+    const topItems = topItemsResult.rows.map((row, index) => ({
+      rank: index + 1,
+      item: row.item,
+      units_sold: parseInt(row.units_sold, 10),
+      revenue: parseFloat(row.revenue),
+      avg_rating: "0.0"
+    }));
+
+    return {
+      overview: {
+        orders,
+        revenue,
+        avg_order_value,
+        new_customers
+      },
+      revenueOverTime: chartResult.rows.map(row => ({
+        label: row.label,
+        orders: parseInt(row.orders, 10),
+        revenue: parseFloat(row.revenue)
+      })),
+      topItems
+    };
+  }
 }
 
 module.exports = Vendor;

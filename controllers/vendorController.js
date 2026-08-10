@@ -237,6 +237,33 @@ const getVendorCustomerDetails = async (req, res, next) => {
   }
 };
 
+// @desc    Get analytics for a vendor
+// @route   GET /api/vendors/me/analytics
+const getVendorAnalytics = async (req, res, next) => {
+  try {
+    if (req.user.role !== 'vendor') {
+      return res.status(403).json({ status: 'error', message: 'Only vendors can access this' });
+    }
+
+    const vendor = await Vendor.findByUserId(req.user.id);
+    if (!vendor) {
+      return res.status(404).json({ status: 'error', message: 'Vendor profile not found' });
+    }
+
+    const { start_date, end_date } = req.query;
+
+    const data = await Vendor.getAnalytics(vendor.id, start_date, end_date);
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Analytics retrieved successfully',
+      data
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getNearbyVendors,
   searchVendors,
@@ -246,5 +273,6 @@ module.exports = {
   updateMyVendorProfile,
   getVendorDashboard,
   getVendorCustomers,
-  getVendorCustomerDetails
+  getVendorCustomerDetails,
+  getVendorAnalytics
 };
