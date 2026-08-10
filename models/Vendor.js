@@ -176,6 +176,100 @@ class Vendor {
       topItems: topItemsResult.rows
     };
   }
+
+  static async getCustomers(vendorId, search = '', dateFilter = '', limit = 10, offset = 0) {
+    let whereClause = 'WHERE o.vendor_id = $1';
+    const params = [vendorId];
+    let paramCount = 2;
+
+    if (search) {
+      whereClause += ` AND (u.first_name ILIKE $${paramCount} OR u.last_name ILIKE $${paramCount} OR u.phone_number ILIKE $${paramCount})`;
+      params.push(`%${search}%`);
+      paramCount++;
+    }
+
+    if (dateFilter === 'today') {
+      whereClause += ` AND DATE(o.created_at) = CURRENT_DATE`;
+    } else if (dateFilter === 'yesterday') {
+      whereClause += ` AND DATE(o.created_at) = CURRENT_DATE - INTERVAL '1 day'`;
+    } else if (dateFilter === 'this_week') {
+      whereClause += ` AND o.created_at >= date_trunc('week', CURRENT_DATE)`;
+    } else if (dateFilter === 'this_month') {
+      whereClause += ` AND o.created_at >= date_trunc('month', CURRENT_DATE)`;
+    }
+
+    // Get total count
+    const countQuery = `
+      SELECT COUNT(DISTINCT u.id) 
+      FROM users u 
+      JOIN orders o ON u.id = o.customer_id 
+      ${whereClause}
+    `;
+    const countResult = await pool.query(countQuery, params);
+    const totalCount = parseInt(countResult.rows[0].count, 10);
+
+    // Get customers
+    const query = `
+      SELECT 
+        u.id, 
+        u.first_name, 
+        u.last_name, 
+        u.phone_number,
+        MAX(o.created_at) as last_order_date
+      FROM users u
+      JOIN orders o ON u.id = o.customer_id
+      ${whereClause}
+      GROUP BY u.id
+      ORDER BY last_order_date DESC
+      LIMIT $${paramCount} OFFSET $${paramCount + 1}
+    `;
+    
+    params.push(limit, offset);
+    const result = await pool.query(query, params);
+
+    return { totalCount, customers: result.rows };
+  }
+
+  static async getCustomerDetails(vendorId, customerId, limit = 10, offset = 0) {
+    // Basic customer details & stats
+    const statsQuery = `
+      SELECT 
+        u.id, u.first_name, u.last_name, u.phone_number, u.created_at as date_joined,
+        COUNT(o.id) as total_orders,
+        COALESCE(SUM(o.total_amount), 0) as total_spent,
+        MAX(o.created_at) as last_order,
+        COALESCE(AVG(o.total_amount), 0) as average_order
+      FROM users u
+      LEFT JOIN orders o ON u.id = o.customer_id AND o.vendor_id = $1
+      WHERE u.id = $2
+      GROUP BY u.id
+    `;
+    const statsResult = await pool.query(statsQuery, [vendorId, customerId]);
+    
+    if (statsResult.rows.length === 0) {
+      return null;
+    }
+
+    // Recent orders pagination
+    const countQuery = `SELECT COUNT(*) FROM orders WHERE vendor_id = $1 AND customer_id = $2`;
+    const countResult = await pool.query(countQuery, [vendorId, customerId]);
+    const totalOrdersCount = parseInt(countResult.rows[0].count, 10);
+
+    const ordersQuery = `
+      SELECT id, order_number, status, total_amount, created_at, customer_note, estimated_delivery_time
+      FROM orders
+      WHERE vendor_id = $1 AND customer_id = $2
+      ORDER BY created_at DESC
+      LIMIT $3 OFFSET $4
+    `;
+    const ordersResult = await pool.query(ordersQuery, [vendorId, customerId, limit, offset]);
+
+    return {
+      stats: statsResult.rows[0],
+      totalOrdersCount,
+      recentOrders: ordersResult.rows
+    };
+  }
 }
 
 module.exports = Vendor;
