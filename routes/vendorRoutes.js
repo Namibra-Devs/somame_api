@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getNearbyVendors, searchVendors, createVendor, getVendorById, getMyVendorProfile, updateMyVendorProfile, getVendorDashboard } = require('../controllers/vendorController');
+const { getNearbyVendors, searchVendors, createVendor, getVendorById, getMyVendorProfile, updateMyVendorProfile, getVendorDashboard, getVendorCustomers, getVendorCustomerDetails, getVendorAnalytics } = require('../controllers/vendorController');
 const { protect } = require('../middlewares/authMiddleware');
 
 const { 
@@ -19,6 +19,9 @@ router.route('/').post(protect, createVendor); // Protected route
 // Vendor Profile and Dashboard
 router.route('/me').get(protect, getMyVendorProfile).put(protect, updateMyVendorProfile);
 router.route('/me/dashboard').get(protect, getVendorDashboard);
+router.route('/me/analytics').get(protect, getVendorAnalytics);
+router.route('/me/customers').get(protect, getVendorCustomers);
+router.route('/me/customers/:id').get(protect, getVendorCustomerDetails);
 
 // Menu Management (Vendor specific)
 router.route('/me/menu-categories')

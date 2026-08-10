@@ -176,6 +176,192 @@ class Vendor {
       topItems: topItemsResult.rows
     };
   }
+
+  static async getCustomers(vendorId, search = '', dateFilter = '', limit = 10, offset = 0) {
+    let whereClause = 'WHERE o.vendor_id = $1';
+    const params = [vendorId];
+    let paramCount = 2;
+
+    if (search) {
+      whereClause += ` AND (u.first_name ILIKE $${paramCount} OR u.last_name ILIKE $${paramCount} OR u.phone_number ILIKE $${paramCount})`;
+      params.push(`%${search}%`);
+      paramCount++;
+    }
+
+    if (dateFilter === 'today') {
+      whereClause += ` AND DATE(o.created_at) = CURRENT_DATE`;
+    } else if (dateFilter === 'yesterday') {
+      whereClause += ` AND DATE(o.created_at) = CURRENT_DATE - INTERVAL '1 day'`;
+    } else if (dateFilter === 'this_week') {
+      whereClause += ` AND o.created_at >= date_trunc('week', CURRENT_DATE)`;
+    } else if (dateFilter === 'this_month') {
+      whereClause += ` AND o.created_at >= date_trunc('month', CURRENT_DATE)`;
+    }
+
+    // Get total count
+    const countQuery = `
+      SELECT COUNT(DISTINCT u.id) 
+      FROM users u 
+      JOIN orders o ON u.id = o.customer_id 
+      ${whereClause}
+    `;
+    const countResult = await pool.query(countQuery, params);
+    const totalCount = parseInt(countResult.rows[0].count, 10);
+
+    // Get customers
+    const query = `
+      SELECT 
+        u.id, 
+        u.first_name, 
+        u.last_name, 
+        u.phone_number,
+        MAX(o.created_at) as last_order_date
+      FROM users u
+      JOIN orders o ON u.id = o.customer_id
+      ${whereClause}
+      GROUP BY u.id
+      ORDER BY last_order_date DESC
+      LIMIT $${paramCount} OFFSET $${paramCount + 1}
+    `;
+    
+    params.push(limit, offset);
+    const result = await pool.query(query, params);
+
+    return { totalCount, customers: result.rows };
+  }
+
+  static async getCustomerDetails(vendorId, customerId, limit = 10, offset = 0) {
+    // Basic customer details & stats
+    const statsQuery = `
+      SELECT 
+        u.id, u.first_name, u.last_name, u.phone_number, u.created_at as date_joined,
+        COUNT(o.id) as total_orders,
+        COALESCE(SUM(o.total_amount), 0) as total_spent,
+        MAX(o.created_at) as last_order,
+        COALESCE(AVG(o.total_amount), 0) as average_order
+      FROM users u
+      LEFT JOIN orders o ON u.id = o.customer_id AND o.vendor_id = $1
+      WHERE u.id = $2
+      GROUP BY u.id
+    `;
+    const statsResult = await pool.query(statsQuery, [vendorId, customerId]);
+    
+    if (statsResult.rows.length === 0) {
+      return null;
+    }
+
+    // Recent orders pagination
+    const countQuery = `SELECT COUNT(*) FROM orders WHERE vendor_id = $1 AND customer_id = $2`;
+    const countResult = await pool.query(countQuery, [vendorId, customerId]);
+    const totalOrdersCount = parseInt(countResult.rows[0].count, 10);
+
+    const ordersQuery = `
+      SELECT id, order_number, status, total_amount, created_at, customer_note, estimated_delivery_time
+      FROM orders
+      WHERE vendor_id = $1 AND customer_id = $2
+      ORDER BY created_at DESC
+      LIMIT $3 OFFSET $4
+    `;
+    const ordersResult = await pool.query(ordersQuery, [vendorId, customerId, limit, offset]);
+
+    return {
+      stats: statsResult.rows[0],
+      totalOrdersCount,
+      recentOrders: ordersResult.rows
+    };
+  }
+
+  static async getAnalytics(vendorId, startDate, endDate) {
+    // If no dates provided, default to current year (Custom default)
+    if (!startDate || !endDate) {
+      const year = new Date().getFullYear();
+      startDate = `${year}-01-01 00:00:00`;
+      endDate = `${year}-12-31 23:59:59`;
+    } else {
+      // Append time to dates if they are just YYYY-MM-DD
+      if (startDate.length <= 10) startDate += ' 00:00:00';
+      if (endDate.length <= 10) endDate += ' 23:59:59';
+    }
+
+    const params = [vendorId, startDate, endDate];
+
+    // Summary Metrics
+    const summaryQuery = `
+      SELECT 
+        COUNT(id) as orders,
+        COALESCE(SUM(total_amount), 0) as revenue
+      FROM orders
+      WHERE vendor_id = $1 AND status = 'delivered' AND created_at >= $2 AND created_at <= $3
+    `;
+    const summaryResult = await pool.query(summaryQuery, params);
+    let orders = parseInt(summaryResult.rows[0].orders, 10);
+    let revenue = parseFloat(summaryResult.rows[0].revenue);
+    let avg_order_value = orders > 0 ? (revenue / orders).toFixed(2) : "0.00";
+
+    const newCustomersQuery = `
+      SELECT COUNT(*) as new_customers FROM (
+        SELECT customer_id FROM orders 
+        WHERE vendor_id = $1 
+        GROUP BY customer_id 
+        HAVING MIN(created_at) >= $2 AND MIN(created_at) <= $3
+      ) AS nc
+    `;
+    const newCustomersResult = await pool.query(newCustomersQuery, params);
+    let new_customers = parseInt(newCustomersResult.rows[0].new_customers, 10);
+
+    // Revenue Over Time (grouped by month)
+    const chartQuery = `
+      SELECT 
+        TO_CHAR(created_at, 'Mon') as label,
+        EXTRACT(MONTH FROM created_at) as month_num,
+        COUNT(id) as orders,
+        COALESCE(SUM(total_amount), 0) as revenue
+      FROM orders
+      WHERE vendor_id = $1 AND status = 'delivered' AND created_at >= $2 AND created_at <= $3
+      GROUP BY label, month_num
+      ORDER BY month_num
+    `;
+    const chartResult = await pool.query(chartQuery, params);
+
+    // Top Items
+    const topItemsQuery = `
+      SELECT 
+        m.name as item,
+        SUM(oi.quantity) as units_sold,
+        SUM(oi.price * oi.quantity) as revenue
+      FROM order_items oi
+      JOIN orders o ON oi.order_id = o.id
+      JOIN menu_items m ON oi.item_id = m.id
+      WHERE o.vendor_id = $1 AND o.status = 'delivered' AND o.created_at >= $2 AND o.created_at <= $3
+      GROUP BY m.id, m.name
+      ORDER BY units_sold DESC
+      LIMIT 5
+    `;
+    const topItemsResult = await pool.query(topItemsQuery, params);
+
+    const topItems = topItemsResult.rows.map((row, index) => ({
+      rank: index + 1,
+      item: row.item,
+      units_sold: parseInt(row.units_sold, 10),
+      revenue: parseFloat(row.revenue),
+      avg_rating: "0.0"
+    }));
+
+    return {
+      overview: {
+        orders,
+        revenue,
+        avg_order_value,
+        new_customers
+      },
+      revenueOverTime: chartResult.rows.map(row => ({
+        label: row.label,
+        orders: parseInt(row.orders, 10),
+        revenue: parseFloat(row.revenue)
+      })),
+      topItems
+    };
+  }
 }
 
 module.exports = Vendor;

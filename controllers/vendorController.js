@@ -158,6 +158,112 @@ const getVendorDashboard = async (req, res, next) => {
   }
 };
 
+// @desc    Get list of customers for vendor
+// @route   GET /api/vendors/me/customers
+const getVendorCustomers = async (req, res, next) => {
+  try {
+    if (req.user.role !== 'vendor') {
+      return res.status(403).json({ status: 'error', message: 'Only vendors can access this' });
+    }
+
+    const vendor = await Vendor.findByUserId(req.user.id);
+    if (!vendor) {
+      return res.status(404).json({ status: 'error', message: 'Vendor profile not found' });
+    }
+
+    const { search, date_filter } = req.query;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const page = parseInt(req.query.page, 10) || 1;
+    const offset = (page - 1) * limit;
+
+    const data = await Vendor.getCustomers(vendor.id, search, date_filter, limit, offset);
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Customers retrieved successfully',
+      data: data.customers,
+      pagination: {
+        total: data.totalCount,
+        page,
+        limit,
+        totalPages: Math.ceil(data.totalCount / limit)
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get details of a specific customer for vendor
+// @route   GET /api/vendors/me/customers/:id
+const getVendorCustomerDetails = async (req, res, next) => {
+  try {
+    if (req.user.role !== 'vendor') {
+      return res.status(403).json({ status: 'error', message: 'Only vendors can access this' });
+    }
+
+    const vendor = await Vendor.findByUserId(req.user.id);
+    if (!vendor) {
+      return res.status(404).json({ status: 'error', message: 'Vendor profile not found' });
+    }
+
+    const customerId = req.params.id;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const page = parseInt(req.query.page, 10) || 1;
+    const offset = (page - 1) * limit;
+
+    const data = await Vendor.getCustomerDetails(vendor.id, customerId, limit, offset);
+
+    if (!data || !data.stats.id) {
+      return res.status(404).json({ status: 'error', message: 'Customer not found or has no orders with you' });
+    }
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Customer details retrieved successfully',
+      data: {
+        stats: data.stats,
+        recentOrders: data.recentOrders,
+        pagination: {
+          total: data.totalOrdersCount,
+          page,
+          limit,
+          totalPages: Math.ceil(data.totalOrdersCount / limit)
+        }
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get analytics for a vendor
+// @route   GET /api/vendors/me/analytics
+const getVendorAnalytics = async (req, res, next) => {
+  try {
+    if (req.user.role !== 'vendor') {
+      return res.status(403).json({ status: 'error', message: 'Only vendors can access this' });
+    }
+
+    const vendor = await Vendor.findByUserId(req.user.id);
+    if (!vendor) {
+      return res.status(404).json({ status: 'error', message: 'Vendor profile not found' });
+    }
+
+    const { start_date, end_date } = req.query;
+
+    const data = await Vendor.getAnalytics(vendor.id, start_date, end_date);
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Analytics retrieved successfully',
+      data
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getNearbyVendors,
   searchVendors,
@@ -165,5 +271,8 @@ module.exports = {
   getVendorById,
   getMyVendorProfile,
   updateMyVendorProfile,
-  getVendorDashboard
+  getVendorDashboard,
+  getVendorCustomers,
+  getVendorCustomerDetails,
+  getVendorAnalytics
 };
