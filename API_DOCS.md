@@ -694,6 +694,48 @@ Base URL: http://localhost:3000
 ---
 
 
+### Get Vendor Notifications
+- **Endpoint**: `GET /api/vendors/me/notifications`
+- **Headers**: `Authorization: Bearer <your_vendor_jwt_token>`
+- **Description**: Returns the notification preferences for the logged-in vendor.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Notification preferences retrieved successfully",
+  "data": {
+    "in_app_notifications": true,
+    "email_notifications": true,
+    "sms_notifications": true
+  }
+}
+```
+
+### Update Vendor Notifications
+- **Endpoint**: `PUT /api/vendors/me/notifications`
+- **Headers**: `Authorization: Bearer <your_vendor_jwt_token>`
+- **Description**: Updates the notification preferences for the logged-in vendor.
+- **Body payload (JSON)**:
+```json
+{
+  "in_app_notifications": true, // optional
+  "email_notifications": false, // optional
+  "sms_notifications": true // optional
+}
+```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Notification preferences updated successfully",
+  "data": {
+    "in_app_notifications": true,
+    "email_notifications": false,
+    "sms_notifications": true
+  }
+}
+```
+
 ### Get Vendor Dashboard Statistics
 - **Endpoint**: `GET /api/vendors/me/dashboard`
 - **Headers**: `Authorization: Bearer <your_jwt_token>` (Must have `vendor` role)

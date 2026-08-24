@@ -140,6 +140,48 @@ const updateMyVendorProfile = async (req, res, next) => {
   }
 };
 
+// @desc    Get vendor notification preferences
+// @route   GET /api/vendors/me/notifications
+const getVendorNotifications = async (req, res, next) => {
+  try {
+    if (req.user.role !== 'vendor') {
+      return res.status(403).json({ status: 'error', message: 'Forbidden: Vendors only' });
+    }
+
+    const notifications = await Vendor.getNotifications(req.user.id);
+
+    if (!notifications) {
+      return res.status(404).json({ status: 'error', message: 'Vendor profile not found' });
+    }
+
+    res.status(200).json({ status: 'success', message: 'Notification preferences retrieved successfully', data: notifications });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Update vendor notification preferences
+// @route   PUT /api/vendors/me/notifications
+const updateVendorNotifications = async (req, res, next) => {
+  try {
+    if (req.user.role !== 'vendor') {
+      return res.status(403).json({ status: 'error', message: 'Forbidden: Vendors only' });
+    }
+
+    const { in_app_notifications, email_notifications, sms_notifications } = req.body;
+
+    const notifications = await Vendor.updateNotifications(req.user.id, { in_app_notifications, email_notifications, sms_notifications });
+
+    if (!notifications) {
+      return res.status(404).json({ status: 'error', message: 'Vendor profile not found. Please create one first.' });
+    }
+
+    res.status(200).json({ status: 'success', message: 'Notification preferences updated successfully', data: notifications });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // @desc    Get dashboard statistics for a vendor
 // @route   GET /api/vendors/me/dashboard
 // @access  Private/Vendor
@@ -279,6 +321,8 @@ module.exports = {
   getVendorById,
   getMyVendorProfile,
   updateMyVendorProfile,
+  getVendorNotifications,
+  updateVendorNotifications,
   getVendorDashboard,
   getVendorCustomers,
   getVendorCustomerDetails,

@@ -63,6 +63,29 @@ class Vendor {
     return result.rows[0];
   }
 
+  static async getNotifications(user_id) {
+    const result = await pool.query(
+      `SELECT in_app_notifications, email_notifications, sms_notifications
+       FROM vendors WHERE user_id = $1`,
+      [user_id]
+    );
+    return result.rows[0];
+  }
+
+  static async updateNotifications(user_id, { in_app_notifications, email_notifications, sms_notifications }) {
+    const result = await pool.query(
+      `UPDATE vendors 
+       SET in_app_notifications = COALESCE($1, in_app_notifications),
+           email_notifications = COALESCE($2, email_notifications),
+           sms_notifications = COALESCE($3, sms_notifications),
+           updated_at = CURRENT_TIMESTAMP
+       WHERE user_id = $4
+       RETURNING in_app_notifications, email_notifications, sms_notifications`,
+      [in_app_notifications, email_notifications, sms_notifications, user_id]
+    );
+    return result.rows[0];
+  }
+
   static async getNearby(lat, lng, radius) {
     const query = `
       SELECT id, name, logo_url, rating, is_open,

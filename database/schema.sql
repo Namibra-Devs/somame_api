@@ -51,6 +51,9 @@ CREATE TABLE vendors (
     rating DECIMAL(3, 2) DEFAULT 0.00,
     tags VARCHAR(255),
     is_open BOOLEAN DEFAULT true,
+    in_app_notifications BOOLEAN DEFAULT true,
+    email_notifications BOOLEAN DEFAULT true,
+    sms_notifications BOOLEAN DEFAULT true,
     location GEOMETRY(Point, 4326) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
