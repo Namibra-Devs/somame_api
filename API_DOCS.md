@@ -580,6 +580,8 @@ Base URL: http://localhost:3000
   "logo_url": "https://example.com/newlogo.png",
   "tags": "drinks, continental",
   "lat": 5.6150,
+  "email": "vendor@somame.com",
+  "phone_number": "+2335555555",
   "lng": -0.1900,
   "is_open": false
 }

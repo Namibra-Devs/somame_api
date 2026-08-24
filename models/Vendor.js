@@ -3,11 +3,14 @@ const { pool } = require('../config/db');
 class Vendor {
   static async findById(id) {
     const result = await pool.query(
-      `SELECT id, user_id, category_id, name, description, logo_url, rating, tags, is_open, address,
-              ST_Y(location::geometry) as lat, 
-              ST_X(location::geometry) as lng, 
-              created_at, updated_at 
-       FROM vendors WHERE id = $1`,
+      `SELECT v.id, v.user_id, v.category_id, v.name, v.description, v.logo_url, v.rating, v.tags, v.is_open, v.address,
+              ST_Y(v.location::geometry) as lat, 
+              ST_X(v.location::geometry) as lng, 
+              v.created_at, v.updated_at,
+              u.email, u.phone_number
+       FROM vendors v
+       JOIN users u ON v.user_id = u.id
+       WHERE v.id = $1`,
       [id]
     );
     return result.rows[0];
@@ -15,11 +18,14 @@ class Vendor {
 
   static async findByUserId(user_id) {
     const result = await pool.query(
-      `SELECT id, user_id, category_id, name, description, logo_url, rating, tags, is_open, address,
-              ST_Y(location::geometry) as lat, 
-              ST_X(location::geometry) as lng, 
-              created_at, updated_at 
-       FROM vendors WHERE user_id = $1`,
+      `SELECT v.id, v.user_id, v.category_id, v.name, v.description, v.logo_url, v.rating, v.tags, v.is_open, v.address,
+              ST_Y(v.location::geometry) as lat, 
+              ST_X(v.location::geometry) as lng, 
+              v.created_at, v.updated_at,
+              u.email, u.phone_number
+       FROM vendors v
+       JOIN users u ON v.user_id = u.id
+       WHERE v.user_id = $1`,
       [user_id]
     );
     return result.rows[0];

@@ -1,4 +1,5 @@
 const Vendor = require('../models/Vendor');
+const User = require('../models/User');
 
 // @desc    Get nearby vendors
 // @route   GET /api/vendors/nearby
@@ -118,7 +119,7 @@ const updateMyVendorProfile = async (req, res, next) => {
       return res.status(403).json({ status: 'error', message: 'Forbidden: Vendors only' });
     }
 
-    const { name, description, category_id, logo_url, tags, lat, lng, is_open, address } = req.body;
+    const { name, description, category_id, logo_url, tags, lat, lng, is_open, address, email, phone_number } = req.body;
 
     const vendor = await Vendor.updateByUserId(req.user.id, { name, description, category_id, logo_url, tags, lat, lng, is_open, address });
 
@@ -126,7 +127,14 @@ const updateMyVendorProfile = async (req, res, next) => {
       return res.status(404).json({ status: 'error', message: 'Vendor profile not found. Please create one first.' });
     }
 
-    res.status(200).json({ status: 'success', message: 'Vendor profile updated successfully', data: vendor });
+    if (email || phone_number) {
+      await User.updateProfile(req.user.id, { email, phone_number });
+    }
+
+    // Re-fetch to get merged user contact details
+    const updatedVendor = await Vendor.findByUserId(req.user.id);
+
+    res.status(200).json({ status: 'success', message: 'Vendor profile updated successfully', data: updatedVendor });
   } catch (error) {
     next(error);
   }
