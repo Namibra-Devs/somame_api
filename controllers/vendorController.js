@@ -1,4 +1,5 @@
 const Vendor = require('../models/Vendor');
+const User = require('../models/User');
 
 // @desc    Get nearby vendors
 // @route   GET /api/vendors/nearby
@@ -46,7 +47,7 @@ const searchVendors = async (req, res, next) => {
 // @route   POST /api/vendors
 const createVendor = async (req, res, next) => {
   try {
-    const { name, logo_url, rating, tags, lat, lng } = req.body;
+    const { name, description, logo_url, rating, tags, lat, lng } = req.body;
     const user_id = req.user.id; // Extract from JWT middleware
     const user_role = req.user.role;
 
@@ -58,7 +59,7 @@ const createVendor = async (req, res, next) => {
       return res.status(400).json({ status: 'error', message: 'Please provide name, lat, and lng' });
     }
 
-    const vendor = await Vendor.create({ user_id, name, logo_url, rating, tags, lat, lng });
+    const vendor = await Vendor.create({ user_id, name, description, logo_url, rating, tags, lat, lng });
 
     res.status(201).json({
       status: 'success',
@@ -118,19 +119,114 @@ const updateMyVendorProfile = async (req, res, next) => {
       return res.status(403).json({ status: 'error', message: 'Forbidden: Vendors only' });
     }
 
-    const { name, category_id, logo_url, tags, lat, lng, is_open, address } = req.body;
+    const { name, description, category_id, logo_url, tags, lat, lng, is_open, address, email, phone_number } = req.body;
 
-    const vendor = await Vendor.updateByUserId(req.user.id, { name, category_id, logo_url, tags, lat, lng, is_open, address });
+    const vendor = await Vendor.updateByUserId(req.user.id, { name, description, category_id, logo_url, tags, lat, lng, is_open, address });
 
     if (!vendor) {
       return res.status(404).json({ status: 'error', message: 'Vendor profile not found. Please create one first.' });
     }
 
-    res.status(200).json({ status: 'success', message: 'Vendor profile updated successfully', data: vendor });
+    if (email || phone_number) {
+      await User.updateProfile(req.user.id, { email, phone_number });
+    }
+
+    // Re-fetch to get merged user contact details
+    const updatedVendor = await Vendor.findByUserId(req.user.id);
+
+    res.status(200).json({ status: 'success', message: 'Vendor profile updated successfully', data: updatedVendor });
   } catch (error) {
     next(error);
   }
 };
+
+// @desc    Get vendor notification preferences
+// @route   GET /api/vendors/me/notifications
+const getVendorNotifications = async (req, res, next) => {
+  try {
+    if (req.user.role !== 'vendor') {
+      return res.status(403).json({ status: 'error', message: 'Forbidden: Vendors only' });
+    }
+
+    const notifications = await Vendor.getNotifications(req.user.id);
+
+    if (!notifications) {
+      return res.status(404).json({ status: 'error', message: 'Vendor profile not found' });
+    }
+
+    res.status(200).json({ status: 'success', message: 'Notification preferences retrieved successfully', data: notifications });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Update vendor notification preferences
+// @route   PUT /api/vendors/me/notifications
+const updateVendorNotifications = async (req, res, next) => {
+  try {
+    if (req.user.role !== 'vendor') {
+      return res.status(403).json({ status: 'error', message: 'Forbidden: Vendors only' });
+    }
+
+    const { in_app_notifications, email_notifications, sms_notifications } = req.body;
+
+    const notifications = await Vendor.updateNotifications(req.user.id, { in_app_notifications, email_notifications, sms_notifications });
+
+    if (!notifications) {
+      return res.status(404).json({ status: 'error', message: 'Vendor profile not found. Please create one first.' });
+    }
+
+    res.status(200).json({ status: 'success', message: 'Notification preferences updated successfully', data: notifications });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get operating hours for a vendor
+// @route   GET /api/vendors/me/operating-hours
+// @access  Private (Vendor only)
+const getVendorOperatingHours = async (req, res, next) => {
+  try {
+    if (req.user.role !== 'vendor') {
+      return res.status(403).json({ status: 'error', message: 'Forbidden: Vendors only' });
+    }
+
+    const vendor = await Vendor.findByUserId(req.user.id);
+    if (!vendor) {
+      return res.status(404).json({ status: 'error', message: 'Vendor profile not found. Please create one first.' });
+    }
+
+    const operatingHours = await Vendor.getOperatingHours(vendor.id);
+    res.status(200).json({ status: 'success', message: 'Operating hours retrieved successfully', data: operatingHours });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Update operating hours for a vendor
+// @route   PUT /api/vendors/me/operating-hours
+// @access  Private (Vendor only)
+const updateVendorOperatingHours = async (req, res, next) => {
+  try {
+    if (req.user.role !== 'vendor') {
+      return res.status(403).json({ status: 'error', message: 'Forbidden: Vendors only' });
+    }
+
+    const vendor = await Vendor.findByUserId(req.user.id);
+    if (!vendor) {
+      return res.status(404).json({ status: 'error', message: 'Vendor profile not found. Please create one first.' });
+    }
+
+    const { weekly_schedule, holidays } = req.body;
+    
+    const updatedOperatingHours = await Vendor.updateOperatingHours(vendor.id, weekly_schedule, holidays);
+
+    res.status(200).json({ status: 'success', message: 'Operating hours updated successfully', data: updatedOperatingHours });
+  } catch (error) {
+    next(error);
+  }
+};
+
 
 // @desc    Get dashboard statistics for a vendor
 // @route   GET /api/vendors/me/dashboard
@@ -271,8 +367,12 @@ module.exports = {
   getVendorById,
   getMyVendorProfile,
   updateMyVendorProfile,
+  getVendorNotifications,
+  updateVendorNotifications,
   getVendorDashboard,
   getVendorCustomers,
   getVendorCustomerDetails,
-  getVendorAnalytics
+  getVendorAnalytics,
+  getVendorOperatingHours,
+  updateVendorOperatingHours
 };

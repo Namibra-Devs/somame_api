@@ -16,16 +16,17 @@ class User {
     return result.rows[0];
   }
 
-  static async updateProfile(id, { first_name, last_name, email }) {
+  static async updateProfile(id, { first_name, last_name, email, phone_number }) {
     const result = await pool.query(
       `UPDATE users 
        SET first_name = COALESCE($1, first_name), 
            last_name = COALESCE($2, last_name), 
            email = COALESCE($3, email),
+           phone_number = COALESCE($4, phone_number),
            updated_at = CURRENT_TIMESTAMP
-       WHERE id = $4 
+       WHERE id = $5 
        RETURNING id, first_name, last_name, email, phone_number, role, is_verified, is_active, updated_at`,
-      [first_name, last_name, email, id]
+      [first_name, last_name, email, phone_number, id]
     );
     return result.rows[0];
   }

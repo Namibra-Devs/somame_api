@@ -513,6 +513,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "name": "KFC Accra", // Store name
+  "description": "Best fried chicken in town", // Store description
   "category_id": 1, // Category ID from the categories table
   "logo_url": "https://example.com/logo.png", // Logo URL of the vendor
   "tags": "fast food, chicken, local", // Tags for the vendor
@@ -574,10 +575,13 @@ Base URL: http://localhost:3000
 ```json
 {
   "name": "KFC East Legon",
+  "description": "Best fried chicken in town",
   "category_id": 2,
   "logo_url": "https://example.com/newlogo.png",
   "tags": "drinks, continental",
   "lat": 5.6150,
+  "email": "vendor@somame.com",
+  "phone_number": "+2335555555",
   "lng": -0.1900,
   "is_open": false
 }
@@ -689,6 +693,126 @@ Base URL: http://localhost:3000
 
 ---
 
+
+### Get Vendor Notifications
+- **Endpoint**: `GET /api/vendors/me/notifications`
+- **Headers**: `Authorization: Bearer <your_vendor_jwt_token>`
+- **Description**: Returns the notification preferences for the logged-in vendor.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Notification preferences retrieved successfully",
+  "data": {
+    "in_app_notifications": true,
+    "email_notifications": true,
+    "sms_notifications": true
+  }
+}
+```
+
+### Update Vendor Notifications
+- **Endpoint**: `PUT /api/vendors/me/notifications`
+- **Headers**: `Authorization: Bearer <your_vendor_jwt_token>`
+- **Description**: Updates the notification preferences for the logged-in vendor.
+- **Body payload (JSON)**:
+```json
+{
+  "in_app_notifications": true, // optional
+  "email_notifications": false, // optional
+  "sms_notifications": true // optional
+}
+```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Notification preferences updated successfully",
+  "data": {
+    "in_app_notifications": true,
+    "email_notifications": false,
+    "sms_notifications": true
+  }
+}
+```
+
+### Get Vendor Operating Hours
+- **Endpoint**: `GET /api/vendors/me/operating-hours`
+- **Headers**: `Authorization: Bearer <your_vendor_jwt_token>`
+- **Description**: Returns the weekly operating schedule and holidays for the logged-in vendor.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Operating hours retrieved successfully",
+  "data": {
+    "weekly_schedule": [
+      {
+        "day_of_week": "Monday",
+        "is_open": true,
+        "open_time": "08:00:00",
+        "close_time": "20:00:00"
+      }
+    ],
+    "holidays": [
+      {
+        "name": "New Year's Day",
+        "date": "2025-01-01T00:00:00.000Z",
+        "is_closed": true
+      }
+    ]
+  }
+}
+```
+
+### Update Vendor Operating Hours
+- **Endpoint**: `PUT /api/vendors/me/operating-hours`
+- **Headers**: `Authorization: Bearer <your_vendor_jwt_token>`
+- **Description**: Updates the weekly operating schedule and holidays for the logged-in vendor.
+- **Body payload (JSON)**:
+```json
+{
+  "weekly_schedule": [
+    {
+      "day_of_week": "Monday",
+      "is_open": true,
+      "open_time": "08:00",
+      "close_time": "20:00"
+    }
+  ],
+  "holidays": [
+    {
+      "name": "New Year's Day",
+      "date": "2025-01-01",
+      "is_closed": true
+    }
+  ]
+}
+```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Operating hours updated successfully",
+  "data": {
+    "weekly_schedule": [
+      {
+        "day_of_week": "Monday",
+        "is_open": true,
+        "open_time": "08:00:00",
+        "close_time": "20:00:00"
+      }
+    ],
+    "holidays": [
+      {
+        "name": "New Year's Day",
+        "date": "2025-01-01T00:00:00.000Z",
+        "is_closed": true
+      }
+    ]
+  }
+}
+```
 
 ### Get Vendor Dashboard Statistics
 - **Endpoint**: `GET /api/vendors/me/dashboard`

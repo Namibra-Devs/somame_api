@@ -46,13 +46,36 @@ CREATE TABLE vendors (
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     category_id INTEGER REFERENCES categories(id) ON DELETE SET NULL,
     name VARCHAR(255) NOT NULL,
+    description TEXT,
     logo_url VARCHAR(255),
     rating DECIMAL(3, 2) DEFAULT 0.00,
     tags VARCHAR(255),
     is_open BOOLEAN DEFAULT true,
+    in_app_notifications BOOLEAN DEFAULT true,
+    email_notifications BOOLEAN DEFAULT true,
+    sms_notifications BOOLEAN DEFAULT true,
     location GEOMETRY(Point, 4326) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE vendor_operating_hours (
+    id SERIAL PRIMARY KEY,
+    vendor_id INTEGER REFERENCES vendors(id) ON DELETE CASCADE,
+    day_of_week VARCHAR(10) NOT NULL,
+    is_open BOOLEAN DEFAULT false,
+    open_time TIME,
+    close_time TIME,
+    UNIQUE(vendor_id, day_of_week)
+);
+
+CREATE TABLE vendor_holidays (
+    id SERIAL PRIMARY KEY,
+    vendor_id INTEGER REFERENCES vendors(id) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL,
+    date DATE NOT NULL,
+    is_closed BOOLEAN DEFAULT true,
+    UNIQUE(vendor_id, date)
 );
 
 -- 4. menu_categories table (Vendor specific)

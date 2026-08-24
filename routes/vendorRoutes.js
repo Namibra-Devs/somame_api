@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getNearbyVendors, searchVendors, createVendor, getVendorById, getMyVendorProfile, updateMyVendorProfile, getVendorDashboard, getVendorCustomers, getVendorCustomerDetails, getVendorAnalytics } = require('../controllers/vendorController');
+const { getNearbyVendors, searchVendors, createVendor, getVendorById, getMyVendorProfile, updateMyVendorProfile, getVendorNotifications, updateVendorNotifications, getVendorDashboard, getVendorCustomers, getVendorCustomerDetails, getVendorAnalytics, getVendorOperatingHours, updateVendorOperatingHours } = require('../controllers/vendorController');
 const { protect } = require('../middlewares/authMiddleware');
 
 const { 
@@ -22,6 +22,8 @@ router.route('/me/dashboard').get(protect, getVendorDashboard);
 router.route('/me/analytics').get(protect, getVendorAnalytics);
 router.route('/me/customers').get(protect, getVendorCustomers);
 router.route('/me/customers/:id').get(protect, getVendorCustomerDetails);
+router.route('/me/notifications').get(protect, getVendorNotifications).put(protect, updateVendorNotifications);
+router.route('/me/operating-hours').get(protect, getVendorOperatingHours).put(protect, updateVendorOperatingHours);
 
 // Menu Management (Vendor specific)
 router.route('/me/menu-categories')

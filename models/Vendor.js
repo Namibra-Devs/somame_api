@@ -3,11 +3,14 @@ const { pool } = require('../config/db');
 class Vendor {
   static async findById(id) {
     const result = await pool.query(
-      `SELECT id, user_id, category_id, name, logo_url, rating, tags, is_open, address,
-              ST_Y(location::geometry) as lat, 
-              ST_X(location::geometry) as lng, 
-              created_at, updated_at 
-       FROM vendors WHERE id = $1`,
+      `SELECT v.id, v.user_id, v.category_id, v.name, v.description, v.logo_url, v.rating, v.tags, v.is_open, v.address,
+              ST_Y(v.location::geometry) as lat, 
+              ST_X(v.location::geometry) as lng, 
+              v.created_at, v.updated_at,
+              u.email, u.phone_number
+       FROM vendors v
+       JOIN users u ON v.user_id = u.id
+       WHERE v.id = $1`,
       [id]
     );
     return result.rows[0];
@@ -15,46 +18,139 @@ class Vendor {
 
   static async findByUserId(user_id) {
     const result = await pool.query(
-      `SELECT id, user_id, category_id, name, logo_url, rating, tags, is_open, address,
-              ST_Y(location::geometry) as lat, 
-              ST_X(location::geometry) as lng, 
-              created_at, updated_at 
+      `SELECT v.id, v.user_id, v.category_id, v.name, v.description, v.logo_url, v.rating, v.tags, v.is_open, v.address,
+              ST_Y(v.location::geometry) as lat, 
+              ST_X(v.location::geometry) as lng, 
+              v.created_at, v.updated_at,
+              u.email, u.phone_number
+       FROM vendors v
+       JOIN users u ON v.user_id = u.id
+       WHERE v.user_id = $1`,
+      [user_id]
+    );
+    return result.rows[0];
+  }
+
+  static async create({ user_id, category_id = null, name, description = null, logo_url, rating = 0.00, tags, address, lat, lng }) {
+    const result = await pool.query(
+      `INSERT INTO vendors (user_id, category_id, name, description, logo_url, rating, tags, address, location) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, ST_SetSRID(ST_MakePoint($9, $10), 4326)) RETURNING *`,
+      [user_id, category_id, name, description, logo_url, rating, tags, address, lng, lat]
+    );
+    return result.rows[0];
+  }
+
+  static async updateByUserId(user_id, { name, description, category_id, logo_url, tags, address, lat, lng, is_open }) {
+    const result = await pool.query(
+      `UPDATE vendors 
+       SET name = COALESCE($1, name), 
+           description = COALESCE($2, description),
+           category_id = COALESCE($3, category_id), 
+           logo_url = COALESCE($4, logo_url), 
+           tags = COALESCE($5, tags),
+           address = COALESCE($6, address),
+           is_open = COALESCE($7, is_open),
+           updated_at = CURRENT_TIMESTAMP,
+           location = CASE 
+                        WHEN $8::numeric IS NOT NULL AND $9::numeric IS NOT NULL 
+                        THEN ST_SetSRID(ST_MakePoint($9, $8), 4326) 
+                        ELSE location 
+                      END
+       WHERE user_id = $10
+       RETURNING id, user_id, category_id, name, description, logo_url, rating, tags, is_open, address, ST_Y(location::geometry) as lat, ST_X(location::geometry) as lng, created_at, updated_at`,
+      [name, description, category_id, logo_url, tags, address, is_open, lat, lng, user_id]
+    );
+    return result.rows[0];
+  }
+
+  static async getNotifications(user_id) {
+    const result = await pool.query(
+      `SELECT in_app_notifications, email_notifications, sms_notifications
        FROM vendors WHERE user_id = $1`,
       [user_id]
     );
     return result.rows[0];
   }
 
-  static async create({ user_id, category_id = null, name, logo_url, rating = 0.00, tags, address, lat, lng }) {
+  static async updateNotifications(user_id, { in_app_notifications, email_notifications, sms_notifications }) {
     const result = await pool.query(
-      `INSERT INTO vendors (user_id, category_id, name, logo_url, rating, tags, address, location) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7, ST_SetSRID(ST_MakePoint($8, $9), 4326)) RETURNING *`,
-      [user_id, category_id, name, logo_url, rating, tags, address, lng, lat]
+      `UPDATE vendors 
+       SET in_app_notifications = COALESCE($1, in_app_notifications),
+           email_notifications = COALESCE($2, email_notifications),
+           sms_notifications = COALESCE($3, sms_notifications),
+           updated_at = CURRENT_TIMESTAMP
+       WHERE user_id = $4
+       RETURNING in_app_notifications, email_notifications, sms_notifications`,
+      [in_app_notifications, email_notifications, sms_notifications, user_id]
     );
     return result.rows[0];
   }
 
-  static async updateByUserId(user_id, { name, category_id, logo_url, tags, address, lat, lng, is_open }) {
-    const result = await pool.query(
-      `UPDATE vendors 
-       SET name = COALESCE($1, name), 
-           category_id = COALESCE($2, category_id), 
-           logo_url = COALESCE($3, logo_url), 
-           tags = COALESCE($4, tags),
-           address = COALESCE($5, address),
-           is_open = COALESCE($6, is_open),
-           updated_at = CURRENT_TIMESTAMP,
-           location = CASE 
-                        WHEN $7::numeric IS NOT NULL AND $8::numeric IS NOT NULL 
-                        THEN ST_SetSRID(ST_MakePoint($8, $7), 4326) 
-                        ELSE location 
-                      END
-       WHERE user_id = $9 
-       RETURNING id, user_id, category_id, name, logo_url, rating, tags, is_open, address, ST_Y(location::geometry) as lat, ST_X(location::geometry) as lng, created_at, updated_at`,
-      [name, category_id, logo_url, tags, address, is_open, lat, lng, user_id]
+  static async getOperatingHours(vendor_id) {
+    const weeklyScheduleResult = await pool.query(
+      `SELECT day_of_week, is_open, open_time, close_time 
+       FROM vendor_operating_hours 
+       WHERE vendor_id = $1`,
+      [vendor_id]
     );
-    return result.rows[0];
+
+    const holidaysResult = await pool.query(
+      `SELECT name, date, is_closed 
+       FROM vendor_holidays 
+       WHERE vendor_id = $1`,
+      [vendor_id]
+    );
+
+    return {
+      weekly_schedule: weeklyScheduleResult.rows,
+      holidays: holidaysResult.rows
+    };
   }
+
+  static async updateOperatingHours(vendor_id, weekly_schedule, holidays) {
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+
+      // Weekly Schedule
+      if (weekly_schedule && Array.isArray(weekly_schedule)) {
+        // Clear existing to replace
+        await client.query(`DELETE FROM vendor_operating_hours WHERE vendor_id = $1`, [vendor_id]);
+        
+        for (const day of weekly_schedule) {
+          await client.query(
+            `INSERT INTO vendor_operating_hours (vendor_id, day_of_week, is_open, open_time, close_time) 
+             VALUES ($1, $2, $3, $4, $5)`,
+            [vendor_id, day.day_of_week, day.is_open, day.open_time, day.close_time]
+          );
+        }
+      }
+
+      // Holidays
+      if (holidays && Array.isArray(holidays)) {
+        // Clear existing to replace
+        await client.query(`DELETE FROM vendor_holidays WHERE vendor_id = $1`, [vendor_id]);
+        
+        for (const holiday of holidays) {
+          await client.query(
+            `INSERT INTO vendor_holidays (vendor_id, name, date, is_closed) 
+             VALUES ($1, $2, $3, $4)`,
+            [vendor_id, holiday.name, holiday.date, holiday.is_closed]
+          );
+        }
+      }
+
+      await client.query('COMMIT');
+    } catch (e) {
+      await client.query('ROLLBACK');
+      throw e;
+    } finally {
+      client.release();
+    }
+
+    return await this.getOperatingHours(vendor_id);
+  }
+
 
   static async getNearby(lat, lng, radius) {
     const query = `
