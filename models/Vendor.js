@@ -3,7 +3,7 @@ const { pool } = require('../config/db');
 class Vendor {
   static async findById(id) {
     const result = await pool.query(
-      `SELECT id, user_id, category_id, name, logo_url, rating, tags, is_open, address,
+      `SELECT id, user_id, category_id, name, description, logo_url, rating, tags, is_open, address,
               ST_Y(location::geometry) as lat, 
               ST_X(location::geometry) as lng, 
               created_at, updated_at 
@@ -15,7 +15,7 @@ class Vendor {
 
   static async findByUserId(user_id) {
     const result = await pool.query(
-      `SELECT id, user_id, category_id, name, logo_url, rating, tags, is_open, address,
+      `SELECT id, user_id, category_id, name, description, logo_url, rating, tags, is_open, address,
               ST_Y(location::geometry) as lat, 
               ST_X(location::geometry) as lng, 
               created_at, updated_at 
@@ -25,33 +25,34 @@ class Vendor {
     return result.rows[0];
   }
 
-  static async create({ user_id, category_id = null, name, logo_url, rating = 0.00, tags, address, lat, lng }) {
+  static async create({ user_id, category_id = null, name, description = null, logo_url, rating = 0.00, tags, address, lat, lng }) {
     const result = await pool.query(
-      `INSERT INTO vendors (user_id, category_id, name, logo_url, rating, tags, address, location) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7, ST_SetSRID(ST_MakePoint($8, $9), 4326)) RETURNING *`,
-      [user_id, category_id, name, logo_url, rating, tags, address, lng, lat]
+      `INSERT INTO vendors (user_id, category_id, name, description, logo_url, rating, tags, address, location) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, ST_SetSRID(ST_MakePoint($9, $10), 4326)) RETURNING *`,
+      [user_id, category_id, name, description, logo_url, rating, tags, address, lng, lat]
     );
     return result.rows[0];
   }
 
-  static async updateByUserId(user_id, { name, category_id, logo_url, tags, address, lat, lng, is_open }) {
+  static async updateByUserId(user_id, { name, description, category_id, logo_url, tags, address, lat, lng, is_open }) {
     const result = await pool.query(
       `UPDATE vendors 
        SET name = COALESCE($1, name), 
-           category_id = COALESCE($2, category_id), 
-           logo_url = COALESCE($3, logo_url), 
-           tags = COALESCE($4, tags),
-           address = COALESCE($5, address),
-           is_open = COALESCE($6, is_open),
+           description = COALESCE($2, description),
+           category_id = COALESCE($3, category_id), 
+           logo_url = COALESCE($4, logo_url), 
+           tags = COALESCE($5, tags),
+           address = COALESCE($6, address),
+           is_open = COALESCE($7, is_open),
            updated_at = CURRENT_TIMESTAMP,
            location = CASE 
-                        WHEN $7::numeric IS NOT NULL AND $8::numeric IS NOT NULL 
-                        THEN ST_SetSRID(ST_MakePoint($8, $7), 4326) 
+                        WHEN $8::numeric IS NOT NULL AND $9::numeric IS NOT NULL 
+                        THEN ST_SetSRID(ST_MakePoint($9, $8), 4326) 
                         ELSE location 
                       END
-       WHERE user_id = $9 
-       RETURNING id, user_id, category_id, name, logo_url, rating, tags, is_open, address, ST_Y(location::geometry) as lat, ST_X(location::geometry) as lng, created_at, updated_at`,
-      [name, category_id, logo_url, tags, address, is_open, lat, lng, user_id]
+       WHERE user_id = $10
+       RETURNING id, user_id, category_id, name, description, logo_url, rating, tags, is_open, address, ST_Y(location::geometry) as lat, ST_X(location::geometry) as lng, created_at, updated_at`,
+      [name, description, category_id, logo_url, tags, address, is_open, lat, lng, user_id]
     );
     return result.rows[0];
   }

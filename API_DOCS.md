@@ -513,6 +513,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "name": "KFC Accra", // Store name
+  "description": "Best fried chicken in town", // Store description
   "category_id": 1, // Category ID from the categories table
   "logo_url": "https://example.com/logo.png", // Logo URL of the vendor
   "tags": "fast food, chicken, local", // Tags for the vendor
@@ -574,6 +575,7 @@ Base URL: http://localhost:3000
 ```json
 {
   "name": "KFC East Legon",
+  "description": "Best fried chicken in town",
   "category_id": 2,
   "logo_url": "https://example.com/newlogo.png",
   "tags": "drinks, continental",

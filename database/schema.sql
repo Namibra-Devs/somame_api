@@ -46,6 +46,7 @@ CREATE TABLE vendors (
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     category_id INTEGER REFERENCES categories(id) ON DELETE SET NULL,
     name VARCHAR(255) NOT NULL,
+    description TEXT,
     logo_url VARCHAR(255),
     rating DECIMAL(3, 2) DEFAULT 0.00,
     tags VARCHAR(255),
