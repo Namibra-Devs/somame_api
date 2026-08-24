@@ -182,6 +182,52 @@ const updateVendorNotifications = async (req, res, next) => {
   }
 };
 
+// @desc    Get operating hours for a vendor
+// @route   GET /api/vendors/me/operating-hours
+// @access  Private (Vendor only)
+const getVendorOperatingHours = async (req, res, next) => {
+  try {
+    if (req.user.role !== 'vendor') {
+      return res.status(403).json({ status: 'error', message: 'Forbidden: Vendors only' });
+    }
+
+    const vendor = await Vendor.findByUserId(req.user.id);
+    if (!vendor) {
+      return res.status(404).json({ status: 'error', message: 'Vendor profile not found. Please create one first.' });
+    }
+
+    const operatingHours = await Vendor.getOperatingHours(vendor.id);
+    res.status(200).json({ status: 'success', message: 'Operating hours retrieved successfully', data: operatingHours });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Update operating hours for a vendor
+// @route   PUT /api/vendors/me/operating-hours
+// @access  Private (Vendor only)
+const updateVendorOperatingHours = async (req, res, next) => {
+  try {
+    if (req.user.role !== 'vendor') {
+      return res.status(403).json({ status: 'error', message: 'Forbidden: Vendors only' });
+    }
+
+    const vendor = await Vendor.findByUserId(req.user.id);
+    if (!vendor) {
+      return res.status(404).json({ status: 'error', message: 'Vendor profile not found. Please create one first.' });
+    }
+
+    const { weekly_schedule, holidays } = req.body;
+    
+    const updatedOperatingHours = await Vendor.updateOperatingHours(vendor.id, weekly_schedule, holidays);
+
+    res.status(200).json({ status: 'success', message: 'Operating hours updated successfully', data: updatedOperatingHours });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
 // @desc    Get dashboard statistics for a vendor
 // @route   GET /api/vendors/me/dashboard
 // @access  Private/Vendor
@@ -326,5 +372,7 @@ module.exports = {
   getVendorDashboard,
   getVendorCustomers,
   getVendorCustomerDetails,
-  getVendorAnalytics
+  getVendorAnalytics,
+  getVendorOperatingHours,
+  updateVendorOperatingHours
 };

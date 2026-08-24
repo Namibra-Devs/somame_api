@@ -736,6 +736,84 @@ Base URL: http://localhost:3000
 }
 ```
 
+### Get Vendor Operating Hours
+- **Endpoint**: `GET /api/vendors/me/operating-hours`
+- **Headers**: `Authorization: Bearer <your_vendor_jwt_token>`
+- **Description**: Returns the weekly operating schedule and holidays for the logged-in vendor.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Operating hours retrieved successfully",
+  "data": {
+    "weekly_schedule": [
+      {
+        "day_of_week": "Monday",
+        "is_open": true,
+        "open_time": "08:00:00",
+        "close_time": "20:00:00"
+      }
+    ],
+    "holidays": [
+      {
+        "name": "New Year's Day",
+        "date": "2025-01-01T00:00:00.000Z",
+        "is_closed": true
+      }
+    ]
+  }
+}
+```
+
+### Update Vendor Operating Hours
+- **Endpoint**: `PUT /api/vendors/me/operating-hours`
+- **Headers**: `Authorization: Bearer <your_vendor_jwt_token>`
+- **Description**: Updates the weekly operating schedule and holidays for the logged-in vendor.
+- **Body payload (JSON)**:
+```json
+{
+  "weekly_schedule": [
+    {
+      "day_of_week": "Monday",
+      "is_open": true,
+      "open_time": "08:00",
+      "close_time": "20:00"
+    }
+  ],
+  "holidays": [
+    {
+      "name": "New Year's Day",
+      "date": "2025-01-01",
+      "is_closed": true
+    }
+  ]
+}
+```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Operating hours updated successfully",
+  "data": {
+    "weekly_schedule": [
+      {
+        "day_of_week": "Monday",
+        "is_open": true,
+        "open_time": "08:00:00",
+        "close_time": "20:00:00"
+      }
+    ],
+    "holidays": [
+      {
+        "name": "New Year's Day",
+        "date": "2025-01-01T00:00:00.000Z",
+        "is_closed": true
+      }
+    ]
+  }
+}
+```
+
 ### Get Vendor Dashboard Statistics
 - **Endpoint**: `GET /api/vendors/me/dashboard`
 - **Headers**: `Authorization: Bearer <your_jwt_token>` (Must have `vendor` role)

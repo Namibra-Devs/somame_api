@@ -86,6 +86,72 @@ class Vendor {
     return result.rows[0];
   }
 
+  static async getOperatingHours(vendor_id) {
+    const weeklyScheduleResult = await pool.query(
+      `SELECT day_of_week, is_open, open_time, close_time 
+       FROM vendor_operating_hours 
+       WHERE vendor_id = $1`,
+      [vendor_id]
+    );
+
+    const holidaysResult = await pool.query(
+      `SELECT name, date, is_closed 
+       FROM vendor_holidays 
+       WHERE vendor_id = $1`,
+      [vendor_id]
+    );
+
+    return {
+      weekly_schedule: weeklyScheduleResult.rows,
+      holidays: holidaysResult.rows
+    };
+  }
+
+  static async updateOperatingHours(vendor_id, weekly_schedule, holidays) {
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+
+      // Weekly Schedule
+      if (weekly_schedule && Array.isArray(weekly_schedule)) {
+        // Clear existing to replace
+        await client.query(`DELETE FROM vendor_operating_hours WHERE vendor_id = $1`, [vendor_id]);
+        
+        for (const day of weekly_schedule) {
+          await client.query(
+            `INSERT INTO vendor_operating_hours (vendor_id, day_of_week, is_open, open_time, close_time) 
+             VALUES ($1, $2, $3, $4, $5)`,
+            [vendor_id, day.day_of_week, day.is_open, day.open_time, day.close_time]
+          );
+        }
+      }
+
+      // Holidays
+      if (holidays && Array.isArray(holidays)) {
+        // Clear existing to replace
+        await client.query(`DELETE FROM vendor_holidays WHERE vendor_id = $1`, [vendor_id]);
+        
+        for (const holiday of holidays) {
+          await client.query(
+            `INSERT INTO vendor_holidays (vendor_id, name, date, is_closed) 
+             VALUES ($1, $2, $3, $4)`,
+            [vendor_id, holiday.name, holiday.date, holiday.is_closed]
+          );
+        }
+      }
+
+      await client.query('COMMIT');
+    } catch (e) {
+      await client.query('ROLLBACK');
+      throw e;
+    } finally {
+      client.release();
+    }
+
+    return await this.getOperatingHours(vendor_id);
+  }
+
+
   static async getNearby(lat, lng, radius) {
     const query = `
       SELECT id, name, logo_url, rating, is_open,
