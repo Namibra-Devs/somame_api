@@ -101,6 +101,53 @@ const login = async (req, res, next) => {
   }
 };
 
+// @desc    Login user with password
+// @route   POST /api/auth/login-with-password
+const loginWithPassword = async (req, res, next) => {
+  try {
+    const { phone_number, password } = req.body;
+
+    if (!phone_number || !password) {
+      return res.status(400).json({ status: 'error', message: 'Please provide phone number and password' });
+    }
+
+    const user = await User.findByPhoneNumber(phone_number);
+
+    if (!user) {
+      return res.status(401).json({ status: 'error', message: 'Invalid credentials' });
+    }
+
+    if (!user.is_active) {
+      return res.status(403).json({ status: 'error', message: 'Account has been disabled. Please contact support.' });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password_hash);
+    if (!isMatch) {
+      return res.status(401).json({ status: 'error', message: 'Invalid credentials' });
+    }
+
+    // Generate token
+    const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, {
+      expiresIn: '30d'
+    });
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Login successful.',
+      data: {
+        user: {
+          id: user.id,
+          phone_number: user.phone_number,
+          role: user.role
+        },
+        token
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // @desc    Verify OTP and return JWT token
 // @route   POST /api/auth/verify-otp
 const verifyOTP = async (req, res, next) => {
@@ -179,5 +226,6 @@ module.exports = {
   register,
   login,
   verifyOTP,
-  seedAdmin
+  seedAdmin,
+  loginWithPassword
 };

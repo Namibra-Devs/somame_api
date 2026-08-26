@@ -65,6 +65,32 @@ Base URL: http://localhost:3000
 }
 ```
 
+### Step 1c: Login with Password
+- **Endpoint**: `POST /api/auth/login-with-password`
+- **Description**: Authenticate using a phone number and password, bypassing OTP. Returns a JWT token.
+- **Body payload (JSON)**:
+```json
+{
+  "phone_number": "1234567890",
+  "password": "securepassword123"
+}
+```
+- **Example Response**: 
+```json
+{
+  "status": "success",
+  "message": "Login successful.",
+  "data": {
+    "user": {
+      "id": 1,
+      "phone_number": "1234567890",
+      "role": "customer"
+    },
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  }
+}
+```
+
 ### Seed Admin (Hidden)
 - **Endpoint**: `POST /api/auth/seed-admin`
 - **Description**: Creates a new admin user directly. Fails if an admin already exists.
