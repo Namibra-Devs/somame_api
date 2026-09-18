@@ -1,6 +1,7 @@
 const MenuCategory = require('../models/MenuCategory');
 const MenuItem = require('../models/MenuItem');
 const Vendor = require('../models/Vendor');
+const { deleteFileFromMinio } = require('../config/storage');
 
 // ==========================================
 // MENU CATEGORIES
@@ -185,6 +186,15 @@ const updateMenuItem = async (req, res, next) => {
       if (!category || category.vendor_id !== vendor.id) {
         return res.status(400).json({ status: 'error', message: 'Invalid menu category' });
       }
+    }
+
+    const existingItem = await MenuItem.findById(req.params.id);
+    if (!existingItem || existingItem.vendor_id !== vendor.id) {
+      return res.status(404).json({ status: 'error', message: 'Menu item not found' });
+    }
+
+    if (image_url && existingItem.image_url && existingItem.image_url !== image_url) {
+      await deleteFileFromMinio(existingItem.image_url);
     }
 
     const item = await MenuItem.update(req.params.id, vendor.id, { 

@@ -1,5 +1,6 @@
 const Vendor = require('../models/Vendor');
 const User = require('../models/User');
+const { deleteFileFromMinio } = require('../config/storage');
 
 // @desc    Get nearby vendors
 // @route   GET /api/vendors/nearby
@@ -120,6 +121,11 @@ const updateMyVendorProfile = async (req, res, next) => {
     }
 
     const { name, description, category_id, logo_url, tags, lat, lng, is_open, address, email, phone_number } = req.body;
+
+    const existingVendor = await Vendor.findByUserId(req.user.id);
+    if (existingVendor && logo_url && existingVendor.logo_url && existingVendor.logo_url !== logo_url) {
+      await deleteFileFromMinio(existingVendor.logo_url);
+    }
 
     const vendor = await Vendor.updateByUserId(req.user.id, { name, description, category_id, logo_url, tags, lat, lng, is_open, address });
 

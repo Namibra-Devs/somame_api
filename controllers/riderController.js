@@ -1,5 +1,6 @@
 const RiderProfile = require('../models/RiderProfile');
 const User = require('../models/User');
+const { deleteFileFromMinio } = require('../config/storage');
 
 // @desc    Submit rider registration/profile
 // @route   POST /api/riders/register
@@ -43,6 +44,28 @@ const submitRiderRegistration = async (req, res, next) => {
 
     // 1. Update User table with first and last name
     await User.updateProfile(userId, { first_name, last_name });
+
+    // Fetch existing profile to delete old images if they have changed
+    const existingProfile = await RiderProfile.findByUserId(userId);
+    if (existingProfile) {
+      const imageFields = [
+        'id_front_image_url', 'id_back_image_url', 'license_front_image_url',
+        'license_back_image_url', 'road_worthy_image_url', 'insurance_image_url',
+        'selfie_image_url'
+      ];
+      
+      const incomingData = {
+        id_front_image_url, id_back_image_url, license_front_image_url,
+        license_back_image_url, road_worthy_image_url, insurance_image_url,
+        selfie_image_url
+      };
+
+      for (const field of imageFields) {
+        if (incomingData[field] && existingProfile[field] && incomingData[field] !== existingProfile[field]) {
+          await deleteFileFromMinio(existingProfile[field]);
+        }
+      }
+    }
 
     // 2. Upsert Rider Profile
     const profileData = {
