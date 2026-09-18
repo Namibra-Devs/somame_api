@@ -2461,3 +2461,26 @@ Connect to the Socket.io server by passing the JWT token.
   ]
 }
 ```
+
+---
+
+## 18. Image Uploads
+
+### Upload Image
+- **Endpoint**: `POST /api/upload`
+- **Description**: Upload a single image to MinIO object storage. The returned `url` can be used when creating or updating other resources.
+- **Headers**:
+  - `Authorization`: `Bearer <token>`
+- **Body payload (FormData)**:
+  - `image`: (File) The image file to upload (jpeg, jpg, png, webp, gif. Max 5MB).
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "File uploaded successfully",
+  "data": {
+    "url": "http://localhost:9000/somame/uploads/1628100123456-123456789.png",
+    "key": "uploads/1628100123456-123456789.png"
+  }
+}
+```

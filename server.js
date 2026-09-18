@@ -37,6 +37,7 @@ app.use('/api/orders', require('./routes/orderRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/parcels', require('./routes/parcelRoutes'));
 app.use('/api/riders', require('./routes/riderRoutes'));
+app.use('/api/upload', require('./routes/uploadRoutes'));
 // Health check endpoints
 app.get('/', (req, res) => {
   res.status(200).json({ status: 'success', message: 'somame_api is running' });
