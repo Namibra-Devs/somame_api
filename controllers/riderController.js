@@ -14,7 +14,7 @@ const submitRiderRegistration = async (req, res, next) => {
       return res.status(403).json({ status: 'error', message: 'Forbidden: Only users with the rider role can register a rider profile' });
     }
 
-    const {
+    let {
       first_name,
       last_name,
       date_of_birth,
@@ -28,6 +28,16 @@ const submitRiderRegistration = async (req, res, next) => {
       insurance_image_url,
       selfie_image_url
     } = req.body;
+
+    if (req.files) {
+      if (req.files['id_front']) id_front_image_url = req.files['id_front'][0].location;
+      if (req.files['id_back']) id_back_image_url = req.files['id_back'][0].location;
+      if (req.files['license_front']) license_front_image_url = req.files['license_front'][0].location;
+      if (req.files['license_back']) license_back_image_url = req.files['license_back'][0].location;
+      if (req.files['road_worthy']) road_worthy_image_url = req.files['road_worthy'][0].location;
+      if (req.files['insurance']) insurance_image_url = req.files['insurance'][0].location;
+      if (req.files['selfie']) selfie_image_url = req.files['selfie'][0].location;
+    }
 
     // Basic Validation
     if (!first_name || !last_name) {

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { getNearbyVendors, searchVendors, createVendor, getVendorById, getMyVendorProfile, updateMyVendorProfile, getVendorNotifications, updateVendorNotifications, getVendorDashboard, getVendorCustomers, getVendorCustomerDetails, getVendorAnalytics, getVendorOperatingHours, updateVendorOperatingHours } = require('../controllers/vendorController');
 const { protect } = require('../middlewares/authMiddleware');
+const { upload } = require('../config/storage');
 
 const { 
   createMenuCategory, getMyMenuCategories, updateMenuCategory, deleteMenuCategory,
@@ -17,7 +18,7 @@ router.route('/nearby').get(getNearbyVendors);
 router.route('/').post(protect, createVendor); // Protected route
 
 // Vendor Profile and Dashboard
-router.route('/me').get(protect, getMyVendorProfile).put(protect, updateMyVendorProfile);
+router.route('/me').get(protect, getMyVendorProfile).put(protect, upload.single('logo'), updateMyVendorProfile);
 router.route('/me/dashboard').get(protect, getVendorDashboard);
 router.route('/me/analytics').get(protect, getVendorAnalytics);
 router.route('/me/customers').get(protect, getVendorCustomers);
@@ -34,11 +35,11 @@ router.route('/me/menu-categories/:id')
   .delete(protect, deleteMenuCategory);
 
 router.route('/me/menu-items')
-  .post(protect, createMenuItem)
+  .post(protect, upload.single('image'), createMenuItem)
   .get(protect, getMyMenuItems);
 router.route('/me/menu-items/:id')
   .get(protect, getMenuItemDetails)
-  .put(protect, updateMenuItem)
+  .put(protect, upload.single('image'), updateMenuItem)
   .delete(protect, deleteMenuItem);
 
 // Promotions Management (Vendor specific)

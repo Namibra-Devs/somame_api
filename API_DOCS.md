@@ -597,21 +597,17 @@ Base URL: http://localhost:3000
 - **Endpoint**: `PUT /api/vendors/me`
 - **Headers**: `Authorization: Bearer <your_vendor_jwt_token>`
 - **Description**: Updates the vendor profile for the logged-in user. Only provided fields are updated.
-- **Body payload (JSON)**:
-```json
-{
-  "name": "KFC East Legon",
-  "description": "Best fried chicken in town",
-  "category_id": 2,
-  "logo_url": "https://example.com/newlogo.png",
-  "tags": "drinks, continental",
-  "lat": 5.6150,
-  "email": "vendor@somame.com",
-  "phone_number": "+2335555555",
-  "lng": -0.1900,
-  "is_open": false
-}
-```
+- **Body payload (multipart/form-data)**:
+  - `name`: "KFC East Legon" (optional)
+  - `description`: "Best fried chicken in town" (optional)
+  - `category_id`: 2 (optional)
+  - `logo`: [File] (optional image file)
+  - `tags`: "drinks, continental" (optional)
+  - `lat`: 5.6150 (optional)
+  - `lng`: -0.1900 (optional)
+  - `is_open`: false (optional)
+  - `email`: "vendor@somame.com" (optional)
+  - `phone_number`: "+2335555555" (optional)
 - **Example Response**:
 ```json
 {
@@ -1281,24 +1277,16 @@ Base URL: http://localhost:3000
 ### Create Menu Item (Vendor Only)
 - **Endpoint**: `POST /api/vendors/me/menu-items`
 - **Headers**: `Authorization: Bearer <your_vendor_jwt_token>`
-- **Body payload (JSON)**:
-```json
-{
-  "menu_category_id": 1,
-  "name": "Spring Rolls",
-  "description": "Crispy vegetable spring rolls",
-  "sizes": [
-    { "size": "Small", "price": 10.00 },
-    { "size": "Regular", "price": 15.50 }
-  ],
-  "quantity": 3,
-  "image_url": "https://example.com/springrolls.jpg",
-  "extras": [
-    { "name": "Sweet Chili Sauce", "price": 2.00 }
-  ],
-  "is_in_stock": true
-}
-```
+- **Body payload (multipart/form-data)**:
+  - `menu_category_id`: 1 (optional)
+  - `name`: "Spring Rolls"
+  - `description`: "Crispy vegetable spring rolls"
+  - `image`: [File] (optional image file)
+  - `price`: 15.50 (required if no sizes)
+  - `sizes`: '[{ "size": "Small", "price": 10.00 }, { "size": "Regular", "price": 15.50 }]' (JSON stringified, optional)
+  - `quantity`: 3 (optional)
+  - `extras`: '[{ "name": "Sweet Chili Sauce", "price": 2.00 }]' (JSON stringified, optional)
+  - `is_in_stock`: true (optional)
 - **Example Response**:
 ```json
 {
@@ -1327,16 +1315,10 @@ Base URL: http://localhost:3000
 ### Update Menu Item (Vendor Only)
 - **Endpoint**: `PUT /api/vendors/me/menu-items/:id`
 - **Headers**: `Authorization: Bearer <your_vendor_jwt_token>`
-- **Body payload (JSON)**:
-```json
-{
-  "sizes": [
-    { "size": "Small", "price": 12.00 },
-    { "size": "Regular", "price": 18.00 }
-  ],
-  "is_in_stock": false
-}
-```
+- **Body payload (multipart/form-data)**:
+  - `sizes`: '[{ "size": "Small", "price": 12.00 }, { "size": "Regular", "price": 18.00 }]' (JSON stringified)
+  - `is_in_stock`: false
+  - `image`: [File] (optional image file to replace old)
 - **Example Response**:
 ```json
 {
@@ -2133,23 +2115,19 @@ Connect to the Socket.io server by passing the JWT token.
 - **Endpoint**: `POST /api/riders/register`
 - **Headers**: `Authorization: Bearer <your_jwt_token>` (Must have `rider` role)
 - **Description**: Submits or updates rider registration details (personal info, vehicle, and documents). Updates the user's name and upserts their rider profile. Status resets to `pending` upon submission.
-- **Body payload (JSON)**:
-```json
-{
-  "first_name": "John",
-  "last_name": "Doe",
-  "date_of_birth": "1990-01-01",
-  "vehicle_type": "motorbike", // "motorbike" or "car"
-  "id_document_type": "ghana_card", // "ghana_card" or "passport"
-  "id_front_image_url": "https://storage.googleapis.com/.../id_front.jpg",
-  "id_back_image_url": "https://storage.googleapis.com/.../id_back.jpg",
-  "license_front_image_url": "https://storage.googleapis.com/.../license_front.jpg",
-  "license_back_image_url": "https://storage.googleapis.com/.../license_back.jpg",
-  "road_worthy_image_url": "https://storage.googleapis.com/.../road_worthy.jpg",
-  "insurance_image_url": "https://storage.googleapis.com/.../insurance.jpg",
-  "selfie_image_url": "https://storage.googleapis.com/.../selfie.jpg"
-}
-```
+- **Body payload (multipart/form-data)**:
+  - `first_name`: "John"
+  - `last_name`: "Doe"
+  - `date_of_birth`: "1990-01-01"
+  - `vehicle_type`: "motorbike" (or "car")
+  - `id_document_type`: "ghana_card" (or "passport")
+  - `id_front`: [File] (optional image file)
+  - `id_back`: [File] (optional image file)
+  - `license_front`: [File] (optional image file)
+  - `license_back`: [File] (optional image file)
+  - `road_worthy`: [File] (optional image file)
+  - `insurance`: [File] (optional image file)
+  - `selfie`: [File] (optional image file)
 - **Example Response**:
 ```json
 {
