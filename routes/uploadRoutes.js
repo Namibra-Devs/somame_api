@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { uploadImage } = require('../controllers/uploadController');
-const upload = require('../config/storage');
+const { upload } = require('../config/storage');
 const { protect } = require('../middlewares/authMiddleware');
 
 // Route: POST /api/upload

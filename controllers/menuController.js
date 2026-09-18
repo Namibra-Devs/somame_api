@@ -1,6 +1,7 @@
 const MenuCategory = require('../models/MenuCategory');
 const MenuItem = require('../models/MenuItem');
 const Vendor = require('../models/Vendor');
+const { deleteFileFromMinio } = require('../config/storage');
 
 // ==========================================
 // MENU CATEGORIES
@@ -87,6 +88,32 @@ const createMenuItem = async (req, res, next) => {
   try {
     let { menu_category_id, name, description, price, size, sizes, quantity, image_url, extras, is_in_stock } = req.body;
     
+    // Parse multipart/form-data strings
+    if (typeof sizes === 'string') {
+      try { sizes = JSON.parse(sizes); } catch(e) {}
+    }
+    if (typeof extras === 'string') {
+      try { extras = JSON.parse(extras); } catch(e) {}
+    }
+    if (is_in_stock !== undefined) {
+      is_in_stock = is_in_stock === 'true' || is_in_stock === true;
+    }
+    if (price !== undefined && price !== '') {
+      price = Number(price);
+    } else {
+      price = undefined;
+    }
+    if (quantity !== undefined && quantity !== '') {
+      quantity = Number(quantity);
+    } else {
+      quantity = undefined;
+    }
+
+    let finalImageUrl = image_url;
+    if (req.file && req.file.location) {
+      finalImageUrl = req.file.location;
+    }
+    
     if (!name) return res.status(400).json({ status: 'error', message: 'Name is required' });
     
     if (sizes && Array.isArray(sizes) && sizes.length > 0) {
@@ -113,7 +140,7 @@ const createMenuItem = async (req, res, next) => {
     }
 
     const item = await MenuItem.create({ 
-      vendor_id: vendor.id, menu_category_id, name, description, price, size, sizes, quantity, image_url, extras, is_in_stock 
+      vendor_id: vendor.id, menu_category_id, name, description, price, size, sizes, quantity, image_url: finalImageUrl, extras, is_in_stock 
     });
 
     res.status(201).json({ status: 'success', message: 'Menu item created successfully', data: item });
@@ -170,6 +197,32 @@ const updateMenuItem = async (req, res, next) => {
 
     let { menu_category_id, name, description, price, size, sizes, quantity, image_url, extras, is_in_stock } = req.body;
 
+    // Parse multipart/form-data strings
+    if (typeof sizes === 'string') {
+      try { sizes = JSON.parse(sizes); } catch(e) {}
+    }
+    if (typeof extras === 'string') {
+      try { extras = JSON.parse(extras); } catch(e) {}
+    }
+    if (is_in_stock !== undefined) {
+      is_in_stock = is_in_stock === 'true' || is_in_stock === true;
+    }
+    if (price !== undefined && price !== '') {
+      price = Number(price);
+    } else {
+      price = undefined;
+    }
+    if (quantity !== undefined && quantity !== '') {
+      quantity = Number(quantity);
+    } else {
+      quantity = undefined;
+    }
+
+    let finalImageUrl = image_url;
+    if (req.file && req.file.location) {
+      finalImageUrl = req.file.location;
+    }
+
     if (sizes && Array.isArray(sizes) && sizes.length > 0) {
       for (const s of sizes) {
         if (!s.size || s.price === undefined) {
@@ -187,8 +240,17 @@ const updateMenuItem = async (req, res, next) => {
       }
     }
 
+    const existingItem = await MenuItem.findById(req.params.id);
+    if (!existingItem || existingItem.vendor_id !== vendor.id) {
+      return res.status(404).json({ status: 'error', message: 'Menu item not found' });
+    }
+
+    if (finalImageUrl && existingItem.image_url && existingItem.image_url !== finalImageUrl) {
+      await deleteFileFromMinio(existingItem.image_url);
+    }
+
     const item = await MenuItem.update(req.params.id, vendor.id, { 
-      menu_category_id, name, description, price, size, sizes, quantity, image_url, extras, is_in_stock 
+      menu_category_id, name, description, price, size, sizes, quantity, image_url: finalImageUrl, extras, is_in_stock 
     });
 
     if (!item) return res.status(404).json({ status: 'error', message: 'Menu item not found' });

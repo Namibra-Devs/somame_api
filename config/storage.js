@@ -44,4 +44,42 @@ const upload = multer({
   }
 });
 
-module.exports = upload;
+const { DeleteObjectCommand } = require('@aws-sdk/client-s3');
+
+const deleteFileFromMinio = async (fileUrl) => {
+  if (!fileUrl) return;
+
+  try {
+    const bucket = process.env.MINIO_BUCKET || 'somame';
+    
+    // We need to extract the object key from the full URL.
+    // E.g., http://localhost:9000/somame/uploads/1628100123456.png -> uploads/1628100123456.png
+    // The bucket name is part of the URL path in MinIO
+    const urlObj = new URL(fileUrl);
+    const pathname = urlObj.pathname; // e.g., /somame/uploads/1628100123456.png
+    
+    // Split by bucket name and remove leading slash
+    const parts = pathname.split(`/${bucket}/`);
+    if (parts.length < 2) {
+      console.log('Could not extract key from URL:', fileUrl);
+      return;
+    }
+    
+    const key = parts[1]; // e.g., uploads/1628100123456.png
+
+    const command = new DeleteObjectCommand({
+      Bucket: bucket,
+      Key: key,
+    });
+
+    await s3Config.send(command);
+    console.log(`Successfully deleted ${key} from MinIO`);
+  } catch (error) {
+    console.error('Error deleting file from MinIO:', error);
+  }
+};
+
+module.exports = {
+  upload,
+  deleteFileFromMinio
+};

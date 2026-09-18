@@ -1,5 +1,6 @@
 const Vendor = require('../models/Vendor');
 const User = require('../models/User');
+const { deleteFileFromMinio } = require('../config/storage');
 
 // @desc    Get nearby vendors
 // @route   GET /api/vendors/nearby
@@ -119,9 +120,23 @@ const updateMyVendorProfile = async (req, res, next) => {
       return res.status(403).json({ status: 'error', message: 'Forbidden: Vendors only' });
     }
 
-    const { name, description, category_id, logo_url, tags, lat, lng, is_open, address, email, phone_number } = req.body;
+    let { name, description, category_id, logo_url, tags, lat, lng, is_open, address, email, phone_number } = req.body;
 
-    const vendor = await Vendor.updateByUserId(req.user.id, { name, description, category_id, logo_url, tags, lat, lng, is_open, address });
+    let finalLogoUrl = logo_url;
+    if (req.file && req.file.location) {
+      finalLogoUrl = req.file.location;
+    }
+
+    if (is_open !== undefined) {
+      is_open = is_open === 'true' || is_open === true;
+    }
+
+    const existingVendor = await Vendor.findByUserId(req.user.id);
+    if (existingVendor && finalLogoUrl && existingVendor.logo_url && existingVendor.logo_url !== finalLogoUrl) {
+      await deleteFileFromMinio(existingVendor.logo_url);
+    }
+
+    const vendor = await Vendor.updateByUserId(req.user.id, { name, description, category_id, logo_url: finalLogoUrl, tags, lat, lng, is_open, address });
 
     if (!vendor) {
       return res.status(404).json({ status: 'error', message: 'Vendor profile not found. Please create one first.' });

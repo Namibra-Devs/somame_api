@@ -13,9 +13,20 @@ const {
   deletePaymentMethod 
 } = require('../controllers/riderPaymentController');
 const { protect } = require('../middlewares/authMiddleware');
+const { upload } = require('../config/storage');
+
+const riderDocsUpload = upload.fields([
+  { name: 'id_front', maxCount: 1 },
+  { name: 'id_back', maxCount: 1 },
+  { name: 'license_front', maxCount: 1 },
+  { name: 'license_back', maxCount: 1 },
+  { name: 'road_worthy', maxCount: 1 },
+  { name: 'insurance', maxCount: 1 },
+  { name: 'selfie', maxCount: 1 },
+]);
 
 router.route('/register')
-  .post(protect, submitRiderRegistration);
+  .post(protect, riderDocsUpload, submitRiderRegistration);
 
 router.route('/me')
   .get(protect, getMyRiderProfile);
