@@ -318,9 +318,21 @@ CREATE TABLE rider_profiles (
     insurance_image_url VARCHAR(255),
     selfie_image_url VARCHAR(255),
     verification_status verification_status_enum DEFAULT 'pending',
+    is_online BOOLEAN DEFAULT false,
+    current_location GEOMETRY(Point, 4326),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE rider_sessions (
+    id SERIAL PRIMARY KEY,
+    rider_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    online_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    offline_at TIMESTAMP WITH TIME ZONE,
+    duration_minutes INTEGER
+);
+
+CREATE INDEX idx_rider_sessions_rider_id ON rider_sessions(rider_id);
 
 CREATE INDEX idx_rider_profiles_user_id ON rider_profiles(user_id);
 

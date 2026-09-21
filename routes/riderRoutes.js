@@ -1,6 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const { submitRiderRegistration, getMyRiderProfile } = require('../controllers/riderController');
+const { 
+  submitRiderRegistration, 
+  getMyRiderProfile, 
+  updateStatus, 
+  updateLocation, 
+  getHomeSummary 
+} = require('../controllers/riderController');
 const { 
   getEarningsDashboard, 
   getPayoutHistory, 
@@ -30,6 +36,15 @@ router.route('/register')
 
 router.route('/me')
   .get(protect, getMyRiderProfile);
+
+router.route('/me/home')
+  .get(protect, getHomeSummary);
+
+router.route('/me/status')
+  .put(protect, updateStatus);
+
+router.route('/me/location')
+  .put(protect, updateLocation);
 
 
 // Payment Methods Routes

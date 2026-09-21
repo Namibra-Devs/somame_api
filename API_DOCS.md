@@ -2306,6 +2306,67 @@ Connect to the Socket.io server by passing the JWT token.
 }
 ```
 
+### Get Rider Home Summary
+- **Endpoint**: `GET /api/riders/me/home`
+- **Headers**: `Authorization: Bearer <your_jwt_token>`
+- **Description**: Fetches the rider's dashboard summary for the current day (earnings, deliveries, and online time).
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Today's summary retrieved successfully",
+  "data": {
+    "is_online": true,
+    "today_summary": {
+      "earning": 600,
+      "deliveries": 8,
+      "online_time": "4h 35min",
+      "online_time_minutes": 275
+    }
+  }
+}
+```
+
+### Toggle Rider Online Status
+- **Endpoint**: `PUT /api/riders/me/status`
+- **Headers**: `Authorization: Bearer <your_jwt_token>`
+- **Description**: Toggles the rider's online/offline status and starts/ends an online session.
+- **Body payload (JSON)**:
+```json
+{
+  "is_online": true
+}
+```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Rider is now online",
+  "data": {
+    "is_online": true
+  }
+}
+```
+
+### Update Rider Location
+- **Endpoint**: `PUT /api/riders/me/location`
+- **Headers**: `Authorization: Bearer <your_jwt_token>`
+- **Description**: Updates the rider's current coordinates for tracking on the map.
+- **Body payload (JSON)**:
+```json
+{
+  "lat": 5.6037,
+  "lng": -0.1870
+}
+```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Location updated successfully"
+}
+```
+
 ## Rider Payment Methods
 
 ### Get Rider Payment Methods

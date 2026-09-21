@@ -3,7 +3,8 @@ const { pool } = require('../config/db');
 class RiderProfile {
   static async findByUserId(userId) {
     const result = await pool.query(
-      `SELECT rp.*, u.first_name, u.last_name, u.phone_number 
+      `SELECT rp.*, u.first_name, u.last_name, u.phone_number,
+              ST_AsGeoJSON(rp.current_location)::json as current_location_json
        FROM rider_profiles rp
        JOIN users u ON rp.user_id = u.id
        WHERE rp.user_id = $1`,
@@ -67,6 +68,26 @@ class RiderProfile {
        SET verification_status = $1, updated_at = CURRENT_TIMESTAMP 
        WHERE user_id = $2 RETURNING *`,
       [status, userId]
+    );
+    return result.rows[0];
+  }
+
+  static async updateStatus(userId, isOnline) {
+    const result = await pool.query(
+      `UPDATE rider_profiles 
+       SET is_online = $1, updated_at = CURRENT_TIMESTAMP 
+       WHERE user_id = $2 RETURNING *`,
+      [isOnline, userId]
+    );
+    return result.rows[0];
+  }
+
+  static async updateLocation(userId, lat, lng) {
+    const result = await pool.query(
+      `UPDATE rider_profiles 
+       SET current_location = ST_SetSRID(ST_MakePoint($1, $2), 4326), updated_at = CURRENT_TIMESTAMP 
+       WHERE user_id = $3 RETURNING *`,
+      [lng, lat, userId] // PostGIS uses Longitude(X), Latitude(Y)
     );
     return result.rows[0];
   }

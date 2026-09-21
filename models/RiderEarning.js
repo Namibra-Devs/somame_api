@@ -62,6 +62,20 @@ class RiderEarning {
     return result.rows[0].today_total;
   }
 
+  static async getTodayDeliveriesCount(riderId) {
+    const result = await pool.query(
+      `
+      SELECT COUNT(*) as deliveries_count
+      FROM rider_earnings
+      WHERE rider_id = $1 
+        AND earning_type = 'delivery'
+        AND created_at >= date_trunc('day', CURRENT_DATE)
+      `,
+      [riderId]
+    );
+    return parseInt(result.rows[0].deliveries_count, 10);
+  }
+
   static async getYesterdayEarnings(riderId) {
     const result = await pool.query(
       `
