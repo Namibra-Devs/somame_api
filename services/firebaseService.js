@@ -1,4 +1,5 @@
-const admin = require('firebase-admin');
+const { initializeApp, getApps, cert } = require('firebase-admin/app');
+const { getMessaging } = require('firebase-admin/messaging');
 const pool = require('../config/db');
 
 // Initialize Firebase Admin SDK
@@ -18,9 +19,9 @@ const initializeFirebase = () => {
       return;
     }
 
-    if (!admin.apps.length) {
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount)
+    if (getApps().length === 0) {
+      initializeApp({
+        credential: cert(serviceAccount)
       });
       console.log('Firebase Admin SDK initialized successfully');
     }
@@ -48,7 +49,7 @@ const getUserTokens = async (userId) => {
  */
 const sendPushNotification = async (userId, title, body, data = {}) => {
   try {
-    if (!admin.apps.length) {
+    if (getApps().length === 0) {
       console.warn('Firebase Admin SDK not initialized, skipping push notification');
       return;
     }
@@ -72,7 +73,7 @@ const sendPushNotification = async (userId, title, body, data = {}) => {
       tokens
     };
 
-    const response = await admin.messaging().sendEachForMulticast(message);
+    const response = await getMessaging().sendEachForMulticast(message);
     console.log(`Push notification sent to user ${userId}:`, response.successCount, 'successes,', response.failureCount, 'failures');
 
     // Optionally clean up invalid tokens if failureCount > 0
