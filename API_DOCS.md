@@ -236,13 +236,13 @@ Base URL: http://localhost:3000
 ```
 
 ### Register FCM Token (Protected)
-- **Endpoint**: `POST /api/users/fcm-token`
+- **Endpoint**: `POST /api/users/fcm-token` **Call POST /api/users/fcm-token with the token immediately after a user logs in.**
 - **Headers**: `Authorization: Bearer <your_jwt_token>`
 - **Description**: Registers a Firebase Cloud Messaging device token for push notifications.
 - **Body payload (JSON)**:
 ```json
 {
-  "token": "eYabc123..."
+  "token": "eYabc123..." // required
 }
 ```
 - **Example Response**:

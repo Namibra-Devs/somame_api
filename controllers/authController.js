@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { pool } = require('../config/db');
+const { sendSMS } = require('../services/smsService');
 
 // Helper to generate 6 digit OTP
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
@@ -35,8 +36,9 @@ const register = async (req, res, next) => {
     // Create user (is_verified defaults to false in schema)
     const user = await User.create({ phone_number, password_hash, role, otp_code, otp_expires_at });
 
-    // Mock sending SMS
-    console.log(`\n\n[MOCK SMS] To: ${phone_number} | Message: Your Somame API verification code is: ${otp_code}\n\n`);
+    // Send SMS via Arkesel
+    const message = `Your Somame API verification code is: ${otp_code}`;
+    await sendSMS(phone_number, message);
 
     res.status(201).json({
       status: 'success',
@@ -85,8 +87,9 @@ const login = async (req, res, next) => {
 
     await User.updateOTP(user.id, otp_code, otp_expires_at);
 
-    // Mock sending SMS
-    console.log(`\n\n[MOCK SMS] To: ${phone_number} | Message: Your Somame API login verification code is: ${otp_code}\n\n`);
+    // Send SMS via Arkesel
+    const message = `Your Somame API login verification code is: ${otp_code}`;
+    await sendSMS(phone_number, message);
 
     res.status(200).json({
       status: 'success',
