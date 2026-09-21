@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
+const { deleteFileFromMinio } = require('../config/storage');
 
 // @desc    Get logged in user profile
 // @route   GET /api/users/profile
@@ -19,9 +20,24 @@ const getProfile = async (req, res, next) => {
 // @route   PUT /api/users/profile
 const updateProfile = async (req, res, next) => {
   try {
-    const { first_name, last_name, email } = req.body;
+    let { first_name, last_name, email, profile_picture } = req.body;
+    
+    // If a file was uploaded via multipart/form-data, use its URL
+    if (req.file) {
+      profile_picture = req.file.location;
+    }
 
-    const user = await User.updateProfile(req.user.id, { first_name, last_name, email });
+    // Check existing user to delete old profile picture if it's being updated
+    const existingUser = await User.findById(req.user.id);
+    if (!existingUser) {
+      return res.status(404).json({ status: 'error', message: 'User not found' });
+    }
+
+    if (profile_picture && existingUser.profile_picture && existingUser.profile_picture !== profile_picture) {
+      await deleteFileFromMinio(existingUser.profile_picture);
+    }
+
+    const user = await User.updateProfile(req.user.id, { first_name, last_name, email, profile_picture });
     
     if (!user) {
       return res.status(404).json({ status: 'error', message: 'User not found' });

@@ -7,7 +7,7 @@ class User {
   }
 
   static async findById(id) {
-    const result = await pool.query('SELECT id, first_name, last_name, email, phone_number, role, is_verified, is_active, created_at, updated_at FROM users WHERE id = $1', [id]);
+    const result = await pool.query('SELECT id, first_name, last_name, email, phone_number, role, is_verified, is_active, profile_picture, created_at, updated_at FROM users WHERE id = $1', [id]);
     return result.rows[0];
   }
 
@@ -16,17 +16,18 @@ class User {
     return result.rows[0];
   }
 
-  static async updateProfile(id, { first_name, last_name, email, phone_number }) {
+  static async updateProfile(id, { first_name, last_name, email, phone_number, profile_picture }) {
     const result = await pool.query(
       `UPDATE users 
        SET first_name = COALESCE($1, first_name), 
            last_name = COALESCE($2, last_name), 
            email = COALESCE($3, email),
            phone_number = COALESCE($4, phone_number),
+           profile_picture = COALESCE($5, profile_picture),
            updated_at = CURRENT_TIMESTAMP
-       WHERE id = $5 
-       RETURNING id, first_name, last_name, email, phone_number, role, is_verified, is_active, updated_at`,
-      [first_name, last_name, email, phone_number, id]
+       WHERE id = $6 
+       RETURNING id, first_name, last_name, email, phone_number, role, is_verified, is_active, profile_picture, updated_at`,
+      [first_name, last_name, email, phone_number, profile_picture, id]
     );
     return result.rows[0];
   }

@@ -155,6 +155,7 @@ Base URL: http://localhost:3000
     "last_name": "Ibrahim",
     "email": "zero@example.com",
     "phone_number": "1234567890",
+    "profile_picture": "http://namibras3.namibra.io/somame/...",
     "role": "customer",
     "is_verified": true,
     "created_at": "2026-06-04T03:30:00.000Z"
@@ -166,12 +167,14 @@ Base URL: http://localhost:3000
 - **Endpoint**: `PUT /api/users/profile`
 - **Headers**: `Authorization: Bearer <your_jwt_token>`
 - **Description**: Updates the logged-in user's profile details.
-- **Body payload (JSON)**:
+- **Body payload (JSON or `multipart/form-data`)**:
+If uploading a file, use `multipart/form-data` with the field `profile_picture` as a File. Otherwise, you can send JSON:
 ```json
 {
   "first_name": "Hamza",
   "last_name": "Ibramin",
-  "email": "zero@example.com"
+  "email": "zero@example.com",
+  "profile_picture": "http://namibras3.namibra.io/somame/..."
 }
 ```
 - **Example Response**:
@@ -185,10 +188,11 @@ Base URL: http://localhost:3000
     "last_name": "Ibramin",
     "email": "zero@example.com",
     "phone_number": "1234567890",
+    "profile_picture": "http://namibras3.namibra.io/somame/...",
     "role": "customer",
     "is_verified": true,
     "is_active": true,
-    "updated_at": "2026-06-04T03:30:00.000Z"
+    "updated_at": "2026-06-04T04:00:00.000Z"
   }
 }
 ```

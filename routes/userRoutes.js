@@ -4,10 +4,11 @@ const { getProfile, updateProfile, updatePassword, updateUserStatus, registerFcm
 const { getAddresses, addAddress, updateAddress, deleteAddress } = require('../controllers/addressController');
 const { getPaymentMethods, addPaymentMethod, setDefaultPaymentMethod, deletePaymentMethod } = require('../controllers/paymentMethodController');
 const { protect } = require('../middlewares/authMiddleware');
+const { upload } = require('../config/storage');
 
 router.route('/profile')
   .get(protect, getProfile)
-  .put(protect, updateProfile);
+  .put(protect, upload.single('profile_picture'), updateProfile);
 
 router.route('/password')
   .put(protect, updatePassword);

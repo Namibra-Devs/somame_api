@@ -12,6 +12,18 @@ const sendSMS = async (phoneNumber, message) => {
     return { status: 'success', message: 'Mock SMS sent' };
   }
 
+  // Format phone number (Arkesel typically requires international format without the '+')
+  // Example for Ghana: 0241234567 -> 233241234567
+  let formattedNumber = phoneNumber;
+  if (formattedNumber.startsWith('0')) {
+    // Defaulting to Ghana country code (233). Adjust this if your users are from elsewhere.
+    formattedNumber = '233' + formattedNumber.substring(1);
+  }
+  // Remove any '+' sign if it exists
+  if (formattedNumber.startsWith('+')) {
+    formattedNumber = formattedNumber.substring(1);
+  }
+
   try {
     const response = await fetch('https://sms.arkesel.com/api/v2/sms/send', {
       method: 'POST',
@@ -22,7 +34,7 @@ const sendSMS = async (phoneNumber, message) => {
       body: JSON.stringify({
         sender: senderId,
         message: message,
-        recipients: [phoneNumber],
+        recipients: [formattedNumber],
       }),
     });
 
@@ -33,7 +45,7 @@ const sendSMS = async (phoneNumber, message) => {
       throw new Error(data.message || 'Failed to send SMS via Arkesel');
     }
 
-    console.log(`[SMS SUCCESS] Sent to ${phoneNumber} via Arkesel`);
+    console.log(`[SMS SUCCESS] Sent to ${formattedNumber} via Arkesel. Response:`, JSON.stringify(data));
     return { status: 'success', data };
   } catch (error) {
     console.error('[SMS EXCEPTION]', error);
