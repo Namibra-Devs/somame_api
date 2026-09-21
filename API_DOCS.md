@@ -235,6 +235,42 @@ Base URL: http://localhost:3000
 }
 ```
 
+### Register FCM Token (Protected)
+- **Endpoint**: `POST /api/users/fcm-token`
+- **Headers**: `Authorization: Bearer <your_jwt_token>`
+- **Description**: Registers a Firebase Cloud Messaging device token for push notifications.
+- **Body payload (JSON)**:
+```json
+{
+  "token": "eYabc123..."
+}
+```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "FCM token registered successfully"
+}
+```
+
+### Remove FCM Token (Protected)
+- **Endpoint**: `DELETE /api/users/fcm-token`
+- **Headers**: `Authorization: Bearer <your_jwt_token>`
+- **Description**: Removes an FCM token (e.g. on logout).
+- **Body payload (JSON)**:
+```json
+{
+  "token": "eYabc123..."
+}
+```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "FCM token removed successfully"
+}
+```
+
 ### Get My Saved Addresses (Customer)
 - **Endpoint**: `GET /api/users/me/addresses`
 - **Headers**: `Authorization: Bearer <your_jwt_token>`

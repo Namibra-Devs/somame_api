@@ -12,7 +12,8 @@ const {
   confirmPickup,
   arriveCustomer,
   confirmDelivery,
-  getRiderFoodDeliveries
+  getRiderFoodDeliveries,
+  sendMessage
 } = require('../controllers/orderController');
 const { validatePromo } = require('../controllers/promotionController');
 const { protect } = require('../middlewares/authMiddleware');
@@ -31,5 +32,6 @@ router.route('/:id/confirm-pickup').post(protect, confirmPickup);
 router.route('/:id/arrive-customer').post(protect, arriveCustomer);
 router.route('/:id/confirm-delivery').post(protect, confirmDelivery);
 router.route('/:id/ratings').post(protect, submitOrderRatings);
+router.route('/:id/message').post(protect, sendMessage);
 
 module.exports = router;

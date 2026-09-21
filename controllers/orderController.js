@@ -7,6 +7,7 @@ const MenuItem = require('../models/MenuItem');
 const RiderWallet = require('../models/RiderWallet');
 const RiderEarning = require('../models/RiderEarning');
 const SystemConfig = require('../models/SystemConfig');
+const { sendPushNotification } = require('../services/firebaseService');
 
 // @desc    Create a new order transaction
 // @route   POST /api/orders
@@ -104,6 +105,14 @@ const createOrder = async (req, res, next) => {
       delivery_location,
       delivery_address
     });
+
+    // Fire & forget push notification to the vendor
+    sendPushNotification(
+      vendor.user_id, 
+      'New Order Received!', 
+      `You have a new order (${order_number}) for $${final_total_amount.toFixed(2)}.`, 
+      { type: 'new_order', orderId: result.id.toString() }
+    ).catch(err => console.error('Failed to send push notification', err));
 
     res.status(201).json({
       status: 'success',
@@ -233,10 +242,55 @@ const updateOrderStatus = async (req, res, next) => {
 
     const updatedOrder = await Order.updateStatus(orderId, status);
     
+    // Fire & forget push notification to customer
+    sendPushNotification(
+      order.customer_id,
+      'Order Status Update',
+      `Your order (${order.order_number}) status is now: ${status.replace('_', ' ')}.`,
+      { type: 'order_status_update', orderId: orderId.toString(), status }
+    ).catch(err => console.error('Failed to send push notification', err));
+
     res.status(200).json({
       status: 'success',
       message: 'Order status updated successfully',
       data: updatedOrder
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Send a message regarding an order (Triggers Push Notification)
+// @route   POST /api/orders/:id/message
+const sendMessage = async (req, res, next) => {
+  try {
+    const orderId = req.params.id;
+    const { message } = req.body;
+    
+    if (!message) {
+      return res.status(400).json({ status: 'error', message: 'Message text is required' });
+    }
+
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ status: 'error', message: 'Order not found' });
+    }
+
+    const role = req.user.role;
+    
+    // Send push notification to the customer if a vendor or admin sends the message
+    if (role === 'vendor' || role === 'admin') {
+      sendPushNotification(
+        order.customer_id,
+        'New Message Received',
+        `New message regarding order ${order.order_number}: ${message}`,
+        { type: 'new_message', orderId: orderId.toString() }
+      ).catch(err => console.error('Failed to send push notification', err));
+    }
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Message sent successfully'
     });
   } catch (error) {
     next(error);
@@ -492,6 +546,7 @@ module.exports = {
   updateOrderStatus,
   acceptJob,
   declineJob,
+  sendMessage,
   arriveMerchant,
   confirmPickup,
   arriveCustomer,

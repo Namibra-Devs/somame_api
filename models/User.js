@@ -84,6 +84,25 @@ class User {
 
     return { success: true, user: result.rows[0] };
   }
+
+  static async registerFcmToken(userId, token) {
+    const result = await pool.query(
+      `INSERT INTO user_fcm_tokens (user_id, token) 
+       VALUES ($1, $2) 
+       ON CONFLICT (user_id, token) DO UPDATE SET updated_at = CURRENT_TIMESTAMP
+       RETURNING id, token`,
+      [userId, token]
+    );
+    return result.rows[0];
+  }
+
+  static async removeFcmToken(userId, token) {
+    const result = await pool.query(
+      'DELETE FROM user_fcm_tokens WHERE user_id = $1 AND token = $2 RETURNING id',
+      [userId, token]
+    );
+    return result.rowCount > 0;
+  }
 }
 
 module.exports = User;
