@@ -7,6 +7,7 @@ const { Server } = require('socket.io');
 
 const { connectDB } = require('./config/db');
 const socketManager = require('./sockets/socketManager');
+const { initializeFirebase } = require('./services/firebaseService');
 
 const app = express();
 const server = http.createServer(app);
@@ -21,6 +22,9 @@ const io = new Server(server, {
 
 // Connect to PostgreSQL database
 connectDB();
+
+// Initialize Firebase
+initializeFirebase();
 
 // Global Middlewares
 app.use(helmet());

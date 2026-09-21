@@ -92,9 +92,47 @@ const updateUserStatus = async (req, res, next) => {
   }
 };
 
+// @desc    Register FCM Token for push notifications
+// @route   POST /api/users/fcm-token
+const registerFcmToken = async (req, res, next) => {
+  try {
+    const { token } = req.body;
+    
+    if (!token) {
+      return res.status(400).json({ status: 'error', message: 'FCM token is required' });
+    }
+
+    await User.registerFcmToken(req.user.id, token);
+
+    res.status(200).json({ status: 'success', message: 'FCM token registered successfully' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Remove FCM Token
+// @route   DELETE /api/users/fcm-token
+const removeFcmToken = async (req, res, next) => {
+  try {
+    const { token } = req.body;
+    
+    if (!token) {
+      return res.status(400).json({ status: 'error', message: 'FCM token is required' });
+    }
+
+    await User.removeFcmToken(req.user.id, token);
+
+    res.status(200).json({ status: 'success', message: 'FCM token removed successfully' });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getProfile,
   updateProfile,
   updatePassword,
-  updateUserStatus
+  updateUserStatus,
+  registerFcmToken,
+  removeFcmToken
 };

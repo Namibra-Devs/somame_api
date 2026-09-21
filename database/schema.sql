@@ -393,3 +393,15 @@ CREATE TABLE rider_payouts (
 );
 
 CREATE INDEX idx_rider_payouts_rider_id ON rider_payouts(rider_id);
+
+-- 25. user_fcm_tokens table
+CREATE TABLE user_fcm_tokens (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    token VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT unique_user_fcm_token UNIQUE (user_id, token)
+);
+
+CREATE INDEX idx_user_fcm_tokens_user_id ON user_fcm_tokens(user_id);

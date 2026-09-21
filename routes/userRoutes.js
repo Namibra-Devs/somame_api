@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getProfile, updateProfile, updatePassword, updateUserStatus } = require('../controllers/userController');
+const { getProfile, updateProfile, updatePassword, updateUserStatus, registerFcmToken, removeFcmToken } = require('../controllers/userController');
 const { getAddresses, addAddress, updateAddress, deleteAddress } = require('../controllers/addressController');
 const { getPaymentMethods, addPaymentMethod, setDefaultPaymentMethod, deletePaymentMethod } = require('../controllers/paymentMethodController');
 const { protect } = require('../middlewares/authMiddleware');
@@ -11,6 +11,10 @@ router.route('/profile')
 
 router.route('/password')
   .put(protect, updatePassword);
+
+router.route('/fcm-token')
+  .post(protect, registerFcmToken)
+  .delete(protect, removeFcmToken);
 
 // Saved Addresses routes
 router.route('/me/addresses')
