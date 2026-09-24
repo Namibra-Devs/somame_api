@@ -4,6 +4,22 @@ const User = require('../models/User');
 const { pool } = require('../config/db');
 const { sendSMS } = require('../services/smsService');
 
+// Helper to normalize phone number
+const normalizePhoneNumber = (phone) => {
+  if (!phone) return phone;
+  let normalized = phone.toString().trim();
+  if (normalized.startsWith('+')) {
+    normalized = normalized.substring(1);
+  }
+  if (normalized.startsWith('233')) {
+    normalized = normalized.substring(3);
+    if (!normalized.startsWith('0')) {
+      normalized = '0' + normalized;
+    }
+  }
+  return normalized;
+};
+
 // Helper to generate 6 digit OTP
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
@@ -11,7 +27,8 @@ const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString()
 // @route   POST /api/auth/register
 const register = async (req, res, next) => {
   try {
-    const { phone_number, password, role } = req.body;
+    let { phone_number, password, role } = req.body;
+    phone_number = normalizePhoneNumber(phone_number);
     
     if (!phone_number || !password || !role) {
       return res.status(400).json({ status: 'error', message: 'Please provide all required fields' });
@@ -57,7 +74,8 @@ const register = async (req, res, next) => {
 // @route   POST /api/auth/login
 const login = async (req, res, next) => {
   try {
-    const { phone_number } = req.body; // Password removed
+    let { phone_number } = req.body;
+    phone_number = normalizePhoneNumber(phone_number); // Password removed
 
     if (!phone_number) {
       return res.status(400).json({ status: 'error', message: 'Please provide a phone number' });
@@ -108,7 +126,8 @@ const login = async (req, res, next) => {
 // @route   POST /api/auth/login-with-password
 const loginWithPassword = async (req, res, next) => {
   try {
-    const { phone_number, password } = req.body;
+    let { phone_number, password } = req.body;
+    phone_number = normalizePhoneNumber(phone_number);
 
     if (!phone_number || !password) {
       return res.status(400).json({ status: 'error', message: 'Please provide phone number and password' });
@@ -155,7 +174,8 @@ const loginWithPassword = async (req, res, next) => {
 // @route   POST /api/auth/verify-otp
 const verifyOTP = async (req, res, next) => {
   try {
-    const { phone_number, otp_code } = req.body;
+    let { phone_number, otp_code } = req.body;
+    phone_number = normalizePhoneNumber(phone_number);
 
     if (!phone_number || !otp_code) {
       return res.status(400).json({ status: 'error', message: 'Please provide phone number and OTP code' });
@@ -193,7 +213,8 @@ const verifyOTP = async (req, res, next) => {
 // @route   POST /api/auth/seed-admin
 const seedAdmin = async (req, res, next) => {
   try {
-    const { phone_number, password } = req.body;
+    let { phone_number, password } = req.body;
+    phone_number = normalizePhoneNumber(phone_number);
     if (!phone_number || !password) {
       return res.status(400).json({ status: 'error', message: 'Provide phone_number and password' });
     }
