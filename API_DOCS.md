@@ -246,7 +246,7 @@ If uploading a file, use `multipart/form-data` with the field `profile_picture` 
 - **Body payload (JSON)**:
 ```json
 {
-  "token": "eYabc123..." // required
+  "token": "eYabc123..." // required (using FirebaseMessaging.getInstance().getToken() in Android or the equivalent in Flutter/React Native)
 }
 ```
 - **Example Response**:
@@ -1551,11 +1551,11 @@ If uploading a file, use `multipart/form-data` with the field `profile_picture` 
 ### Update Order Status (Vendor / Rider / Admin)
 - **Endpoint**: `PATCH /api/orders/:id/status`
 - **Headers**: `Authorization: Bearer <your_jwt_token>`
-- **Description**: Updates the status of an order. Vendors can update to `accepted` or `preparing`. Riders can update to `out_for_delivery` or `delivered`.
+- **Description**: Updates the status of an order. Vendors can update to `accepted` or `preparing` or `ready`. Riders can update to `out_for_delivery` or `delivered`.
 - **Body payload (JSON)**:
 ```json
 {
-  "status": "accepted"
+  "status": "accepted" // accepted, preparing, ready, out_for_delivery, delivered
 }
 ```
 - **Example Response**:

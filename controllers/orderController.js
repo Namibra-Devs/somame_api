@@ -227,8 +227,8 @@ const updateOrderStatus = async (req, res, next) => {
       if (!vendor || order.vendor_id !== vendor.id) {
         return res.status(403).json({ status: 'error', message: 'Not authorized to update this order' });
       }
-      if (!['accepted', 'preparing'].includes(status)) {
-        return res.status(400).json({ status: 'error', message: 'Vendors can only update status to "accepted" or "preparing"' });
+      if (!['accepted', 'preparing', 'ready'].includes(status)) {
+        return res.status(400).json({ status: 'error', message: 'Vendors can only update status to "accepted", "preparing", or "ready"' });
       }
     } else if (role === 'rider') {
       if (order.rider_id !== userId) {
@@ -242,6 +242,23 @@ const updateOrderStatus = async (req, res, next) => {
     }
 
     const updatedOrder = await Order.updateStatus(orderId, status);
+
+    // If order is ready, broadcast to riders
+    if (status === 'ready') {
+      const { pool } = require('../config/db');
+      pool.query("SELECT id FROM users WHERE role = 'rider' AND is_active = true")
+        .then(result => {
+           result.rows.forEach(rider => {
+             sendPushNotification(
+               rider.id,
+               'New Delivery Available!',
+               `A new order (${order.order_number}) is ready for pickup.`,
+               { type: 'new_delivery_job', orderId: orderId.toString() }
+             ).catch(err => console.error('Failed to send to rider', err));
+           });
+        })
+        .catch(err => console.error('Error fetching riders for broadcast', err));
+    }
     
     // Fire & forget push notification to customer
     sendPushNotification(
