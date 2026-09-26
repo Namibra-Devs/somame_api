@@ -1576,6 +1576,40 @@ If uploading a file, use `multipart/form-data` with the field `profile_picture` 
 }
 ```
 
+### Update Order Status To Ready (Vendor)
+- **Endpoint**: `PATCH /api/orders/:id/status`
+- **Headers**: `Authorization: Bearer <your_vendor_jwt_token>`
+- **Description**: Updates the order status to `ready`. When triggered, it automatically emits a `new_delivery_job` websocket event to all connected riders.
+- **Body payload (JSON)**:
+```json
+{
+  "status": "ready"
+}
+```
+- **Websocket Broadcast (to 'riders' room)**:
+  - Event Name: `new_delivery_job`
+  - Payload:
+```json
+{
+  "type": "new_delivery_job",
+  "orderId": "123",
+  "order_number": "ORD-1X2Y3Z-1234",
+  "vendor": {
+    "name": "Burger Joint",
+    "address": "123 Main St",
+    "lat": 34.0522,
+    "lng": -118.2437
+  },
+  "delivery": {
+    "address": "456 Customer Ave",
+    "lat": 34.0622,
+    "lng": -118.2537
+  },
+  "total_amount": "25.50",
+  "payment_method": "cod"
+}
+```
+
 ### Submit Ratings (Customer Only)
 - **Endpoint**: `POST /api/orders/:id/ratings`
 - **Headers**: `Authorization: Bearer <your_customer_jwt_token>`
