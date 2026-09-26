@@ -27,6 +27,10 @@ connectDB();
 initializeFirebase();
 
 // Global Middlewares
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
 app.use(helmet());
 app.use(cors());
 app.use(express.json());
