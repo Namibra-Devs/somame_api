@@ -13,7 +13,8 @@ const { sendPushNotification } = require('../services/firebaseService');
 // @route   POST /api/orders
 const createOrder = async (req, res, next) => {
   try {
-    const { vendor_id, rider_id, items, total_amount, promotion_id, discount_amount, rider_tip, estimated_delivery_time, customer_note, payment_method, delivery_location, delivery_address } = req.body;
+    let { vendor_id, rider_id, items, total_amount, promotion_id, discount_amount, rider_tip, estimated_delivery_time, customer_note, payment_method, delivery_location, delivery_address } = req.body;
+    if (payment_method === 'cash') { payment_method = 'cod'; }
     
     // Fetch customer_id from the authenticated user token
     const customer_id = req.user.id;

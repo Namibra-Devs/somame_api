@@ -1415,7 +1415,7 @@ If uploading a file, use `multipart/form-data` with the field `profile_picture` 
   "rider_tip": 5.00, // optional rider tip amount
   "estimated_delivery_time": "2026-06-04T04:10:00.000Z", // optional
   "customer_note": "Please leave at the front door", // optional
-  "payment_method": "momo", // this can be momo, cash, card, stripe
+  "payment_method": "momo", // this can be momo, cod, card, stripe
   "items": [
     { "item_id": 1, "item_name": "Fried Rice", "quantity": 2, "price": 20.00 }, // should be get from the menu_items table using the item_id
     { "item_id": 2, "item_name": "Chicken", "quantity": 1, "price": 15.50 } // should be get from the menu_items table using the item_id
