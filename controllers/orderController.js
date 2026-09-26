@@ -112,7 +112,7 @@ const createOrder = async (req, res, next) => {
       vendor.user_id, 
       'New Order Received!', 
       `You have a new order (${order_number}) for $${final_total_amount.toFixed(2)}.`, 
-      { type: 'new_order', orderId: result.id.toString() }
+      { type: 'new_order', orderId: result.order.id.toString() }
     ).catch(err => console.error('Failed to send push notification', err));
 
     res.status(201).json({
