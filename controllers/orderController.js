@@ -245,6 +245,9 @@ const updateOrderStatus = async (req, res, next) => {
 
     // If order is ready, broadcast to riders
     if (status === 'ready') {
+      if (req.io) {
+        req.io.to('riders').emit('new_delivery_job', { type: 'new_delivery_job', orderId: orderId.toString(), order_number: order.order_number });
+      }
       const { pool } = require('../config/db');
       pool.query("SELECT id FROM users WHERE role = 'rider' AND is_active = true")
         .then(result => {
