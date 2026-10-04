@@ -2106,6 +2106,40 @@ Connect to the Socket.io server by passing the JWT token.
 }
 ```
 
+### Track Parcel Order (Protected)
+- **Endpoint**: `GET /api/parcels/:id/track`
+- **Headers**: `Authorization: Bearer <your_jwt_token>`
+- **Description**: Fetch all data needed to track a parcel (pickup/dropoff locations, rider location, ETA, rider info, and status).
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Parcel tracking details retrieved successfully",
+  "data": {
+    "id": 1,
+    "order_number": "PAR-A1B2C3-5678",
+    "status": "accepted",
+    "estimated_time_mins": 45,
+    "created_at": "2026-06-21T08:00:00.000Z",
+    "total_amount": "80.25",
+    "item_description": "A fragile vase",
+    "item_value": "150.00",
+    "delivery_speed": "standard",
+    "pickup_address": "Accra Mall, Spintex Road",
+    "dropoff_address": "Pinkberry, Adenta-Dodowa Road",
+    "pickup_lat": 5.6234,
+    "pickup_lng": -0.1742,
+    "dropoff_lat": 5.6705,
+    "dropoff_lng": -0.1601,
+    "rider_first_name": "Kwasi",
+    "rider_last_name": "Appiah",
+    "rider_phone": "0541234567",
+    "rider_lat": 5.6310,
+    "rider_lng": -0.1700
+  }
+}
+```
+
 ### Get My Parcels (Customer Only)
 - **Endpoint**: `GET /api/parcels/me`
 - **Headers**: `Authorization: Bearer <customer_jwt_token>`

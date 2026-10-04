@@ -217,6 +217,14 @@ const acceptJob = async (req, res, next) => {
     // Initialize delivery tracking
     const delivery = await ParcelDelivery.create(parcelId, riderId, lat, lng);
 
+    // Fetch full tracking data to send to the customer immediately
+    const trackingData = await ParcelOrder.trackParcel(parcelId);
+
+    // Notify the customer in real-time via Socket.io
+    if (req.io) {
+      req.io.to(`user_${parcel.customer_id}`).emit('parcel_rider_found', trackingData);
+    }
+
     res.status(200).json({
       status: 'success',
       message: 'Parcel job accepted successfully',
@@ -328,6 +336,27 @@ const getRiderParcelDeliveries = async (req, res, next) => {
   }
 };
 
+// @desc    Track a parcel's progress and rider location
+// @route   GET /api/parcels/:id/track
+const trackParcel = async (req, res, next) => {
+  try {
+    const parcelId = req.params.id;
+    const parcelData = await ParcelOrder.trackParcel(parcelId);
+    
+    if (!parcelData) {
+      return res.status(404).json({ status: 'error', message: 'Parcel not found' });
+    }
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Parcel tracking details retrieved successfully',
+      data: parcelData
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   calculateFare,
   createParcelOrder,
@@ -336,5 +365,6 @@ module.exports = {
   getRiderParcelDeliveries,
   acceptJob,
   declineJob,
-  confirmDelivery
+  confirmDelivery,
+  trackParcel
 };

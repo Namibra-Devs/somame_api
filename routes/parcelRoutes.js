@@ -8,7 +8,8 @@ const {
   acceptJob,
   declineJob,
   getRiderParcelDeliveries,
-  confirmDelivery
+  confirmDelivery,
+  trackParcel
 } = require('../controllers/parcelController');
 const { protect } = require('../middlewares/authMiddleware');
 
@@ -19,6 +20,7 @@ router.route('/').post(protect, createParcelOrder);
 router.route('/me').get(protect, getMyParcels);
 router.route('/rider-history').get(protect, getRiderParcelDeliveries);
 router.route('/:id').get(protect, getParcelDetails);
+router.route('/:id/track').get(protect, trackParcel);
 router.route('/:id/accept-job').post(protect, acceptJob);
 router.route('/:id/decline-job').post(protect, declineJob);
 router.route('/:id/confirm-delivery').post(protect, confirmDelivery);
