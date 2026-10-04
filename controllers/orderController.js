@@ -576,6 +576,27 @@ const getRiderFoodDeliveries = async (req, res, next) => {
   }
 };
 
+// @desc    Track an order's progress and rider location
+// @route   GET /api/orders/:id/track
+const trackOrder = async (req, res, next) => {
+  try {
+    const orderId = req.params.id;
+    const orderData = await Order.trackOrder(orderId);
+    
+    if (!orderData) {
+      return res.status(404).json({ status: 'error', message: 'Order not found' });
+    }
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Order tracking details retrieved successfully',
+      data: orderData
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createOrder,
   getOrderDetails,
@@ -589,5 +610,6 @@ module.exports = {
   confirmPickup,
   arriveCustomer,
   confirmDelivery,
+  trackOrder,
   getRiderFoodDeliveries
 };

@@ -14,11 +14,15 @@ class Order {
              vu.phone_number as vendor_phone,
              cu.first_name as customer_first_name,
              cu.last_name as customer_last_name,
-             cu.phone_number as customer_phone
+             cu.phone_number as customer_phone,
+             ru.first_name as rider_first_name,
+             ru.last_name as rider_last_name,
+             ru.phone_number as rider_phone
       FROM orders o
       JOIN vendors v ON o.vendor_id = v.id
       JOIN users vu ON v.user_id = vu.id
       JOIN users cu ON o.customer_id = cu.id
+      LEFT JOIN users ru ON o.rider_id = ru.id
       WHERE o.id = $1
     `, [id]);
     return result.rows[0];
@@ -246,6 +250,22 @@ class Order {
       [riderId]
     );
     return result.rows;
+  }
+  static async trackOrder(id) {
+    const result = await pool.query(`
+      SELECT o.id, o.order_number, o.status, o.delivery_otp, o.estimated_delivery_time, o.created_at, o.total_amount,
+             o.delivery_address, ST_Y(o.delivery_location::geometry) as delivery_lat, ST_X(o.delivery_location::geometry) as delivery_lng,
+             v.name as vendor_name, v.address as vendor_address,
+             ST_Y(v.location::geometry) as vendor_lat, ST_X(v.location::geometry) as vendor_lng,
+             ru.first_name as rider_first_name, ru.last_name as rider_last_name, ru.phone_number as rider_phone,
+             ST_Y(rp.current_location::geometry) as rider_lat, ST_X(rp.current_location::geometry) as rider_lng
+      FROM orders o
+      JOIN vendors v ON o.vendor_id = v.id
+      LEFT JOIN users ru ON o.rider_id = ru.id
+      LEFT JOIN rider_profiles rp ON o.rider_id = rp.user_id
+      WHERE o.id = $1
+    `, [id]);
+    return result.rows[0];
   }
 }
 

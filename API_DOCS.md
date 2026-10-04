@@ -1440,6 +1440,7 @@ If uploading a file, use `multipart/form-data` with the field `profile_picture` 
       "vendor_id": 1,
       "rider_id": 2,
       "status": "pending",
+      "delivery_otp": "7392",
       "total_amount": "46.50",
       "promotion_id": 1,
       "discount_amount": "9.00",
@@ -1458,6 +1459,39 @@ If uploading a file, use `multipart/form-data` with the field `profile_picture` 
       "current_location": "0101000020E61000000ABFDB3CAAA5CABF160B547C38741640",
       "updated_at": "2026-06-04T03:40:00.000Z"
     }
+  }
+}
+```
+
+### Track Order (Protected)
+- **Endpoint**: `GET /api/orders/:id/track`
+- **Headers**: `Authorization: Bearer <your_jwt_token>`
+- **Description**: Fetch all data needed to track an order (vendor location, rider location, status, ETA, and delivery_otp).
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Order tracking details retrieved successfully",
+  "data": {
+    "id": 1,
+    "order_number": "ORD-1X2Y3Z-1234",
+    "status": "out_for_delivery",
+    "delivery_otp": "7392",
+    "estimated_delivery_time": "2026-06-04T04:10:00.000Z",
+    "created_at": "2026-06-04T03:40:00.000Z",
+    "total_amount": "46.50",
+    "delivery_address": "Mensah Bibiri Street",
+    "delivery_lat": 5.6037,
+    "delivery_lng": -0.1870,
+    "vendor_name": "Napoli Kitchen",
+    "vendor_address": "Puma, Nmai Dzorn",
+    "vendor_lat": 5.6100,
+    "vendor_lng": -0.1800,
+    "rider_first_name": "Kwame",
+    "rider_last_name": "Mensah",
+    "rider_phone": "0541234567",
+    "rider_lat": 5.6075,
+    "rider_lng": -0.1830
   }
 }
 ```
