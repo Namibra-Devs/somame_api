@@ -133,6 +133,21 @@ class ParcelOrder {
     );
     return result.rows;
   }
+  static async trackParcel(id) {
+    const result = await pool.query(`
+      SELECT po.id, po.order_number, po.status, po.estimated_time_mins, po.created_at, po.total_amount,
+             po.item_description, po.item_value, po.delivery_speed, po.pickup_address, po.dropoff_address,
+             ST_Y(po.pickup_location::geometry) as pickup_lat, ST_X(po.pickup_location::geometry) as pickup_lng,
+             ST_Y(po.dropoff_location::geometry) as dropoff_lat, ST_X(po.dropoff_location::geometry) as dropoff_lng,
+             ru.first_name as rider_first_name, ru.last_name as rider_last_name, ru.phone_number as rider_phone,
+             ST_Y(rp.current_location::geometry) as rider_lat, ST_X(rp.current_location::geometry) as rider_lng
+      FROM parcel_orders po
+      LEFT JOIN users ru ON po.rider_id = ru.id
+      LEFT JOIN rider_profiles rp ON po.rider_id = rp.user_id
+      WHERE po.id = $1
+    `, [id]);
+    return result.rows[0];
+  }
 }
 
 module.exports = ParcelOrder;
