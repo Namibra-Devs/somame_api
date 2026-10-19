@@ -2670,22 +2670,22 @@ Connect to the Socket.io server by passing the JWT token.
 
 ## 19. Customer Support & Cases (/api/support)
 
-This module powers the customer support experience across all 5 Figma mobile screens:
-- **Screen 1**: Support Home Screen (Recent orders, link to "See All", and options: "Contact a Support Agent", "Browse help articles", "Cases").
-- **Screen 2**: "Select Order" Screen (All orders in date order, grouped by month e.g., August 2026, July 2026).
-- **Screen 3**: Initial Chat Screen (Automated greeting referencing the selected order's vendor: *"Hey! How can we help you with your order with KFC Adenta"*).
-- **Screen 4**: Active Chat with unique Case Number badge (e.g., `Case 2324242424` with copy button) triggered upon the user's first message.
-- **Screen 5**: Updated Support Home Screen dynamically presenting the **Cases** carousel/card at the top with last message preview and "See All".
+This module powers the customer support experience across all mobile screens:
+- **1**: Support Home Screen (Recent orders, link to "See All", and options: "Contact a Support Agent", "Browse help articles", "Cases").
+- **2**: "Select Order" Screen (All orders in date order, grouped by month e.g., August 2026, July 2026).
+- **3**: Initial Chat Screen (Automated greeting referencing the selected order's vendor: *"Hey! How can we help you with your order with KFC Adenta"*).
+- **4**: Active Chat with unique Case Number badge (e.g., `Case 2324242424` with copy button) triggered upon the user's first message.
+- **5**: Updated Support Home Screen dynamically presenting the **Cases** carousel/card at the top with last message preview and "See All".
 
 ---
 
-### 19.1 Get Support Overview (Screen 1 & Screen 5)
+### 19.1 Get Support Overview
 - **Endpoint**: `GET /api/support/overview`
 - **Headers**:
   - `Authorization`: `Bearer <token>`
 - **Description**: Retrieves data for the main Support home screen.
-  - If the user has active cases, `has_cases` is `true` and the `cases` array contains their latest cases (Screen 5).
-  - If no cases exist yet, `has_cases` is `false` and the mobile app hides the Cases card (Screen 1).
+  - If the user has active cases, `has_cases` is `true` and the `cases` array contains their latest cases.
+  - If no cases exist yet, `has_cases` is `false` and the mobile app hides the Cases card.
   - Also returns the user's recent orders with formatted dates and currency (`GHC100`).
 - **Example Response**:
 ```json
@@ -2735,13 +2735,13 @@ This module powers the customer support experience across all 5 Figma mobile scr
 
 ---
 
-### 19.2 Get Support Topics / Sample Queries (Screen 100: "How can we help you")
+### 19.2 Get Support Topics / Sample Queries ("How can we help you")
 - **Endpoint**: `GET /api/support/topics`
 - **Headers**:
   - `Authorization`: `Bearer <token>`
 - **Description**: Triggered when the customer clicks **"Contact a Support Agent"** on the home screen. Returns the queries / option cards:
-  - "I need help with an order" $\rightarrow$ navigates to Select Order (Screen 2 / `GET /api/support/orders`).
-  - "Something else" $\rightarrow$ navigates to General Chat (Screen 101 / `GET /api/support/general/init`).
+  - "I need help with an order" $\rightarrow$ navigates to Select Order ( `GET /api/support/orders`).
+  - "Something else" $\rightarrow$ navigates to General Chat (`GET /api/support/general/init`).
 - **Example Response**:
 ```json
 {
@@ -2769,11 +2769,11 @@ This module powers the customer support experience across all 5 Figma mobile scr
 
 ---
 
-### 19.3 Get All Orders for Selection (Screen 2: "Select Order")
+### 19.3 Get All Orders for Selection ("Select Order")
 - **Endpoint**: `GET /api/support/orders`
 - **Headers**:
   - `Authorization`: `Bearer <token>`
-- **Description**: Triggered when the customer clicks "See All" on Recent Orders. Returns all customer orders ordered chronologically (newest first), pre-grouped by month & year (e.g. `August 2026`, `July 2026`) matching Figma Screen 2.
+- **Description**: Triggered when the customer clicks "See All" on Recent Orders. Returns all customer orders ordered chronologically (newest first), pre-grouped by month & year (e.g. `August 2026`, `July 2026`).
 - **Example Response**:
 ```json
 {
@@ -2823,11 +2823,11 @@ This module powers the customer support experience across all 5 Figma mobile scr
 
 ---
 
-### 19.3 Initialize Chat Context for Selected Order (Screen 3)
+### 19.3 Initialize Chat Context for Selected Order
 - **Endpoint**: `GET /api/support/orders/:orderId/init`
 - **Headers**:
   - `Authorization`: `Bearer <token>`
-- **Description**: Triggered when customer clicks on an order in Screen 2. Returns the selected order details, checks if an open case already exists, and provides the default bot greeting: *"Hey! How can we help you with your order with KFC Adenta"*.
+- **Description**: Triggered when customer clicks on an order. Returns the selected order details, checks if an open case already exists, and provides the default bot greeting: *"Hey! How can we help you with your order with KFC Adenta"*.
 - **Example Response**:
 ```json
 {
@@ -2860,7 +2860,7 @@ This module powers the customer support experience across all 5 Figma mobile scr
 
 ---
 
-### 19.5 Initialize General Chat (Screen 101: "Something else")
+### 19.5 Initialize General Chat ("Something else")
 - **Endpoint**: `GET /api/support/general/init`
 - **Headers**:
   - `Authorization`: `Bearer <token>`
@@ -2887,13 +2887,13 @@ This module powers the customer support experience across all 5 Figma mobile scr
 
 ---
 
-### 19.6 Create Support Case & Send First Message (Screen 4 & Screen 101)
+### 19.6 Create Support Case & Send First Message
 - **Endpoint**: `POST /api/support/cases`
 - **Headers**:
   - `Authorization`: `Bearer <token>`
   - `Content-Type`: `application/json`
 - **Description**: Triggered when the customer types their issue and hits send. It generates the unique **Case Number** (e.g. `2324242424`), registers the case, saves both the system welcome message and the user's message, and broadcasts the event.
-- **Request Body (Order Linked - Screen 4)**:
+- **Request Body (Order Linked)**:
 ```json
 {
   "order_id": 18,
@@ -2901,7 +2901,7 @@ This module powers the customer support experience across all 5 Figma mobile scr
   "attachments": []
 }
 ```
-- **Request Body (General / Something else - Screen 101)**:
+- **Request Body (General / Something else)**:
 ```json
 {
   "subject": "Something else",
@@ -2951,13 +2951,13 @@ This module powers the customer support experience across all 5 Figma mobile scr
 
 ---
 
-### 19.7 Get All Customer Cases (Screen 102 & Screen 5: "Cases" / Tab Filter)
+### 19.7 Get All Customer Cases ("Cases" / Tab Filter)
 - **Endpoint**: `GET /api/support/cases`
 - **Headers**:
   - `Authorization`: `Bearer <token>`
 - **Query Parameters**:
   - `status`: (Optional) Filter by `open` or `closed`. Omit or pass `all` to retrieve all cases.
-- **Description**: Powers the Cases screen with the **[ Open ]** and **[ Closed ]** segment filter tabs (Screen 102), as well as the Cases card on the Support home screen (Screen 5). Returns tab counts (`open`, `closed`, `total`) and the filtered list of cases.
+- **Description**: Powers the Cases screen with the **[ Open ]** and **[ Closed ]** segment filter tabs, as well as the Cases card on the Support home screen. Returns tab counts (`open`, `closed`, `total`) and the filtered list of cases.
 - **Example Request**:
   `GET /api/support/cases?status=open`
 - **Example Response**:
@@ -3093,7 +3093,23 @@ This module powers the customer support experience across all 5 Figma mobile scr
 
 ---
 
-### 19.11 Browse Help Articles / FAQs
+### 19.11 Mark Messages as Read (Read Receipts)
+- **Endpoint**: `PATCH /api/support/cases/:id/read`
+- **Headers**:
+  - `Authorization`: `Bearer <token>`
+- **Description**: Marks all unread messages in the case (sent by the other party) as read (`is_read: true`). Also triggered automatically whenever a user fetches case details via `GET /api/support/cases/:id`.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Messages marked as read",
+  "marked_count": 2
+}
+```
+
+---
+
+### 19.12 Browse Help Articles / FAQs
 - **Endpoint**: `GET /api/support/articles`
 - **Query Params**:
   - `category`: (Optional, e.g. `Orders`, `Payments`, `Delivery`, `Account`)
@@ -3117,7 +3133,7 @@ This module powers the customer support experience across all 5 Figma mobile scr
 
 ---
 
-### 19.12 Real-Time Support Chat via Socket.io
+### 19.13 Real-Time Support Chat via Socket.io
 In addition to REST endpoints, full real-time messaging is supported via WebSockets:
 
 1. **Join Support Room**:
@@ -3142,7 +3158,16 @@ socket.on('support_message_received', (message) => {
 });
 ```
 
-4. **Listen for Case Updates** (e.g. for Home Screen badge or notification):
+4. **Mark Messages as Read in Real Time**:
+```javascript
+socket.emit('mark_messages_read', { case_id: 1 });
+
+socket.on('messages_marked_read', ({ case_id, read_by }) => {
+  // Update UI checkmarks to read / double-blue ticks
+});
+```
+
+5. **Listen for Case Updates** (e.g. for Home Screen badge or notification):
 ```javascript
 socket.on('support_case_updated', (caseSummary) => {
   // Update last_message and badge on Support Home Screen

@@ -20,6 +20,22 @@ module.exports = (io, socket) => {
     }
   });
 
+  // Mark messages as read via WebSocket
+  socket.on('mark_messages_read', async ({ case_id }) => {
+    try {
+      if (!case_id) return;
+      const count = await SupportMessage.markAsRead(case_id, socket.user.id);
+      if (count > 0) {
+        io.to(`support_case_${case_id}`).emit('messages_marked_read', {
+          case_id,
+          read_by: socket.user.id
+        });
+      }
+    } catch (err) {
+      console.error('Error in mark_messages_read socket event:', err);
+    }
+  });
+
   // Support chat message via socket
   socket.on('send_support_chat_message', async ({ case_id, message, attachments }) => {
     try {

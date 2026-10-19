@@ -28,13 +28,14 @@ class SupportMessage {
   }
 
   static async markAsRead(case_id, excludeSenderId = null) {
-    let query = `UPDATE support_messages SET is_read = true WHERE case_id = $1`;
+    let query = `UPDATE support_messages SET is_read = true WHERE case_id = $1 AND is_read = false`;
     const values = [case_id];
     if (excludeSenderId) {
       query += ` AND (sender_id != $2 OR sender_id IS NULL)`;
       values.push(excludeSenderId);
     }
-    await pool.query(query, values);
+    const result = await pool.query(query, values);
+    return result.rowCount;
   }
 }
 
