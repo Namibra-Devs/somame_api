@@ -2665,3 +2665,486 @@ Connect to the Socket.io server by passing the JWT token.
   }
 }
 ```
+
+---
+
+## 19. Customer Support & Cases (/api/support)
+
+This module powers the customer support experience across all 5 Figma mobile screens:
+- **Screen 1**: Support Home Screen (Recent orders, link to "See All", and options: "Contact a Support Agent", "Browse help articles", "Cases").
+- **Screen 2**: "Select Order" Screen (All orders in date order, grouped by month e.g., August 2026, July 2026).
+- **Screen 3**: Initial Chat Screen (Automated greeting referencing the selected order's vendor: *"Hey! How can we help you with your order with KFC Adenta"*).
+- **Screen 4**: Active Chat with unique Case Number badge (e.g., `Case 2324242424` with copy button) triggered upon the user's first message.
+- **Screen 5**: Updated Support Home Screen dynamically presenting the **Cases** carousel/card at the top with last message preview and "See All".
+
+---
+
+### 19.1 Get Support Overview (Screen 1 & Screen 5)
+- **Endpoint**: `GET /api/support/overview`
+- **Headers**:
+  - `Authorization`: `Bearer <token>`
+- **Description**: Retrieves data for the main Support home screen.
+  - If the user has active cases, `has_cases` is `true` and the `cases` array contains their latest cases (Screen 5).
+  - If no cases exist yet, `has_cases` is `false` and the mobile app hides the Cases card (Screen 1).
+  - Also returns the user's recent orders with formatted dates and currency (`GHC100`).
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Support overview retrieved successfully",
+  "data": {
+    "has_cases": true,
+    "cases": [
+      {
+        "id": 1,
+        "case_number": "242424323",
+        "display_case_number": "Case 242424323",
+        "subject": "Order with KFC - Adenta",
+        "status": "open",
+        "last_message": "Could you please let us know how we can ..",
+        "last_message_at": "2026-08-24T00:54:00.000Z",
+        "formatted_time": "12:54 AM",
+        "formatted_date": "Monday August 24",
+        "order_number": "ORD-88219",
+        "vendor_name": "KFC - Adenta",
+        "vendor_logo": "https://somame.s3.amazonaws.com/vendors/kfc.png"
+      }
+    ],
+    "recent_orders": [
+      {
+        "id": 15,
+        "order_number": "ORD-12345",
+        "vendor_name": "KFC - Adenta",
+        "vendor_logo": "https://somame.s3.amazonaws.com/vendors/kfc.png",
+        "total_amount": "100.00",
+        "currency": "GHC",
+        "display_total": "GHC100",
+        "status": "delivered",
+        "created_at": "2026-06-04T13:34:00.000Z",
+        "formatted_date": "Friday 04 Jun, 2026 13:34"
+      }
+    ],
+    "navigation_links": [
+      { "key": "contact_agent", "title": "Contact a Support Agent" },
+      { "key": "browse_articles", "title": "Browse help articles" },
+      { "key": "cases", "title": "Cases" }
+    ]
+  }
+}
+```
+
+---
+
+### 19.2 Get Support Topics / Sample Queries (Screen 100: "How can we help you")
+- **Endpoint**: `GET /api/support/topics`
+- **Headers**:
+  - `Authorization`: `Bearer <token>`
+- **Description**: Triggered when the customer clicks **"Contact a Support Agent"** on the home screen. Returns the queries / option cards:
+  - "I need help with an order" $\rightarrow$ navigates to Select Order (Screen 2 / `GET /api/support/orders`).
+  - "Something else" $\rightarrow$ navigates to General Chat (Screen 101 / `GET /api/support/general/init`).
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Support topics retrieved successfully",
+  "data": {
+    "title": "How can we help you",
+    "topics": [
+      {
+        "id": "order_help",
+        "title": "I need help with an order",
+        "action": "NAVIGATE_SELECT_ORDER",
+        "route": "/api/support/orders"
+      },
+      {
+        "id": "something_else",
+        "title": "Something else",
+        "action": "NAVIGATE_GENERAL_CHAT",
+        "route": "/api/support/general/init"
+      }
+    ]
+  }
+}
+```
+
+---
+
+### 19.3 Get All Orders for Selection (Screen 2: "Select Order")
+- **Endpoint**: `GET /api/support/orders`
+- **Headers**:
+  - `Authorization`: `Bearer <token>`
+- **Description**: Triggered when the customer clicks "See All" on Recent Orders. Returns all customer orders ordered chronologically (newest first), pre-grouped by month & year (e.g. `August 2026`, `July 2026`) matching Figma Screen 2.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Support orders retrieved successfully",
+  "data": {
+    "grouped": [
+      {
+        "month_year": "August 2026",
+        "orders": [
+          {
+            "id": 18,
+            "order_number": "ORD-88219",
+            "vendor_name": "KFC - Adenta",
+            "vendor_logo": "https://somame.s3.amazonaws.com/vendors/kfc.png",
+            "total_amount": "100.00",
+            "currency": "GHC",
+            "display_total": "GHC100",
+            "status": "delivered",
+            "created_at": "2026-08-04T13:34:00.000Z",
+            "formatted_date": "Friday 04 Aug, 2026 13:34"
+          }
+        ]
+      },
+      {
+        "month_year": "July 2026",
+        "orders": [
+          {
+            "id": 12,
+            "order_number": "ORD-77102",
+            "vendor_name": "KFC - Adenta",
+            "vendor_logo": "https://somame.s3.amazonaws.com/vendors/kfc.png",
+            "total_amount": "100.00",
+            "currency": "GHC",
+            "display_total": "GHC100",
+            "status": "delivered",
+            "created_at": "2026-07-04T13:34:00.000Z",
+            "formatted_date": "Friday 04 Jul, 2026 13:34"
+          }
+        ]
+      }
+    ],
+    "orders": [ /* Flat list also included */ ]
+  }
+}
+```
+
+---
+
+### 19.3 Initialize Chat Context for Selected Order (Screen 3)
+- **Endpoint**: `GET /api/support/orders/:orderId/init`
+- **Headers**:
+  - `Authorization`: `Bearer <token>`
+- **Description**: Triggered when customer clicks on an order in Screen 2. Returns the selected order details, checks if an open case already exists, and provides the default bot greeting: *"Hey! How can we help you with your order with KFC Adenta"*.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Chat context initialized",
+  "data": {
+    "order": {
+      "id": 18,
+      "order_number": "ORD-88219",
+      "vendor_name": "KFC - Adenta",
+      "vendor_logo": "https://somame.s3.amazonaws.com/vendors/kfc.png",
+      "total_amount": "100.00",
+      "currency": "GHC",
+      "display_total": "GHC100",
+      "formatted_date": "Friday 04 Aug, 2026 13:34"
+    },
+    "has_existing_case": false,
+    "existing_case": null,
+    "default_bot_message": {
+      "sender_type": "system",
+      "sender_name": "Somame Support",
+      "message": "Hey! How can we help you with your order with KFC - Adenta",
+      "created_at": "2026-08-24T00:54:00.000Z",
+      "formatted_time": "12:54 AM",
+      "formatted_date": "Monday August 24"
+    }
+  }
+}
+```
+
+---
+
+### 19.5 Initialize General Chat (Screen 101: "Something else")
+- **Endpoint**: `GET /api/support/general/init`
+- **Headers**:
+  - `Authorization`: `Bearer <token>`
+- **Description**: Triggered when the customer clicks **"Something else"** on the "How can we help you" options screen. Returns the initial bot greeting *"Hey! How can we help?"* without linking to a specific order.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "General chat context initialized",
+  "data": {
+    "title": "Somame Support",
+    "subject": "Something else",
+    "default_bot_message": {
+      "sender_type": "system",
+      "sender_name": "Somame Support",
+      "message": "Hey! How can we help?",
+      "created_at": "2026-08-24T00:54:00.000Z",
+      "formatted_time": "12:54 AM",
+      "formatted_date": "Monday August 24"
+    }
+  }
+}
+```
+
+---
+
+### 19.6 Create Support Case & Send First Message (Screen 4 & Screen 101)
+- **Endpoint**: `POST /api/support/cases`
+- **Headers**:
+  - `Authorization`: `Bearer <token>`
+  - `Content-Type`: `application/json`
+- **Description**: Triggered when the customer types their issue and hits send. It generates the unique **Case Number** (e.g. `2324242424`), registers the case, saves both the system welcome message and the user's message, and broadcasts the event.
+- **Request Body (Order Linked - Screen 4)**:
+```json
+{
+  "order_id": 18,
+  "message": "Issue i faced",
+  "attachments": []
+}
+```
+- **Request Body (General / Something else - Screen 101)**:
+```json
+{
+  "subject": "Something else",
+  "message": "I need help with my payment",
+  "attachments": []
+}
+```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Support case created successfully",
+  "data": {
+    "id": 1,
+    "case_number": "2324242424",
+    "display_case_number": "Case 2324242424",
+    "user_id": 5,
+    "order_id": 18,
+    "subject": "Order with KFC - Adenta",
+    "status": "open",
+    "priority": "medium",
+    "vendor_name": "KFC - Adenta",
+    "messages": [
+      {
+        "id": 1,
+        "case_id": 1,
+        "sender_type": "system",
+        "message": "Hey! How can we help you with your order with KFC - Adenta",
+        "created_at": "2026-08-24T00:54:00.000Z",
+        "formatted_time": "12:54 AM",
+        "formatted_date": "Monday August 24"
+      },
+      {
+        "id": 2,
+        "case_id": 1,
+        "sender_id": 5,
+        "sender_type": "customer",
+        "message": "Issue i faced",
+        "created_at": "2026-08-24T00:54:00.000Z",
+        "formatted_time": "12:54 AM",
+        "formatted_date": "Monday August 24"
+      }
+    ]
+  }
+}
+```
+
+---
+
+### 19.7 Get All Customer Cases (Screen 102 & Screen 5: "Cases" / Tab Filter)
+- **Endpoint**: `GET /api/support/cases`
+- **Headers**:
+  - `Authorization`: `Bearer <token>`
+- **Query Parameters**:
+  - `status`: (Optional) Filter by `open` or `closed`. Omit or pass `all` to retrieve all cases.
+- **Description**: Powers the Cases screen with the **[ Open ]** and **[ Closed ]** segment filter tabs (Screen 102), as well as the Cases card on the Support home screen (Screen 5). Returns tab counts (`open`, `closed`, `total`) and the filtered list of cases.
+- **Example Request**:
+  `GET /api/support/cases?status=open`
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Cases retrieved successfully",
+  "filter": "open",
+  "counts": {
+    "open": 1,
+    "closed": 0,
+    "total": 1
+  },
+  "count": 1,
+  "data": [
+    {
+      "id": 1,
+      "case_number": "242424323",
+      "display_case_number": "Case 242424323",
+      "subject": "Order with KFC - Adenta",
+      "status": "open",
+      "last_message": "Could you please let us know how we can ..",
+      "last_message_at": "2026-08-24T00:54:00.000Z",
+      "formatted_time": "12:54 AM",
+      "formatted_date": "Monday August 24",
+      "order_number": "ORD-88219",
+      "vendor_name": "KFC - Adenta",
+      "vendor_logo": "https://somame.s3.amazonaws.com/vendors/kfc.png"
+    }
+  ]
+}
+```
+
+---
+
+### 19.8 Close Support Case
+- **Endpoint**: `PATCH /api/support/cases/:id/close`
+- **Headers**:
+  - `Authorization`: `Bearer <token>`
+- **Description**: Marks a case as `closed`. The `:id` parameter can be the database integer ID (e.g. `1`) or the 10-digit case number (e.g. `242424323` or `Case 242424323`).
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Case closed successfully",
+  "data": {
+    "id": 1,
+    "case_number": "242424323",
+    "display_case_number": "Case 242424323",
+    "status": "closed"
+  }
+}
+```
+
+---
+
+### 19.9 Get Case Details & Message History
+- **Endpoint**: `GET /api/support/cases/:id`
+- **Headers**:
+  - `Authorization`: `Bearer <token>`
+- **Description**: Retrieves a single case by its ID or case number (`/api/support/cases/2324242424`), along with full message history chronologically sorted.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Case details retrieved successfully",
+  "data": {
+    "id": 1,
+    "case_number": "2324242424",
+    "display_case_number": "Case 2324242424",
+    "status": "open",
+    "order_number": "ORD-88219",
+    "vendor_name": "KFC - Adenta",
+    "vendor_logo": "https://somame.s3.amazonaws.com/vendors/kfc.png",
+    "messages": [
+      {
+        "id": 1,
+        "sender_type": "system",
+        "message": "Hey! How can we help you with your order with KFC - Adenta",
+        "formatted_time": "12:54 AM",
+        "formatted_date": "Monday August 24"
+      },
+      {
+        "id": 2,
+        "sender_type": "customer",
+        "message": "Issue i faced",
+        "formatted_time": "12:54 AM",
+        "formatted_date": "Monday August 24"
+      },
+      {
+        "id": 3,
+        "sender_type": "agent",
+        "message": "Could you please let us know how we can assist?",
+        "formatted_time": "12:56 AM",
+        "formatted_date": "Monday August 24"
+      }
+    ]
+  }
+}
+```
+
+---
+
+### 19.10 Send Follow-up Message in Case
+- **Endpoint**: `POST /api/support/cases/:id/messages`
+- **Headers**:
+  - `Authorization`: `Bearer <token>`
+  - `Content-Type`: `application/json`
+- **Request Body**:
+```json
+{
+  "message": "The chicken was cold when it arrived.",
+  "attachments": []
+}
+```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Message sent successfully",
+  "data": {
+    "id": 4,
+    "case_id": 1,
+    "sender_id": 5,
+    "sender_type": "customer",
+    "message": "The chicken was cold when it arrived.",
+    "attachments": [],
+    "formatted_time": "12:58 AM",
+    "formatted_date": "Monday August 24"
+  }
+}
+```
+
+---
+
+### 19.11 Browse Help Articles / FAQs
+- **Endpoint**: `GET /api/support/articles`
+- **Query Params**:
+  - `category`: (Optional, e.g. `Orders`, `Payments`, `Delivery`, `Account`)
+- **Description**: Returns knowledge base and help articles for the "Browse help articles" link.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Support articles retrieved successfully",
+  "categories": ["Account", "Delivery", "Orders", "Payments"],
+  "data": [
+    {
+      "id": 1,
+      "title": "How do I track my order in real-time?",
+      "category": "Orders",
+      "content": "You can track your order directly from the order details screen..."
+    }
+  ]
+}
+```
+
+---
+
+### 19.12 Real-Time Support Chat via Socket.io
+In addition to REST endpoints, full real-time messaging is supported via WebSockets:
+
+1. **Join Support Room**:
+```javascript
+socket.emit('join_support_case', { case_id: 1 });
+```
+
+2. **Send Message**:
+```javascript
+socket.emit('send_support_chat_message', {
+  case_id: 1,
+  message: "Issue i faced",
+  attachments: []
+});
+```
+
+3. **Listen for Incoming Messages**:
+```javascript
+socket.on('support_message_received', (message) => {
+  // Append new message to chat UI in real time
+  console.log('New message:', message);
+});
+```
+
+4. **Listen for Case Updates** (e.g. for Home Screen badge or notification):
+```javascript
+socket.on('support_case_updated', (caseSummary) => {
+  // Update last_message and badge on Support Home Screen
+});
+```
