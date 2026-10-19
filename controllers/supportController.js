@@ -483,6 +483,9 @@ const getCaseDetails = async (req, res, next) => {
       return res.status(403).json({ status: 'error', message: 'Forbidden' });
     }
 
+    // Automatically mark incoming messages from other sender as read
+    await SupportMessage.markAsRead(supportCase.id, userId);
+
     const messages = await SupportMessage.findByCaseId(supportCase.id);
     const formattedMessages = messages.map(m => ({
       ...m,
@@ -498,6 +501,38 @@ const getCaseDetails = async (req, res, next) => {
         display_case_number: `Case ${supportCase.case_number}`,
         messages: formattedMessages
       }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Mark all messages in a support case as read
+// @route   PATCH /api/support/cases/:id/read
+const markCaseMessagesAsRead = async (req, res, next) => {
+  try {
+    const caseId = req.params.id;
+    const userId = req.user.id;
+
+    const supportCase = await SupportCase.findByIdOrCaseNumber(caseId);
+    if (!supportCase) {
+      return res.status(404).json({ status: 'error', message: 'Support case not found' });
+    }
+
+    const markedCount = await SupportMessage.markAsRead(supportCase.id, userId);
+
+    const io = req.app.get('io');
+    if (io && markedCount > 0) {
+      io.to(`support_case_${supportCase.id}`).emit('messages_marked_read', {
+        case_id: supportCase.id,
+        read_by: userId
+      });
+    }
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Messages marked as read',
+      marked_count: markedCount
     });
   } catch (error) {
     next(error);
@@ -604,5 +639,6 @@ module.exports = {
   closeCase,
   getCaseDetails,
   sendCaseMessage,
+  markCaseMessagesAsRead,
   getSupportArticles
 };

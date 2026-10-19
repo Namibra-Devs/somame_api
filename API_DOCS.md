@@ -3093,7 +3093,23 @@ This module powers the customer support experience across all 5 Figma mobile scr
 
 ---
 
-### 19.11 Browse Help Articles / FAQs
+### 19.11 Mark Messages as Read (Read Receipts)
+- **Endpoint**: `PATCH /api/support/cases/:id/read`
+- **Headers**:
+  - `Authorization`: `Bearer <token>`
+- **Description**: Marks all unread messages in the case (sent by the other party) as read (`is_read: true`). Also triggered automatically whenever a user fetches case details via `GET /api/support/cases/:id`.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Messages marked as read",
+  "marked_count": 2
+}
+```
+
+---
+
+### 19.12 Browse Help Articles / FAQs
 - **Endpoint**: `GET /api/support/articles`
 - **Query Params**:
   - `category`: (Optional, e.g. `Orders`, `Payments`, `Delivery`, `Account`)
@@ -3117,7 +3133,7 @@ This module powers the customer support experience across all 5 Figma mobile scr
 
 ---
 
-### 19.12 Real-Time Support Chat via Socket.io
+### 19.13 Real-Time Support Chat via Socket.io
 In addition to REST endpoints, full real-time messaging is supported via WebSockets:
 
 1. **Join Support Room**:
@@ -3142,7 +3158,16 @@ socket.on('support_message_received', (message) => {
 });
 ```
 
-4. **Listen for Case Updates** (e.g. for Home Screen badge or notification):
+4. **Mark Messages as Read in Real Time**:
+```javascript
+socket.emit('mark_messages_read', { case_id: 1 });
+
+socket.on('messages_marked_read', ({ case_id, read_by }) => {
+  // Update UI checkmarks to read / double-blue ticks
+});
+```
+
+5. **Listen for Case Updates** (e.g. for Home Screen badge or notification):
 ```javascript
 socket.on('support_case_updated', (caseSummary) => {
   // Update last_message and badge on Support Home Screen

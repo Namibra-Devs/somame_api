@@ -11,6 +11,7 @@ const {
   closeCase,
   getCaseDetails,
   sendCaseMessage,
+  markCaseMessagesAsRead,
   getSupportArticles
 } = require('../controllers/supportController');
 const { protect } = require('../middlewares/authMiddleware');
@@ -33,6 +34,7 @@ router.route('/cases/:id')
   .get(protect, getCaseDetails);
 
 router.patch('/cases/:id/close', protect, closeCase);
+router.patch('/cases/:id/read', protect, markCaseMessagesAsRead);
 router.post('/cases/:id/messages', protect, sendCaseMessage);
 
 module.exports = router;
