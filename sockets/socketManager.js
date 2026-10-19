@@ -15,10 +15,13 @@ const socketManager = (io) => {
       socket.join('riders');
     } else if (socket.user.role === 'vendor') {
       socket.join(`vendor_${socket.user.vendor_id || socket.user.id}`);
+    } else if (socket.user.role === 'admin') {
+      socket.join('support_agents');
     }
 
-    // Attach modularized tracking event handlers
+    // Attach modularized tracking and support event handlers
     require('./trackingSocket')(io, socket);
+    require('./supportSocket')(io, socket);
 
     socket.on('disconnect', (reason) => {
       console.log(`User disconnected: ${socket.user.id} | Reason: ${reason}`);

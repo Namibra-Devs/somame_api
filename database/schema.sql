@@ -418,3 +418,48 @@ CREATE TABLE user_fcm_tokens (
 );
 
 CREATE INDEX idx_user_fcm_tokens_user_id ON user_fcm_tokens(user_id);
+
+-- 26. support_cases table
+CREATE TABLE support_cases (
+    id SERIAL PRIMARY KEY,
+    case_number VARCHAR(50) UNIQUE NOT NULL,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    order_id INTEGER REFERENCES orders(id) ON DELETE SET NULL,
+    parcel_order_id INTEGER REFERENCES parcel_orders(id) ON DELETE SET NULL,
+    subject VARCHAR(255),
+    status VARCHAR(50) DEFAULT 'open', -- 'open', 'in_progress', 'resolved', 'closed'
+    priority VARCHAR(50) DEFAULT 'medium',
+    assigned_agent_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    last_message TEXT,
+    last_message_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_support_cases_user_id ON support_cases(user_id);
+CREATE INDEX idx_support_cases_case_number ON support_cases(case_number);
+CREATE INDEX idx_support_cases_order_id ON support_cases(order_id);
+
+-- 27. support_messages table
+CREATE TABLE support_messages (
+    id SERIAL PRIMARY KEY,
+    case_id INTEGER NOT NULL REFERENCES support_cases(id) ON DELETE CASCADE,
+    sender_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    sender_type VARCHAR(50) NOT NULL, -- 'system', 'customer', 'agent', 'admin'
+    message TEXT NOT NULL,
+    attachments JSONB DEFAULT '[]',
+    is_read BOOLEAN DEFAULT false,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_support_messages_case_id ON support_messages(case_id);
+
+-- 28. support_articles table
+CREATE TABLE support_articles (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    category VARCHAR(100) NOT NULL, -- 'Orders', 'Payments', 'Delivery', 'Account', 'General'
+    content TEXT NOT NULL,
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
