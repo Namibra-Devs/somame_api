@@ -7,7 +7,7 @@ const { Server } = require('socket.io');
 
 const { connectDB } = require('./config/db');
 const socketManager = require('./sockets/socketManager');
-const { initializeFirebase } = require('./services/firebaseService');
+const { initializeFirebase, setSocketIO } = require('./services/firebaseService');
 
 const app = express();
 const server = http.createServer(app);
@@ -24,7 +24,7 @@ const io = new Server(server, {
 connectDB();
 
 // Initialize Firebase
-initializeFirebase();
+initializeFirebase(); setSocketIO(io);
 
 // Global Middlewares
 app.set('io', io);

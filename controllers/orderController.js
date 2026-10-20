@@ -369,6 +369,7 @@ const acceptJob = async (req, res, next) => {
 
     // Initialize delivery tracking
     const delivery = await Delivery.create(orderId, riderId, lat, lng);
+    if (order.vendor_user_id) { sendPushNotification(order.vendor_user_id, 'Rider Assigned', `A rider has accepted order ${order.order_number}.`, { type: 'rider_assigned', orderId: orderId.toString() }).catch(() => {}); }
 
     res.status(200).json({
       status: 'success',
@@ -424,6 +425,7 @@ const arriveMerchant = async (req, res, next) => {
     if (order.rider_id !== riderId) return res.status(403).json({ status: 'error', message: 'You are not assigned to this order' });
 
     const updatedOrder = await Order.arriveMerchant(orderId);
+    if (order.vendor_user_id) { sendPushNotification(order.vendor_user_id, 'Rider Arrived at Store', `Rider arrived to pick up order ${order.order_number}.`, { type: 'rider_arrived', orderId: orderId.toString() }).catch(() => {}); }
 
     res.status(200).json({
       status: 'success',
@@ -456,6 +458,7 @@ const confirmPickup = async (req, res, next) => {
     if (order.rider_id !== riderId) return res.status(403).json({ status: 'error', message: 'You are not assigned to this order' });
 
     const updatedOrder = await Order.confirmPickup(orderId, proof_image_url);
+    if (order.vendor_user_id) { sendPushNotification(order.vendor_user_id, 'Order Picked Up', `Order ${order.order_number} is now out for delivery.`, { type: 'order_picked_up', orderId: orderId.toString() }).catch(() => {}); }
 
     res.status(200).json({
       status: 'success',
@@ -543,6 +546,7 @@ const confirmDelivery = async (req, res, next) => {
 
     // Update Wallet
     await RiderWallet.addEarning(riderId, totalAmount);
+    if (order.vendor_user_id) { sendPushNotification(order.vendor_user_id, 'Order Delivered', `Order ${order.order_number} has been delivered to the customer.`, { type: 'order_delivered', orderId: orderId.toString() }).catch(() => {}); }
 
     res.status(200).json({
       status: 'success',
