@@ -142,7 +142,8 @@ class Order {
     const result = await pool.query(`
       SELECT oi.*, m.image_url 
       FROM order_items oi
-      LEFT JOIN menu_items m ON oi.item_id = m.id
+      JOIN orders o ON oi.order_id = o.id
+      LEFT JOIN menu_items m ON (oi.item_id = m.id OR (oi.item_id IS NULL AND m.vendor_id = o.vendor_id AND LOWER(m.name) = LOWER(oi.item_name)))
       WHERE oi.order_id = $1
     `, [orderId]);
     return result.rows;
