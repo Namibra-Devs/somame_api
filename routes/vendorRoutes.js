@@ -1,61 +1,129 @@
 const express = require('express');
 const router = express.Router();
-const { getNearbyVendors, searchVendors, createVendor, getVendorById, getMyVendorProfile, updateMyVendorProfile, getVendorNotifications, updateVendorNotifications, getVendorDashboard, getVendorCustomers, getVendorCustomerDetails, getVendorAnalytics, getVendorOperatingHours, updateVendorOperatingHours } = require('../controllers/vendorController');
+const {
+  getNearbyVendors,
+  searchVendors,
+  createVendor,
+  getVendorById,
+  getMyVendorProfile,
+  updateMyVendorProfile,
+  getVendorNotifications,
+  updateVendorNotifications,
+  getVendorDashboard,
+  getVendorCustomers,
+  getVendorCustomerDetails,
+  getVendorAnalytics,
+  getVendorOperatingHours,
+  updateVendorOperatingHours
+} = require('../controllers/vendorController');
 const { protect } = require('../middlewares/authMiddleware');
 const { upload } = require('../config/storage');
 
-const { 
-  createMenuCategory, getMyMenuCategories, updateMenuCategory, deleteMenuCategory,
-  createMenuItem, getMyMenuItems, getMenuItemDetails, updateMenuItem, deleteMenuItem, getVendorMenu 
+const {
+  createMenuCategory,
+  getMyMenuCategories,
+  updateMenuCategory,
+  deleteMenuCategory,
+  createMenuItem,
+  getMyMenuItems,
+  getMenuItemDetails,
+  updateMenuItem,
+  deleteMenuItem,
+  getVendorMenu
 } = require('../controllers/menuController');
 
 const {
-  createPromotion, getMyPromotions, updatePromotion, deletePromotion
+  createPromotion,
+  getMyPromotions,
+  updatePromotion,
+  deletePromotion
 } = require('../controllers/promotionController');
+
+const { getVendorOrders, getOrderDetails } = require('../controllers/orderController');
+
+const {
+  getVendorEarnings,
+  getVendorPaymentMethods,
+  saveVendorPaymentMethod,
+  updateVendorPaymentMethod,
+  deleteVendorPaymentMethod,
+  getVendorPayoutHistory,
+  requestVendorPayout
+} = require('../controllers/vendorPayoutController');
 
 router.route('/search').get(searchVendors);
 router.route('/nearby').get(getNearbyVendors);
-router.route('/').post(protect, createVendor); // Protected route
+router.route('/').post(protect, createVendor);
 
 // Vendor Profile and Dashboard
-router.route('/me').get(protect, getMyVendorProfile).put(protect, upload.single('logo'), updateMyVendorProfile);
+router
+  .route('/me')
+  .get(protect, getMyVendorProfile)
+  .put(protect, upload.single('logo'), updateMyVendorProfile);
 router.route('/me/dashboard').get(protect, getVendorDashboard);
 router.route('/me/analytics').get(protect, getVendorAnalytics);
 router.route('/me/customers').get(protect, getVendorCustomers);
 router.route('/me/customers/:id').get(protect, getVendorCustomerDetails);
-router.route('/me/notifications').get(protect, getVendorNotifications).put(protect, updateVendorNotifications);
-router.route('/me/operating-hours').get(protect, getVendorOperatingHours).put(protect, updateVendorOperatingHours);
+router
+  .route('/me/notifications')
+  .get(protect, getVendorNotifications)
+  .put(protect, updateVendorNotifications);
+router
+  .route('/me/operating-hours')
+  .get(protect, getVendorOperatingHours)
+  .put(protect, updateVendorOperatingHours);
 
 // Menu Management (Vendor specific)
-router.route('/me/menu-categories')
+router
+  .route('/me/menu-categories')
   .post(protect, createMenuCategory)
   .get(protect, getMyMenuCategories);
-router.route('/me/menu-categories/:id')
+router
+  .route('/me/menu-categories/:id')
   .put(protect, updateMenuCategory)
   .delete(protect, deleteMenuCategory);
 
-router.route('/me/menu-items')
+router
+  .route('/me/menu-items')
   .post(protect, upload.single('image'), createMenuItem)
   .get(protect, getMyMenuItems);
-router.route('/me/menu-items/:id')
+router
+  .route('/me/menu-items/:id')
   .get(protect, getMenuItemDetails)
   .put(protect, upload.single('image'), updateMenuItem)
   .delete(protect, deleteMenuItem);
 
 // Promotions Management (Vendor specific)
-router.route('/me/promotions')
+router
+  .route('/me/promotions')
   .post(protect, createPromotion)
   .get(protect, getMyPromotions);
-router.route('/me/promotions/:id')
+router
+  .route('/me/promotions/:id')
   .put(protect, updatePromotion)
   .delete(protect, deletePromotion);
 
-// Public vendor routes
-router.route('/:id').get(getVendorById);
-router.route('/:id/menu').get(getVendorMenu);
-
-const { getVendorOrders, getOrderDetails } = require('../controllers/orderController');
+// Vendor Orders
 router.route('/me/orders').get(protect, getVendorOrders);
 router.route('/me/orders/:id').get(protect, getOrderDetails);
+
+// Vendor Earnings, Payment Methods & Payouts
+router.route('/me/earnings').get(protect, getVendorEarnings);
+router
+  .route('/me/payment-methods')
+  .get(protect, getVendorPaymentMethods)
+  .post(protect, saveVendorPaymentMethod);
+router
+  .route('/me/payment-methods/:id')
+  .put(protect, updateVendorPaymentMethod)
+  .delete(protect, deleteVendorPaymentMethod);
+router
+  .route('/me/payouts')
+  .get(protect, getVendorPayoutHistory)
+  .post(protect, requestVendorPayout);
+
+// Public vendor routes (placed after /me/* routes)
+router.route('/:id').get(getVendorById);
+router.route('/:id/menu').get(getVendorMenu);
 
 module.exports = router;

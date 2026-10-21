@@ -6,7 +6,7 @@ class Order {
       SELECT o.*, 
              ST_Y(o.delivery_location::geometry) as delivery_lat, 
              ST_X(o.delivery_location::geometry) as delivery_lng,
-             v.name as vendor_name, 
+             v.user_id as vendor_user_id, v.name as vendor_name, 
              v.address as vendor_address,
              v.logo_url as vendor_logo_url,
              ST_Y(v.location::geometry) as vendor_lat, 
@@ -122,7 +122,7 @@ class Order {
        SELECT o.*, 
               ST_Y(o.delivery_location::geometry) as delivery_lat, 
               ST_X(o.delivery_location::geometry) as delivery_lng,
-              v.name as vendor_name, 
+              v.user_id as vendor_user_id, v.name as vendor_name, 
               vu.phone_number as vendor_phone, 
               v.address as vendor_address,
               ST_Y(v.location::geometry) as vendor_lat, 
@@ -142,7 +142,8 @@ class Order {
     const result = await pool.query(`
       SELECT oi.*, m.image_url 
       FROM order_items oi
-      LEFT JOIN menu_items m ON oi.item_id = m.id
+      JOIN orders o ON oi.order_id = o.id
+      LEFT JOIN menu_items m ON (oi.item_id = m.id OR (oi.item_id IS NULL AND m.vendor_id = o.vendor_id AND LOWER(m.name) = LOWER(oi.item_name)))
       WHERE oi.order_id = $1
     `, [orderId]);
     return result.rows;
@@ -229,7 +230,7 @@ class Order {
          RETURNING *
        )
        SELECT o.*, 
-              v.name as vendor_name, 
+              v.user_id as vendor_user_id, v.name as vendor_name, 
               v.address as vendor_address
        FROM updated_order o
        JOIN vendors v ON o.vendor_id = v.id`,
@@ -240,7 +241,7 @@ class Order {
   static async findRiderDeliveries(riderId) {
     const result = await pool.query(
       `SELECT o.id, o.order_number, o.status, o.total_amount, o.created_at, o.delivery_address,
-              v.name as vendor_name, v.logo_url as vendor_logo_url, v.address as vendor_address,
+              v.user_id as vendor_user_id, v.name as vendor_name, v.logo_url as vendor_logo_url, v.address as vendor_address,
               ST_Y(o.delivery_location::geometry) as delivery_lat, ST_X(o.delivery_location::geometry) as delivery_lng,
               ST_Y(v.location::geometry) as vendor_lat, ST_X(v.location::geometry) as vendor_lng
        FROM orders o
@@ -255,7 +256,7 @@ class Order {
     const result = await pool.query(`
       SELECT o.id, o.order_number, o.status, o.delivery_otp, o.estimated_delivery_time, o.created_at, o.total_amount,
              o.delivery_address, ST_Y(o.delivery_location::geometry) as delivery_lat, ST_X(o.delivery_location::geometry) as delivery_lng,
-             v.name as vendor_name, v.address as vendor_address,
+             v.user_id as vendor_user_id, v.name as vendor_name, v.address as vendor_address,
              ST_Y(v.location::geometry) as vendor_lat, ST_X(v.location::geometry) as vendor_lng,
              ru.first_name as rider_first_name, ru.last_name as rider_last_name, ru.phone_number as rider_phone,
              ST_Y(rp.current_location::geometry) as rider_lat, ST_X(rp.current_location::geometry) as rider_lng

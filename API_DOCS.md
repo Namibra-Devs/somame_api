@@ -1010,7 +1010,9 @@ If uploading a file, use `multipart/form-data` with the field `profile_picture` 
     "topItems": [
       {
         "rank": 1,
+        "id": 1,
         "item": "Spring Rolls",
+        "image_url": "https://example.com/springrolls.jpg",
         "units_sold": 45,
         "revenue": 697.50,
         "avg_rating": "0.0"
@@ -1040,6 +1042,7 @@ If uploading a file, use `multipart/form-data` with the field `profile_picture` 
       "first_name": "Paul",
       "last_name": "Amegah",
       "phone_number": "0555555555",
+      "date_joined": "2020-06-23T00:00:00.000Z",
       "last_order_date": "2026-06-04T03:40:00.000Z"
     }
   ],
@@ -1093,6 +1096,229 @@ If uploading a file, use `multipart/form-data` with the field `profile_picture` 
       "limit": 10,
       "totalPages": 3
     }
+  }
+}
+```
+
+### Get Vendor Earnings, Period Breakdown, Payment Methods & Payout History (Vendor Only)
+- **Endpoint**: `GET /api/vendors/me/earnings`
+- **Headers**: `Authorization: Bearer <your_vendor_jwt_token>` (Must have `vendor` role)
+- **Query Parameters**:
+  - `period` (optional): `weekly`, `monthly` (default), `yearly`, or `custom`.
+  - `start_date` (optional, used when `period=custom`): Start date (`YYYY-MM-DD`).
+  - `end_date` (optional, used when `period=custom`): End date (`YYYY-MM-DD`).
+- **Description**: Retrieves the vendor's available withdrawable balance, total lifetime earnings, total withdrawn, period revenue/commission breakdown, saved payout methods, and payout history.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Vendor earnings retrieved successfully",
+  "data": {
+    "available_balance": 2000.00,
+    "total_earned": 4500.00,
+    "total_withdrawn": 2500.00,
+    "breakdown": {
+      "order_count": 18,
+      "gross_revenue": 2500.00,
+      "commission_rate": 15,
+      "commission_amount": 375.00,
+      "commission_pct": -15,
+      "delivery_fees": 125.00,
+      "delivery_fees_pct": -5,
+      "net_payout": 2000.00,
+      "net_payout_pct": 80
+    },
+    "payment_methods": [
+      {
+        "id": 1,
+        "vendor_id": 1,
+        "provider": "momo",
+        "network_or_bank": "MTN Mobile Money",
+        "account_name": "KFC Accra",
+        "account_number": "0541234890",
+        "branch": null,
+        "is_default": true,
+        "created_at": "2026-10-21T16:00:00.000Z",
+        "updated_at": "2026-10-21T16:00:00.000Z"
+      }
+    ],
+    "payout_history": [
+      {
+        "id": 1,
+        "vendor_id": 1,
+        "amount": "2500.00",
+        "payment_method_id": 1,
+        "method_label": "MTN Mobile Money",
+        "account_masked": "*******890",
+        "status": "Paid",
+        "reference_id": "PAY-M2K9P1",
+        "created_at": "2026-10-21T16:30:00.000Z",
+        "updated_at": "2026-10-21T16:30:00.000Z"
+      }
+    ]
+  }
+}
+```
+
+### Get Vendor Payment Methods (Vendor Only)
+- **Endpoint**: `GET /api/vendors/me/payment-methods`
+- **Headers**: `Authorization: Bearer <your_vendor_jwt_token>` (Must have `vendor` role)
+- **Description**: Retrieves all saved payout accounts (Mobile Money or Bank) for the logged-in vendor.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Vendor payment methods retrieved successfully",
+  "data": [
+    {
+      "id": 1,
+      "vendor_id": 1,
+      "provider": "momo",
+      "network_or_bank": "MTN Mobile Money",
+      "account_name": "KFC Accra",
+      "account_number": "0541234890",
+      "branch": null,
+      "is_default": true,
+      "created_at": "2026-10-21T16:00:00.000Z",
+      "updated_at": "2026-10-21T16:00:00.000Z"
+    }
+  ]
+}
+```
+
+### Add or Save Vendor Payment Method (Vendor Only)
+- **Endpoint**: `POST /api/vendors/me/payment-methods`
+- **Headers**: `Authorization: Bearer <your_vendor_jwt_token>` (Must have `vendor` role)
+- **Description**: Creates a new Mobile Money (`momo`) or Bank (`bank`) payout account for the vendor (or updates an existing one if `id` is included). If it is the vendor's first payout method, `is_default` is automatically set to `true`.
+- **Body payload (JSON)**:
+```json
+{
+  "provider": "momo", // "momo" or "bank" (required)
+  "network_or_bank": "MTN Mobile Money", // Network name or Bank name (required)
+  "account_name": "KFC Accra", // Account holder name (required)
+  "account_number": "0541234890", // Phone number or bank account number (required)
+  "branch": "East Legon Branch", // Optional (used when provider is "bank")
+  "is_default": true // Optional
+}
+```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Payout method added successfully",
+  "data": {
+    "id": 1,
+    "vendor_id": 1,
+    "provider": "momo",
+    "network_or_bank": "MTN Mobile Money",
+    "account_name": "KFC Accra",
+    "account_number": "0541234890",
+    "branch": null,
+    "is_default": true,
+    "created_at": "2026-10-21T16:00:00.000Z",
+    "updated_at": "2026-10-21T16:00:00.000Z"
+  }
+}
+```
+
+### Update Vendor Payment Method (Vendor Only)
+- **Endpoint**: `PUT /api/vendors/me/payment-methods/:id`
+- **Headers**: `Authorization: Bearer <your_vendor_jwt_token>` (Must have `vendor` role)
+- **Description**: Updates an existing vendor payout method or sets it as the default payout account (`{ "is_default": true }`).
+- **Body payload (JSON)**:
+```json
+{
+  "is_default": true
+}
+```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Payout method updated successfully",
+  "data": {
+    "id": 1,
+    "vendor_id": 1,
+    "provider": "momo",
+    "network_or_bank": "MTN Mobile Money",
+    "account_name": "KFC Accra",
+    "account_number": "0541234890",
+    "branch": null,
+    "is_default": true,
+    "created_at": "2026-10-21T16:00:00.000Z",
+    "updated_at": "2026-10-21T16:05:00.000Z"
+  }
+}
+```
+
+### Delete Vendor Payment Method (Vendor Only)
+- **Endpoint**: `DELETE /api/vendors/me/payment-methods/:id`
+- **Headers**: `Authorization: Bearer <your_vendor_jwt_token>` (Must have `vendor` role)
+- **Description**: Deletes a saved payout method belonging to the vendor.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Payout method deleted successfully"
+}
+```
+
+### Get Vendor Payout History (Vendor Only)
+- **Endpoint**: `GET /api/vendors/me/payouts`
+- **Headers**: `Authorization: Bearer <your_vendor_jwt_token>` (Must have `vendor` role)
+- **Description**: Returns a chronological list of all payout withdrawals made by the vendor.
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Vendor payout history retrieved successfully",
+  "data": [
+    {
+      "id": 1,
+      "vendor_id": 1,
+      "amount": "2500.00",
+      "payment_method_id": 1,
+      "method_label": "MTN Mobile Money",
+      "account_masked": "*******890",
+      "status": "Paid",
+      "reference_id": "PAY-M2K9P1",
+      "created_at": "2026-10-21T16:30:00.000Z",
+      "updated_at": "2026-10-21T16:30:00.000Z"
+    }
+  ]
+}
+```
+
+### Request Vendor Payout (Vendor Only)
+- **Endpoint**: `POST /api/vendors/me/payouts`
+- **Headers**: `Authorization: Bearer <your_vendor_jwt_token>` (Must have `vendor` role)
+- **Description**: Validates the requested withdrawal amount against the vendor's available balance, records the payout in `vendor_payouts`, and returns the created payout record along with the updated `remaining_balance`.
+- **Body payload (JSON)**:
+```json
+{
+  "amount": 500.00, // required (must be > 0 and <= available_balance)
+  "payment_method_id": 1 // required (must belong to the vendor)
+}
+```
+- **Example Response**:
+```json
+{
+  "status": "success",
+  "message": "Payout processed successfully",
+  "data": {
+    "payout": {
+      "id": 2,
+      "vendor_id": 1,
+      "amount": "500.00",
+      "payment_method_id": 1,
+      "method_label": "MTN Mobile Money",
+      "account_masked": "*******890",
+      "status": "Paid",
+      "reference_id": "PAY-M2K9Z8",
+      "created_at": "2026-10-21T17:00:00.000Z",
+      "updated_at": "2026-10-21T17:00:00.000Z"
+    },
+    "remaining_balance": 1500.00
   }
 }
 ```
