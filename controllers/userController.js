@@ -20,7 +20,7 @@ const getProfile = async (req, res, next) => {
 // @route   PUT /api/users/profile
 const updateProfile = async (req, res, next) => {
   try {
-    let { first_name, last_name, email, profile_picture } = req.body;
+    let { first_name, last_name, email, phone_number, profile_picture } = req.body;
     
     // If a file was uploaded via multipart/form-data, use its URL
     if (req.file) {
@@ -37,7 +37,7 @@ const updateProfile = async (req, res, next) => {
       await deleteFileFromMinio(existingUser.profile_picture);
     }
 
-    const user = await User.updateProfile(req.user.id, { first_name, last_name, email, profile_picture });
+    const user = await User.updateProfile(req.user.id, { first_name, last_name, email, phone_number, profile_picture });
     
     if (!user) {
       return res.status(404).json({ status: 'error', message: 'User not found' });

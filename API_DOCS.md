@@ -174,6 +174,7 @@ If uploading a file, use `multipart/form-data` with the field `profile_picture` 
   "first_name": "Hamza",
   "last_name": "Ibramin",
   "email": "zero@example.com",
+  "phone_number": "1234567890",
   "profile_picture": "http://namibras3.namibra.io/somame/..."
 }
 ```
