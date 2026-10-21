@@ -311,11 +311,12 @@ class Vendor {
         u.first_name, 
         u.last_name, 
         u.phone_number,
+        u.created_at as date_joined,
         MAX(o.created_at) as last_order_date
       FROM users u
       JOIN orders o ON u.id = o.customer_id
       ${whereClause}
-      GROUP BY u.id
+      GROUP BY u.id, u.first_name, u.last_name, u.phone_number, u.created_at
       ORDER BY last_order_date DESC
       LIMIT $${paramCount} OFFSET $${paramCount + 1}
     `;
@@ -338,7 +339,7 @@ class Vendor {
       FROM users u
       LEFT JOIN orders o ON u.id = o.customer_id AND o.vendor_id = $1
       WHERE u.id = $2
-      GROUP BY u.id
+      GROUP BY u.id, u.first_name, u.last_name, u.phone_number, u.created_at
     `;
     const statsResult = await pool.query(statsQuery, [vendorId, customerId]);
     
