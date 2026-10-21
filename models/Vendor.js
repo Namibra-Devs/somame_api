@@ -423,14 +423,16 @@ class Vendor {
     // Top Items
     const topItemsQuery = `
       SELECT 
+        m.id,
         m.name as item,
+        m.image_url,
         SUM(oi.quantity) as units_sold,
         SUM(oi.price * oi.quantity) as revenue
       FROM order_items oi
       JOIN orders o ON oi.order_id = o.id
       JOIN menu_items m ON oi.item_id = m.id
       WHERE o.vendor_id = $1 AND o.status = 'delivered' AND o.created_at >= $2 AND o.created_at <= $3
-      GROUP BY m.id, m.name
+      GROUP BY m.id, m.name, m.image_url
       ORDER BY units_sold DESC
       LIMIT 5
     `;
@@ -438,7 +440,9 @@ class Vendor {
 
     const topItems = topItemsResult.rows.map((row, index) => ({
       rank: index + 1,
+      id: row.id,
       item: row.item,
+      image_url: row.image_url,
       units_sold: parseInt(row.units_sold, 10),
       revenue: parseFloat(row.revenue),
       avg_rating: "0.0"
