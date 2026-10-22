@@ -3400,3 +3400,89 @@ socket.on('support_case_updated', (caseSummary) => {
   // Update last_message and badge on Support Home Screen
 });
 ```
+
+
+---
+
+## 20. Admin Console Operations (/api/admin)
+
+All endpoints in this section require an Admin JWT token (`Authorization: Bearer <admin_jwt_token>`), except `GET /api/admin/configs`.
+
+### 20.1 Get Admin Dashboard Overview & KPIs
+- **Endpoint**: `GET /api/admin/dashboard`
+- **Headers**: `Authorization: Bearer <admin_jwt_token>`
+- **Description**: Returns platform-wide KPIs (users, vendors, riders, pending KYC, food & parcel orders, GMV, service fees, open support cases), 7-day revenue chart data, recent food orders, and recent parcel deliveries.
+
+### 20.2 Get All Vendors (Admin)
+- **Endpoint**: `GET /api/admin/vendors`
+- **Headers**: `Authorization: Bearer <admin_jwt_token>`
+- **Description**: Lists all vendor stores joined with owner details (`users`), category (`categories`), total order count, delivered revenue, and menu item count.
+
+### 20.3 Update Vendor Store / Status (Admin)
+- **Endpoint**: `PUT /api/admin/vendors/:id`
+- **Headers**: `Authorization: Bearer <admin_jwt_token>`
+- **Body payload (JSON)**:
+```json
+{
+  "name": "KFC East Legon",
+  "description": "Best fried chicken in town",
+  "category_id": 1,
+  "tags": "fast food, chicken",
+  "is_open": true,
+  "owner_is_active": true,
+  "lat": 5.6358,
+  "lng": -0.1614
+}
+```
+
+### 20.4 Get All Riders & KYC Profiles (Admin)
+- **Endpoint**: `GET /api/admin/riders`
+- **Headers**: `Authorization: Bearer <admin_jwt_token>`
+- **Description**: Lists all riders joined with `rider_profiles` (KYC document URLs, vehicle type, online status, `verification_status`), `rider_wallets`, and completed food/parcel delivery counts.
+
+### 20.5 Approve or Reject Rider KYC / Status (Admin)
+- **Endpoint**: `PATCH /api/admin/riders/:id/verify`
+- **Headers**: `Authorization: Bearer <admin_jwt_token>`
+- **Body payload (JSON)**:
+```json
+{
+  "verification_status": "approved", // "pending", "approved", or "rejected"
+  "is_active": true
+}
+```
+
+### 20.6 Get All Customers (Admin)
+- **Endpoint**: `GET /api/admin/customers`
+- **Headers**: `Authorization: Bearer <admin_jwt_token>`
+- **Description**: Lists all customer accounts with food order count, parcel order count, total spent, saved addresses count, and active/suspended status.
+
+### 20.7 Get All Food Orders & Update Order Status (Admin)
+- **Endpoints**:
+  - `GET /api/admin/orders`: Lists all food orders with customer, vendor, rider, and line items.
+  - `PATCH /api/admin/orders/:id/status`: Updates `status`, `payment_status`, or `rider_id` for a food order.
+
+### 20.8 Get All Parcel Deliveries & Update Parcel Status (Admin)
+- **Endpoints**:
+  - `GET /api/admin/parcels`: Lists all parcel orders with pickup/dropoff coordinates, customer, and rider details.
+  - `PATCH /api/admin/parcels/:id/status`: Updates `status`, `payment_status`, or `rider_id` for a parcel order.
+
+### 20.9 Get All Vendor & Rider Payouts & Update Payout Status (Admin)
+- **Endpoints**:
+  - `GET /api/admin/payouts`: Returns `{ vendor_payouts: [...], rider_payouts: [...] }`.
+  - `PATCH /api/admin/payouts/:type/:id`: Updates payout `status` where `:type` is `vendor` or `rider` (e.g. `{ "status": "Paid" }` or `{ "status": "Failed" }`).
+
+### 20.10 Admin Support Helpdesk & FAQ Articles Management
+- **Endpoints**:
+  - `GET /api/admin/support/cases`: Lists all customer/rider/vendor support cases.
+  - `GET /api/admin/support/cases/:id`: Returns case details and chronological message thread.
+  - `POST /api/admin/support/cases/:id/messages`: Sends an admin reply (`{ "message": "..." }`) and moves `open` cases to `in_progress`.
+  - `PATCH /api/admin/support/cases/:id/status`: Updates case `status` (`open`, `in_progress`, `resolved`, `closed`) and `priority` (`low`, `medium`, `high`).
+  - `GET /api/admin/support/articles`: Lists all help center articles (including inactive).
+  - `POST /api/admin/support/articles`: Creates a new help article (`{ "title", "category", "content", "is_active" }`).
+  - `PUT /api/admin/support/articles/:id`: Updates a help article.
+  - `DELETE /api/admin/support/articles/:id`: Deletes a help article.
+
+### 20.11 Get & Update System Configurations (Admin)
+- **Endpoints**:
+  - `GET /api/admin/configs`: Retrieves key-value map of `system_configs`.
+  - `PUT /api/admin/configs`: Updates `system_configs` key-value pairs (`parcel_base_fare`, `parcel_per_km_fee`, `parcel_service_fee`, `parcel_express_multiplier`, `rider_base_pay`, `rider_distance_bonus`, `order_service_fee`).
